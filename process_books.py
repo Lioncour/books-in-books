@@ -47,9 +47,18 @@ def init_database():
             source_book_id INTEGER,
             referenced_book_id INTEGER,
             FOREIGN KEY (source_book_id) REFERENCES books (id),
-            FOREIGN KEY (referenced_book_id) REFERENCES books (id)
+            FOREIGN KEY (referenced_book_id) REFERENCES books (id),
+            CHECK (source_book_id != referenced_book_id)
         )
     ''')
+    
+    # Remove any existing self-references
+    cursor.execute('''
+        DELETE FROM book_references 
+        WHERE source_book_id = referenced_book_id
+    ''')
+    if cursor.rowcount > 0:
+        print(f"Removed {cursor.rowcount} existing self-references from database")
     
     # Create processed_files table to track which files have been processed
     cursor.execute('''
