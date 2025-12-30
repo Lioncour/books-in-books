@@ -16,7 +16,7 @@ body {
 }
 
 body.synth-bg {
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+    background: #0a0a0a; /* Processing 2010 solid dark background */
     font-family: 'Share Tech Mono', 'Orbitron', 'Roboto Mono', monospace;
     color: #e2e8f0;
     height: 100vh;
@@ -81,7 +81,7 @@ header p {
 
 #graph-container {
     flex: 1;
-    background-color: #1a1a1a;
+    background-color: #0a0a0a; /* Processing 2010 dark background */
     position: relative;
     overflow: hidden;
 }

@@ -52,53 +52,37 @@ function init2D() {
   
   console.log('Initializing 2D with dimensions:', width, 'x', height);
   
-  // Create SVG
+  // Create SVG with Processing 2010 style background
   svg = container.append("svg")
     .attr("width", width)
     .attr("height", height)
-    .style("background", "transparent")
+    .style("background", "#0a0a0a") // Dark Processing background
     .style("display", "block");
   
   console.log('SVG created:', width, 'x', height);
   
-  // Add defs for gradients and filters
+  // Add defs for Processing 2010 style - minimal, geometric
   const defs = svg.append("defs");
   
-  // Gradient for gold nodes
-  const goldGradient = defs.append("linearGradient")
-    .attr("id", "goldGradient")
-    .attr("x1", "0%").attr("y1", "0%")
-    .attr("x2", "100%").attr("y2", "100%");
-  goldGradient.append("stop").attr("offset", "0%").attr("stop-color", "#ffd700");
-  goldGradient.append("stop").attr("offset", "100%").attr("stop-color", "#ffed4e");
-  
-  // Gradient for blue nodes
-  const blueGradient = defs.append("linearGradient")
-    .attr("id", "blueGradient")
-    .attr("x1", "0%").attr("y1", "0%")
-    .attr("x2", "100%").attr("y2", "100%");
-  blueGradient.append("stop").attr("offset", "0%").attr("stop-color", "#7f9cf5");
-  blueGradient.append("stop").attr("offset", "100%").attr("stop-color", "#a3bffa");
-  
-  // Glow filter for nodes
-  const glowFilter = defs.append("filter")
-    .attr("id", "glow");
-  glowFilter.append("feGaussianBlur")
-    .attr("stdDeviation", "3")
-    .attr("result", "coloredBlur");
-  const feMerge = glowFilter.append("feMerge");
-  feMerge.append("feMergeNode").attr("in", "coloredBlur");
-  feMerge.append("feMergeNode").attr("in", "SourceGraphic");
-  
-  // Shadow filter
+  // Simple shadow filter for depth (Processing style)
   const shadowFilter = defs.append("filter")
-    .attr("id", "shadow");
+    .attr("id", "processing-shadow")
+    .attr("x", "-50%")
+    .attr("y", "-50%")
+    .attr("width", "200%")
+    .attr("height", "200%");
   shadowFilter.append("feGaussianBlur")
+    .attr("in", "SourceAlpha")
     .attr("stdDeviation", "2")
-    .attr("result", "coloredBlur");
-  const feMergeShadow = shadowFilter.append("feMerge");
-  feMergeShadow.append("feMergeNode").attr("in", "SourceGraphic");
-  feMergeShadow.append("feMergeNode").attr("in", "coloredBlur");
+    .attr("result", "blur");
+  shadowFilter.append("feOffset")
+    .attr("in", "blur")
+    .attr("dx", "1")
+    .attr("dy", "1")
+    .attr("result", "offsetBlur");
+  const feMerge = shadowFilter.append("feMerge");
+  feMerge.append("feMergeNode").attr("in", "offsetBlur");
+  feMerge.append("feMergeNode").attr("in", "SourceGraphic");
   
   // Create groups for links and nodes
   linkGroup = svg.append("g").attr("class", "links");
@@ -256,20 +240,21 @@ function renderGraph(books, references) {
     });
     const connections = connectedBookIds.size;
     
-    let size, color, gradient;
+    // Processing 2010 style - simple, geometric, minimal
+    let size, color, strokeColor;
     if (isStarting) {
-      size = Math.max(20, Math.min(35, 20 + connections * 2));
-      color = "#ffd700";
-      gradient = "url(#goldGradient)";
+      size = Math.max(18, Math.min(32, 18 + connections * 2));
+      color = "#FFD700"; // Bright yellow/gold - Processing accent color
+      strokeColor = "#FFA500"; // Orange stroke for depth
     } else if (connections > 0) {
-      size = Math.max(10, Math.min(20, 10 + connections * 1.5));
-      const intensity = Math.min(255, 150 + connections * 20);
-      color = `rgb(100, 150, ${intensity})`;
-      gradient = "url(#blueGradient)";
+      size = Math.max(8, Math.min(18, 8 + connections * 1.5));
+      // Simple blue - Processing style
+      color = "#4A90E2"; // Clean blue
+      strokeColor = "#2E5C8A"; // Darker blue stroke
     } else {
-      size = 8;
+      size = 6;
       color = "#666666";
-      gradient = color;
+      strokeColor = "#444444";
     }
     
     // Better initial positioning - starting books closer together
@@ -295,7 +280,7 @@ function renderGraph(books, references) {
       connections: connections,
       size: size,
       color: color,
-      gradient: gradient,
+      strokeColor: strokeColor,
       x: x,
       y: y,
       vx: 0,
@@ -375,48 +360,56 @@ function renderGraph(books, references) {
   
   console.log('Force simulation created');
   
-  // Draw links - D3 will convert source/target IDs to node objects
+  // Draw links - WCAG friendly: higher contrast, thicker lines
   console.log('Drawing', links.length, 'links');
   const link = linkGroup.selectAll("line")
     .data(links)
     .enter().append("line")
-    .attr("stroke", "#888888")
-    .attr("stroke-opacity", 0.6)
-    .attr("stroke-width", 2)
-    .style("filter", "url(#shadow)")
+    .attr("stroke", "#888888") // Lighter gray for better contrast
+    .attr("stroke-opacity", 0.6) // Higher opacity for visibility
+    .attr("stroke-width", 2.5) // Thicker for better visibility
     .style("stroke-linecap", "round");
   
   console.log('Links drawn:', link.size());
   
-  // Draw nodes
+  // Draw nodes - Processing 2010 style: simple circles with stroke
   console.log('Drawing', nodes.length, 'nodes');
   const node = nodeGroup.selectAll("circle")
     .data(nodes)
     .enter().append("circle")
-    .attr("r", d => d.size)
-    .attr("fill", d => d.gradient)
+    .attr("r", 0) // Start at 0 for animation
+    .attr("fill", d => d.color)
+    .attr("stroke", d => d.strokeColor)
+    .attr("stroke-width", 2)
     .style("cursor", "pointer")
-    .style("filter", d => d.isStarting ? "url(#glow)" : "url(#shadow)")
+    .style("filter", "url(#processing-shadow)")
+    .style("opacity", 0) // Start invisible for animation
     .on("mouseover", function(event, d) {
       showTooltip(event, d);
       d3.select(this)
         .transition()
-        .duration(200)
-        .attr("r", d.size * 1.2)
-        .style("filter", d.isStarting ? "url(#glow)" : "url(#shadow)");
+        .duration(150)
+        .attr("r", d.size * 1.15)
+        .attr("stroke-width", 3);
     })
     .on("mouseout", function(event, d) {
       hideTooltip();
       d3.select(this)
         .transition()
-        .duration(200)
+        .duration(150)
         .attr("r", d.size)
-        .style("filter", d.isStarting ? "url(#glow)" : "url(#shadow)");
+        .attr("stroke-width", 2);
     })
-  .on("click", function(event, d) {
-    event.stopPropagation();
-    selectNode(d);
-  });
+    .on("click", function(event, d) {
+      event.stopPropagation();
+      selectNode(d);
+    })
+    .call(drag(simulation)); // Enable dragging for all nodes (drag function checks if starting)
+  
+  // Initial animation will be triggered in simulation tick when nodes are positioned
+  
+  // Track if initial animation has run
+  let initialAnimationRun = false;
   
   // Update positions on simulation tick
   simulation.on("tick", () => {
@@ -441,6 +434,20 @@ function renderGraph(books, references) {
     node
       .attr("cx", d => d.x || width / 2)
       .attr("cy", d => d.y || height / 2);
+    
+    // Trigger initial animation once nodes are positioned
+    if (!initialAnimationRun && nodes.length > 0 && nodes[0].x !== undefined && nodes[0].x !== null) {
+      initialAnimationRun = true;
+      // Small delay to ensure positions are set
+      setTimeout(() => {
+        node.transition()
+          .duration(400)
+          .delay((d, i) => Math.min(i * 8, 200))
+          .ease(d3.easeBackOut.overshoot(1.5))
+          .attr("r", d => d.size)
+          .style("opacity", 1);
+      }, 50);
+    }
     
     // Update node counts periodically (not every tick to avoid performance issues)
     if (Math.random() < 0.01) { // Update roughly 1% of ticks
@@ -504,30 +511,31 @@ function updateNodeCounts() {
 // Stats function removed - no longer displaying stats panel
 
 function drag(simulation) {
-  function dragstarted(event, d) {
-    if (!event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
-  }
-  
-  function dragged(event, d) {
-    // Only allow dragging starting books
-    if (d.isStarting) {
+  return d3.drag()
+    .on("start", function(event, d) {
+      // Only allow dragging starting books
+      if (!d.isStarting) {
+        event.sourceEvent.stopPropagation();
+        return;
+      }
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    })
+    .on("drag", function(event, d) {
+      // Only allow dragging starting books
+      if (!d.isStarting) return;
+      // Account for zoom transform - event.x and event.y are already in transformed coordinates
       d.fx = event.x;
       d.fy = event.y;
-    }
-  }
-  
-  function dragended(event, d) {
-    if (!event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
-  }
-  
-  return d3.drag()
-    .on("start", dragstarted)
-    .on("drag", dragged)
-    .on("end", dragended);
+    })
+    .on("end", function(event, d) {
+      if (!d.isStarting) return;
+      if (!event.active) simulation.alphaTarget(0);
+      // Allow node to move freely again
+      d.fx = null;
+      d.fy = null;
+    });
 }
 
 function selectNode(node) {
@@ -955,27 +963,82 @@ function updateNodeVisibility() {
   console.log('Final nodesToHide:', Array.from(nodesToHide));
   console.log('Visible starting books:', startingBooks.filter(id => !hiddenNodeIds.has(String(id))));
   
-  // Apply visibility - starting books are always visible if not in hiddenNodeIds
-  nodeGroup.selectAll("circle")
-    .style("opacity", d => {
-      const nodeId = String(d.id);
-      // Starting books: visible if not in hiddenNodeIds
-      if (d.isStarting) {
-        return hiddenNodeIds.has(nodeId) ? 0 : 1;
-      }
-      // Other nodes: visible if not in nodesToHide
-      return nodesToHide.has(nodeId) ? 0 : 1;
-    })
-    .style("pointer-events", d => {
-      const nodeId = String(d.id);
-      if (d.isStarting) {
-        return hiddenNodeIds.has(nodeId) ? "none" : "all";
-      }
-      return nodesToHide.has(nodeId) ? "none" : "all";
-    });
+  // Apply visibility with fast Processing-style animations - random timing for "spring alive" effect
+  const nodeSelection = nodeGroup.selectAll("circle");
   
-  // Hide/show links
+  // Collect nodes that need to be shown (for random animation)
+  const nodesToShow = [];
+  const nodesToHideAnimated = [];
+  
+  nodeSelection.each(function(d) {
+    const nodeId = String(d.id);
+    const element = d3.select(this);
+    const shouldHide = d.isStarting 
+      ? hiddenNodeIds.has(nodeId)
+      : nodesToHide.has(nodeId);
+    
+    const wasVisible = parseFloat(element.style("opacity")) > 0;
+    const isVisible = !shouldHide;
+    
+    if (wasVisible && !isVisible) {
+      // Mark for hiding animation
+      nodesToHideAnimated.push({ element, node: d });
+    } else if (!wasVisible && isVisible) {
+      // Mark for showing animation (only non-starting nodes get random timing)
+      if (!d.isStarting) {
+        nodesToShow.push({ element, node: d });
+      } else {
+        // Starting nodes show immediately
+        element
+          .style("opacity", 0)
+          .attr("r", 0)
+          .style("pointer-events", "all")
+          .transition()
+          .duration(350)
+          .ease(d3.easeBackOut.overshoot(1.2))
+          .attr("r", d.size)
+          .style("opacity", 1);
+      }
+    } else if (isVisible) {
+      // Already visible, ensure it stays visible
+      element.style("opacity", 1).style("pointer-events", "all");
+    } else {
+      // Already hidden, ensure it stays hidden
+      element.style("opacity", 0).style("pointer-events", "none");
+    }
+  });
+  
+  // Animate hiding nodes (fast, no random delay)
+  nodesToHideAnimated.forEach(({ element, node }) => {
+    element.transition()
+      .duration(300)
+      .ease(d3.easeQuadIn)
+      .attr("r", 0)
+      .style("opacity", 0)
+      .on("end", function() {
+        element.style("pointer-events", "none");
+      });
+  });
+  
+  // Animate showing nodes with RANDOM delays for "spring alive" effect
+  nodesToShow.forEach(({ element, node }) => {
+    const randomDelay = Math.random() * 400; // Random delay 0-400ms
+    element
+      .style("opacity", 0)
+      .attr("r", 0)
+      .style("pointer-events", "all")
+      .transition()
+      .delay(randomDelay)
+      .duration(350)
+      .ease(d3.easeBackOut.overshoot(1.2))
+      .attr("r", node.size)
+      .style("opacity", 1);
+  });
+  
+  // Hide/show links with fast animation
   linkGroup.selectAll("line")
+    .transition()
+    .duration(300)
     .style("opacity", d => {
       const sourceId = String(typeof d.source === 'object' ? d.source.id : d.source);
       const targetId = String(typeof d.target === 'object' ? d.target.id : d.target);
@@ -984,7 +1047,7 @@ function updateNodeVisibility() {
       const sourceHidden = nodesToHide.has(sourceId) || (nodes.find(n => String(n.id) === sourceId)?.isStarting && hiddenNodeIds.has(sourceId));
       const targetHidden = nodesToHide.has(targetId) || (nodes.find(n => String(n.id) === targetId)?.isStarting && hiddenNodeIds.has(targetId));
       
-      return (sourceHidden || targetHidden) ? 0 : 0.6;
+      return (sourceHidden || targetHidden) ? 0 : 0.6; // Higher opacity for WCAG
     })
     .style("pointer-events", d => {
       const sourceId = String(typeof d.source === 'object' ? d.source.id : d.source);
