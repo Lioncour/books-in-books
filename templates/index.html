@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books in books</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- D3.js for modern 2D graph visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+</head>
+<body class="synth-bg">
+    <div class="synth-bar-panel">
+        <div id="starting-books-list" class="starting-books-list"></div>
+        <a href="/verify" class="verify-link">Verify References</a>
+    </div>
+    <div class="synth-panel synth-graph-panel">
+        <div id="graph-container">
+            <div class="graph-controls">
+                <button id="reset-view" class="synth-btn">Reset View</button>
+                <button id="toggle-labels" class="synth-btn">Toggle Labels</button>
+            </div>
+        </div>
+        <div id="hover-info" class="hover-info">
+            <div id="hover-title"></div>
+            <div id="hover-author"></div>
+        </div>
+        <div id="node-tooltip" class="node-tooltip"></div>
+    </div>
+    <script src="{{ url_for('static', filename='main.js') }}?v=5"></script>
+</body>
+</html> 

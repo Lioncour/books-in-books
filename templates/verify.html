@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify References - Books in Books</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .verify-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .verify-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .verify-header h1 {
+            color: #ffd700;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .book-verification {
+            background: rgba(35, 39, 47, 0.9);
+            border: 2px solid #7f9cf5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .book-title {
+            color: #ffd700;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .book-author {
+            color: #a3bffa;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: rgba(10, 10, 10, 0.5);
+            border: 1px solid #7f9cf5;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-label {
+            color: #a3bffa;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            color: #ffd700;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .stat-value.ok {
+            color: #4ade80;
+        }
+        .stat-value.warning {
+            color: #fbbf24;
+        }
+        .references-section {
+            margin-top: 20px;
+        }
+        .section-title {
+            color: #7f9cf5;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #7f9cf5;
+            padding-bottom: 5px;
+        }
+        .reference-item {
+            background: rgba(10, 10, 10, 0.3);
+            border-left: 3px solid #ffd700;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .reference-title {
+            color: #ffd700;
+            font-family: 'Share Tech Mono', monospace;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .reference-author {
+            color: #a3bffa;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        .context-snippet {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 2px solid #7f9cf5;
+            padding: 8px 12px;
+            margin-top: 8px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            border-radius: 4px;
+        }
+        .context-label {
+            color: #7f9cf5;
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+        }
+        .loading {
+            text-align: center;
+            color: #7f9cf5;
+            font-family: 'Share Tech Mono', monospace;
+            padding: 40px;
+        }
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            padding: 15px;
+            color: #fca5a5;
+            font-family: 'Share Tech Mono', monospace;
+            margin-bottom: 20px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #7f9cf5;
+            font-family: 'Share Tech Mono', monospace;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #7f9cf5;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            background: #7f9cf5;
+            color: #0a0a0a;
+        }
+        .match-badge {
+            display: inline-block;
+            background: #4ade80;
+            color: #0a0a0a;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .warning-badge {
+            display: inline-block;
+            background: #fbbf24;
+            color: #0a0a0a;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body class="synth-bg">
+    <div class="verify-container">
+        <a href="/" class="back-link">← Back to Graph</a>
+        
+        <div class="verify-header">
+            <h1>Book Reference Verification</h1>
+            <p style="color: #a3bffa; font-family: 'Share Tech Mono', monospace;">
+                Verify which book references were detected in your books
+            </p>
+        </div>
+        
+        <div id="loading" class="loading">
+            <p>Analyzing books and extracting references...</p>
+            <p style="font-size: 0.8rem; margin-top: 10px;">This may take a minute...</p>
+        </div>
+        
+        <div id="error-container"></div>
+        <div id="verification-results"></div>
+    </div>
+    
+    <script>
+        async function loadVerification() {
+            try {
+                const response = await fetch('/api/verify');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                displayResults(data);
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error-container').innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${error.message}
+                        <br><br>
+                        Make sure you have run <code>python process_books.py</code> first.
+                    </div>
+                `;
+            }
+        }
+        
+        function displayResults(data) {
+            const container = document.getElementById('verification-results');
+            
+            if (!data.books || data.books.length === 0) {
+                container.innerHTML = `
+                    <div class="error">
+                        No books found. Please add books to the books/ folder and run process_books.py first.
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            data.books.forEach(book => {
+                const matches = book.matches || 0;
+                const onlyInDb = book.only_in_database || [];
+                const onlyInText = book.only_in_text || [];
+                
+                html += `
+                    <div class="book-verification">
+                        <div class="book-title">${escapeHtml(book.title)}</div>
+                        <div class="book-author">by ${escapeHtml(book.author || 'Unknown')}</div>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-label">In Database</div>
+                                <div class="stat-value">${book.db_references_count || 0}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Found in Text</div>
+                                <div class="stat-value">${book.found_references_count || 0}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Matches</div>
+                                <div class="stat-value ok">${matches}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Warnings</div>
+                                <div class="stat-value warning">${onlyInDb.length + onlyInText.length}</div>
+                            </div>
+                        </div>
+                        
+                        ${book.db_references && book.db_references.length > 0 ? `
+                            <div class="references-section">
+                                <div class="section-title">References in Database (${book.db_references.length})</div>
+                                ${book.db_references.map(ref => `
+                                    <div class="reference-item">
+                                        <div class="reference-title">${escapeHtml(ref.title)}</div>
+                                        <div class="reference-author">by ${escapeHtml(ref.author || 'Unknown')}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${book.found_references && book.found_references.length > 0 ? `
+                            <div class="references-section">
+                                <div class="section-title">References Found in Text (${book.found_references.length})</div>
+                                ${book.found_references.map(ref => {
+                                    const isMatch = book.matched_titles && book.matched_titles.includes(ref.title.toLowerCase());
+                                    return `
+                                        <div class="reference-item">
+                                            <div class="reference-title">
+                                                ${escapeHtml(ref.title)}
+                                                ${isMatch ? '<span class="match-badge">MATCH</span>' : '<span class="warning-badge">NEW</span>'}
+                                            </div>
+                                            ${ref.contexts && ref.contexts.length > 0 ? `
+                                                <div style="margin-top: 10px;">
+                                                    <div class="context-label">Context (${ref.count} occurrence(s)):</div>
+                                                    ${ref.contexts.slice(0, 2).map(ctx => `
+                                                        <div class="context-snippet">...${escapeHtml(ctx)}...</div>
+                                                    `).join('')}
+                                                    ${ref.contexts.length > 2 ? `<div style="color: #7f9cf5; font-size: 0.8rem; margin-top: 5px;">... and ${ref.contexts.length - 2} more occurrence(s)</div>` : ''}
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${onlyInDb.length > 0 ? `
+                            <div class="references-section">
+                                <div class="section-title">Only in Database (${onlyInDb.length})</div>
+                                ${onlyInDb.map(title => `
+                                    <div class="reference-item" style="border-left-color: #fbbf24;">
+                                        <div class="reference-title">${escapeHtml(title)}</div>
+                                        <div style="color: #fbbf24; font-size: 0.85rem; margin-top: 5px;">
+                                            Not found in current text scan
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${onlyInText.length > 0 ? `
+                            <div class="references-section">
+                                <div class="section-title">Only in Text (${onlyInText.length})</div>
+                                ${onlyInText.map(title => `
+                                    <div class="reference-item" style="border-left-color: #fbbf24;">
+                                        <div class="reference-title">${escapeHtml(title)}</div>
+                                        <div style="color: #fbbf24; font-size: 0.85rem; margin-top: 5px;">
+                                            Not yet in database
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Load verification on page load
+        loadVerification();
+    </script>
+</body>
+</html>
+
