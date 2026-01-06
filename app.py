@@ -83,6 +83,10 @@ def api_books():
             db_title = book['title'].lower().strip()
             db_author = (book['author'] or '').lower().strip()
             
+            # Skip books without authors (they shouldn't be nodes)
+            if not db_author or db_author == 'unknown':
+                continue
+            
             # Exclude summaries or derivative works
             if 'summary of' in db_title or 'paperback' in db_title.lower():
                 is_starting = False

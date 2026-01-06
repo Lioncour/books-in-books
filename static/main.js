@@ -121,9 +121,20 @@ function renderGraph(books, references) {
   
   allBooks = books;
   allReferences = references;
+  
+  // Filter out books without authors (they shouldn't be nodes)
+  books = books.filter(book => {
+    const hasAuthor = book.author && book.author.trim() && book.author.toLowerCase() !== 'unknown';
+    if (!hasAuthor) {
+      console.log(`Filtering out book without author: "${book.title}" (ID: ${book.id})`);
+    }
+    return hasAuthor;
+  });
+  
   startingBooks = books.filter(b => b.is_starting).map(b => String(b.id));
   
   console.log(`Starting books found: ${startingBooks.length}`, startingBooks);
+  console.log(`Books with authors: ${books.length}`);
   
   // Remove duplicate books - prioritize starting books, then by ID (lower ID = created first)
   const booksByTitle = new Map();
@@ -157,7 +168,7 @@ function renderGraph(books, references) {
     }
   });
   
-  // Remap references
+  // Remap references and filter out references to books without authors
   const uniqueReferences = references
     .map(ref => ({
       source: idRemap.get(String(ref.source)) || String(ref.source),
@@ -181,29 +192,25 @@ function renderGraph(books, references) {
   
   console.log(`Final starting books: ${startingBooks.length}`, startingBooks);
   
-  // Filter to only show nodes connected to starting books (directly or indirectly)
+  // Filter to only show nodes DIRECTLY referenced by starting books (no sub-networks from normal nodes)
   const connectedBookIds = new Set(startingBooks);
-  let changed = true;
-  let iterations = 0;
-  const maxIterations = 100; // Safety limit
   
-  // Keep expanding until no new connections found (finds all nodes reachable from starting books)
-  while (changed && iterations < maxIterations) {
-    changed = false;
-    references.forEach(ref => {
-      const sourceId = String(ref.source);
-      const targetId = String(ref.target);
-      if (connectedBookIds.has(sourceId) && !connectedBookIds.has(targetId)) {
+  // Only add nodes that are DIRECTLY referenced by starting books (one level deep)
+  // This prevents normal nodes from creating their own sub-networks
+  references.forEach(ref => {
+    const sourceId = String(ref.source);
+    const targetId = String(ref.target);
+    
+    // Only add target if source is a starting book
+    if (connectedBookIds.has(sourceId) && !connectedBookIds.has(targetId)) {
+      // Check if source is actually a starting book (not just a normal node we added)
+      if (startingBooks.includes(sourceId)) {
         connectedBookIds.add(targetId);
-        changed = true;
       }
-      if (connectedBookIds.has(targetId) && !connectedBookIds.has(sourceId)) {
-        connectedBookIds.add(sourceId);
-        changed = true;
-      }
-    });
-    iterations++;
-  }
+    }
+  });
+  
+  console.log(`Found ${connectedBookIds.size - startingBooks.length} nodes directly referenced by starting books`);
   
   // Filter books and references to only include connected ones
   const connectedBooks = books.filter(b => connectedBookIds.has(String(b.id)));
@@ -1065,18 +1072,71 @@ function updateNodeVisibility() {
 
 function fetchDataAndRenderGraph() {
   console.log('Fetching data...');
-  Promise.all([
-    fetch('/api/books').then(res => res.json()),
-    fetch('/api/references').then(res => res.json())
-  ]).then(([books, references]) => {
-    console.log('Data fetched:', books.length, 'books,', references.length, 'references');
-    // Store in global variables for use in other functions
-    allBooks = books;
-    allReferences = references;
-    renderGraph(books, references);
-  }).catch(error => {
-    console.error('Error fetching data:', error);
-  });
+  
+  // Detect if we're in static mode (GitHub Pages) or Flask mode
+  // Static mode: files are in same directory or docs/ directory
+  // Flask mode: API endpoints are available
+  const isStaticMode = window.location.pathname.includes('/docs/') || 
+                       window.location.hostname.includes('github.io') ||
+                       window.location.protocol === 'file:';
+  
+  let booksPromise, referencesPromise;
+  
+  if (isStaticMode) {
+    // Static mode: load from JSON files
+    console.log('Running in static mode, loading from JSON files...');
+    // Determine base path based on current location
+    let basePath = '';
+    const pathname = window.location.pathname;
+    
+    if (pathname.includes('/docs/')) {
+      // We're viewing from /docs/ folder directly (local file or docs subdirectory)
+      basePath = '.';
+    } else if (window.location.hostname.includes('github.io')) {
+      // GitHub Pages - files are at root of repo, so use current path's base
+      // e.g., https://user.github.io/repo/ -> basePath = '/repo'
+      // e.g., https://user.github.io/repo/index.html -> basePath = '/repo'
+      const pathParts = pathname.split('/').filter(p => p && p !== 'index.html');
+      if (pathParts.length > 0) {
+        basePath = '/' + pathParts[0];
+      }
+    } else {
+      // Local file or other static hosting - use relative path
+      basePath = '.';
+    }
+    
+    console.log('Static mode base path:', basePath);
+    booksPromise = fetch(`${basePath}/books.json`).then(res => {
+      if (!res.ok) throw new Error(`Failed to load books.json: ${res.status}`);
+      return res.json();
+    });
+    referencesPromise = fetch(`${basePath}/references.json`).then(res => {
+      if (!res.ok) throw new Error(`Failed to load references.json: ${res.status}`);
+      return res.json();
+    });
+  } else {
+    // Flask mode: use API endpoints
+    console.log('Running in Flask mode, loading from API...');
+    booksPromise = fetch('/api/books').then(res => res.json());
+    referencesPromise = fetch('/api/references').then(res => res.json());
+  }
+  
+  Promise.all([booksPromise, referencesPromise])
+    .then(([books, references]) => {
+      console.log('Data fetched:', books.length, 'books,', references.length, 'references');
+      // Store in global variables for use in other functions
+      allBooks = books;
+      allReferences = references;
+      renderGraph(books, references);
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+      const container = document.getElementById('graph-container');
+      if (container) {
+        container.innerHTML = 
+          '<div style="color: #ffd700; padding: 20px; text-align: center;">Error loading data. Please check the console for details.</div>';
+      }
+    });
 }
     
     // Reset view button

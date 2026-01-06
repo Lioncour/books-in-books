@@ -3,3 +3,4 @@ spacy>=3.7.0
 ebooklib>=0.18
 requests>=2.31.0
 
+
