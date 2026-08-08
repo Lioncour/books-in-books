@@ -3,30 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Books in books</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <title>Books in Books</title>
+    <meta name="description" content="Add the books you own. Books in Books finds the titles they mention and draws the literary web between them.">
+    <meta name="theme-color" content="#0f5c5c">
+    <link rel="icon" href="static/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
+    <link rel="manifest" href="static/site.webmanifest">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="static/style.css">
-    <!-- D3.js for modern 2D graph visualization -->
     <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
 </head>
-<body class="synth-bg">
-    <div class="synth-bar-panel">
-        <div id="starting-books-list" class="starting-books-list"></div>
-        <a href="#" class="verify-link" onclick="alert('Verification requires the Flask server. Run locally with: python app.py'); return false;">Verify References</a>
+<body data-static="true">
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+            <header class="brand-block">
+                <div class="brand-row">
+                    <img class="brand-mark" src="static/mark.svg" alt="" width="36" height="36">
+                    <p class="brand">Books in Books</p>
+                </div>
+                <h1 class="headline">See how your shelves talk to each other</h1>
+                <p class="lede">Add the books you own. We find the titles they mention, then draw the web between them.</p>
+            </header>
+
+            <div class="sidebar-actions">
+                <button type="button" class="btn btn-primary" id="open-upload">Add books</button>
+                <button type="button" class="btn btn-ghost" id="run-process" hidden>Extract references</button>
+            </div>
+
+            <div class="search-wrap">
+                <label class="sr-only" for="search-input">Search books</label>
+                <input type="search" id="search-input" class="search-input" placeholder="Search title or author" autocomplete="off">
+                <ul id="search-results" class="search-results" hidden></ul>
+            </div>
+
+            <section class="library-section" aria-labelledby="library-heading">
+                <div class="section-head">
+                    <h2 id="library-heading">Your library</h2>
+                    <span id="library-count" class="muted-count"></span>
+                </div>
+                <div id="library-empty" class="empty-state" hidden>
+                    <p>No books yet. Drop an EPUB or TXT named like <em>Author - Title</em>, then extract references.</p>
+                </div>
+                <ul id="library-list" class="library-list"></ul>
+            </section>
+
+            <footer class="sidebar-foot">
+                <div class="network-actions" id="network-actions">
+                    <button type="button" class="quiet-link as-button" id="export-network">Export network</button>
+                    <button type="button" class="quiet-link as-button" id="import-network">Import network</button>
+                    <input type="file" id="import-file" accept="application/json,.json" hidden>
+                </div>
+                <a href="#" onclick="alert('Verification requires the local Flask server (python app.py).'); return false;" class="quiet-link">Verify references</a>
+            </footer>
+        </aside>
+
+        <main class="stage">
+            <div id="graph-container" class="graph-container" aria-label="Book connection graph">
+                <div class="graph-toolbar">
+                    <div class="toolbar-left">
+                        <button type="button" id="reset-view" class="btn btn-small">Reset view</button>
+                        <button type="button" id="export-png" class="btn btn-small">Save image</button>
+                        <button type="button" id="focus-mode" class="btn btn-small" hidden>Clear focus</button>
+                    </div>
+                    <div id="node-counts" class="node-counts" aria-live="polite"></div>
+                </div>
+                <div id="first-run" class="first-run" hidden>
+                    <img class="first-run-mark" src="static/mark.svg" alt="" width="48" height="48">
+                    <h2>Start your literary web</h2>
+                    <ol class="first-run-steps">
+                        <li><strong>Add books</strong> — upload EPUB or TXT files named like <em>Author - Title</em>.</li>
+                        <li><strong>Extract</strong> — we find titles mentioned in the text and check Open Library.</li>
+                        <li><strong>Explore</strong> — click a library book to focus its mentions on the graph.</li>
+                    </ol>
+                    <button type="button" class="btn btn-primary" id="first-run-add">Add your first book</button>
+                </div>
+            </div>
+
+            <div id="process-banner" class="process-banner" hidden role="status" aria-live="polite">
+                <div class="process-banner-top">
+                    <p id="process-message">Processing…</p>
+                    <button type="button" class="banner-dismiss" id="process-dismiss" aria-label="Dismiss">×</button>
+                </div>
+                <div class="progress-track" aria-hidden="true">
+                    <div id="process-bar" class="progress-bar"></div>
+                </div>
+                <ul id="process-errors" class="process-errors" hidden></ul>
+            </div>
+        </main>
+
+        <aside class="detail-panel" id="detail-panel" hidden>
+            <button type="button" class="detail-close" id="detail-close" aria-label="Close detail">×</button>
+            <div id="detail-content"></div>
+        </aside>
     </div>
-    <div class="synth-panel synth-graph-panel">
-        <div id="graph-container">
-            <div class="graph-controls">
-                <button id="reset-view" class="synth-btn">Reset View</button>
-                <button id="toggle-labels" class="synth-btn">Toggle Labels</button>
+
+    <div id="toast-region" class="toast-region" aria-live="polite" aria-relevant="additions"></div>
+
+    <div id="upload-modal" class="modal" hidden>
+        <div class="modal-backdrop" data-close-modal></div>
+        <div class="modal-card" role="dialog" aria-labelledby="upload-title" aria-modal="true">
+            <button type="button" class="detail-close" data-close-modal aria-label="Close">×</button>
+            <h2 id="upload-title">Add books</h2>
+            <p class="modal-copy">Upload <strong>.epub</strong> or <strong>.txt</strong> files. Prefer names like <em>Author - Title.epub</em>.</p>
+            <div id="drop-zone" class="drop-zone">
+                <input type="file" id="file-input" accept=".epub,.txt,application/epub+zip,text/plain" multiple hidden>
+                <p>Drag files here, or <button type="button" class="linkish" id="pick-files">browse</button></p>
+            </div>
+            <ul id="upload-queue" class="upload-queue"></ul>
+            <p id="upload-status" class="upload-status" hidden></p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
+                <button type="button" class="btn btn-primary" id="upload-submit" disabled>Upload &amp; process</button>
             </div>
         </div>
-        <div id="hover-info" class="hover-info">
-            <div id="hover-title"></div>
-            <div id="hover-author"></div>
-        </div>
-        <div id="node-tooltip" class="node-tooltip"></div>
     </div>
-    <script src="static/main.js?v=6"></script>
+
+    <div id="node-tooltip" class="node-tooltip" hidden></div>
+
+    <script src="static/main.js?v=13"></script>
 </body>
-</html> 
+</html>

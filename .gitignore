@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 ENV/
 build/
 develop-eggs/
@@ -45,6 +46,7 @@ books/*.epub
 books/*.txt
 # Keep the books folder structure but ignore large files
 !books/.gitkeep
+process_status.json
 
 # Logs
 *.log

@@ -1,798 +1,217 @@
 [
   {
     "source": 1,
-    "target": 2
+    "target": 2,
+    "context": null
   },
   {
     "source": 1,
-    "target": 3
+    "target": 3,
+    "context": null
   },
   {
     "source": 1,
-    "target": 4
+    "target": 4,
+    "context": null
   },
   {
     "source": 1,
-    "target": 5
+    "target": 5,
+    "context": null
   },
   {
     "source": 1,
-    "target": 6
+    "target": 6,
+    "context": null
   },
   {
     "source": 1,
-    "target": 7
+    "target": 7,
+    "context": null
   },
   {
-    "source": 1,
-    "target": 8
+    "source": 3,
+    "target": 18,
+    "context": "y through my second glass of wine while watching a rerun of Star Trek: The Next Generation when the phone rang. The first thing I did was look at the"
   },
   {
-    "source": 1,
-    "target": 9
+    "source": 3,
+    "target": 23,
+    "context": "acher. We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after"
   },
   {
-    "source": 1,
-    "target": 10
+    "source": 3,
+    "target": 24,
+    "context": "ng dream in the early 1980s. Stimulated by a cartoon called The Masters of the Universe, these toys may not have actually ruled the universe, but f"
   },
   {
-    "source": 1,
-    "target": 11
+    "source": 3,
+    "target": 25,
+    "context": "y classes the way He-Man had anyway. My girls had all been “My Little Pony” addicts in that era.&#13; I opened the comic and paged thr"
   },
   {
-    "source": 1,
-    "target": 12
+    "source": 3,
+    "target": 26,
+    "context": "hat we normally do.”&#13; “Yeah, we’re going to discuss how Psycho Girl killed some poor kid in the first grade,” Billy added.&#13;"
   },
   {
-    "source": 1,
-    "target": 13
+    "source": 3,
+    "target": 27,
+    "context": "on either killing one another or reenacting some version of Lord of the Flies, Julie became easily overcome in situations where fighting"
   },
   {
-    "source": 1,
-    "target": 14
+    "source": 3,
+    "target": 28,
+    "context": "ide to stand by the wall.”&#13; I picked out Arnold Lobel’s Frog and Toad Are Friends, a longtime favorite of mine. It was an easy-reader childre"
   },
   {
-    "source": 1,
-    "target": 15
+    "source": 3,
+    "target": 29,
+    "context": "e of its shouting. But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,"
   },
   {
-    "source": 1,
-    "target": 16
+    "source": 3,
+    "target": 30,
+    "context": "ing. But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,” be"
   },
   {
-    "source": 1,
-    "target": 17
+    "source": 3,
+    "target": 31,
+    "context": "as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,” because they were f"
   },
   {
-    "source": 1,
-    "target": 18
+    "source": 3,
+    "target": 32,
+    "context": "this gave us lots of Christmas songs to work with. Indeed, “Jingle Bells” almost became our theme song we sang it so much.&#13; The"
   },
   {
-    "source": 1,
-    "target": 19
+    "source": 3,
+    "target": 33,
+    "context": "nch. Santa pulled over a little chair and sat down to read “The Night Before Christmas” to the children while they ate.&#13; A tiny moment of peac"
   },
   {
-    "source": 1,
-    "target": 38
+    "source": 3,
+    "target": 34,
+    "context": "ks – Arnold Lobel’s Frog and Toad books and Russell Hoban’s Frances series on the idea that familiarity would be a good way to"
   },
   {
-    "source": 1,
-    "target": 39
+    "source": 3,
+    "target": 35,
+    "context": "our détente by getting up to locate a second book, I opened Frog and Toad again. There was one particularly funny little story where"
   },
   {
-    "source": 1,
-    "target": 40
+    "source": 3,
+    "target": 36,
+    "context": "r. On this day, it had taken almost seven minutes to choose Best Friends for Frances, so I settled down to read it.&#13; As had beco"
   },
   {
-    "source": 1,
-    "target": 41
+    "source": 3,
+    "target": 37,
+    "context": "eed, one that I’d used for years in working with children: “Would You Like to Swing on a Star.”&#13; “A mule is an animal with long, funny ears.” I waggl"
   },
   {
-    "source": 1,
-    "target": 42
+    "source": 3,
+    "target": 38,
+    "context": "the homemade game. There is a children’s board game called Candy Land that involves progressing along a long snaking path made up"
   },
   {
-    "source": 1,
-    "target": 43
+    "source": 3,
+    "target": 39,
+    "context": "e room telepathically.&#13; Six or seven minutes of reading She-Ra aloud to myself in the reading corner and no sign of moveme"
   },
   {
-    "source": 1,
-    "target": 44
+    "source": 3,
+    "target": 40,
+    "context": "hoes and attached a little blue ribbon medallion that said “First Prize.” Not exactly appropriate, but it was all I could find at t"
   },
   {
-    "source": 1,
-    "target": 45
+    "source": 3,
+    "target": 41,
+    "context": "classroom.&#13; I’d been reading an old favorite of mine – Treasure Island – to the children after lunch. I always did this every year"
   },
   {
-    "source": 1,
-    "target": 46
+    "source": 3,
+    "target": 42,
+    "context": ". She had long blonde hair pushed back with a headband à la Alice in Wonderland, whom she would have made a pretty good stand-in for, excep"
   },
   {
-    "source": 1,
-    "target": 47
+    "source": 3,
+    "target": 43,
+    "context": "Greek myths, picture books, and the whole of A. A. Milne’s Winnie-the-Pooh – but Venus’s favorite was a thin book of verse called Fath"
   },
   {
-    "source": 1,
-    "target": 48
+    "source": 3,
+    "target": 44,
+    "context": "ngsong.&#13; Her favorite of all the rhymes was one called “Dilly Dilly.”&#13; Dilly, Dilly, Piccalilli. Tell me something very sil"
   },
   {
-    "source": 1,
-    "target": 49
+    "source": 3,
+    "target": 45,
+    "context": "terest in my routine. Donna, the girl whose story I told in The Saddest Girl in the World, had left us in November and I’d taken Christmas off and wa"
   },
   {
-    "source": 20,
-    "target": 21
+    "source": 13,
+    "target": 9,
+    "context": null
   },
   {
-    "source": 20,
-    "target": 22
+    "source": 13,
+    "target": 10,
+    "context": null
   },
   {
-    "source": 20,
-    "target": 23
+    "source": 13,
+    "target": 11,
+    "context": null
   },
   {
-    "source": 20,
-    "target": 24
+    "source": 13,
+    "target": 12,
+    "context": null
   },
   {
-    "source": 20,
-    "target": 25
+    "source": 13,
+    "target": 14,
+    "context": null
   },
   {
-    "source": 20,
-    "target": 26
+    "source": 13,
+    "target": 15,
+    "context": null
   },
   {
-    "source": 20,
-    "target": 27
+    "source": 13,
+    "target": 16,
+    "context": null
   },
   {
-    "source": 28,
-    "target": 29
+    "source": 13,
+    "target": 17,
+    "context": null
   },
   {
-    "source": 28,
-    "target": 30
+    "source": 13,
+    "target": 18,
+    "context": null
   },
   {
-    "source": 28,
-    "target": 31
+    "source": 13,
+    "target": 19,
+    "context": null
   },
   {
-    "source": 28,
-    "target": 32
+    "source": 13,
+    "target": 20,
+    "context": null
   },
   {
-    "source": 28,
-    "target": 33
+    "source": 13,
+    "target": 21,
+    "context": null
   },
   {
-    "source": 28,
-    "target": 34
-  },
-  {
-    "source": 28,
-    "target": 35
-  },
-  {
-    "source": 28,
-    "target": 36
-  },
-  {
-    "source": 28,
-    "target": 37
-  },
-  {
-    "source": 57,
-    "target": 29
-  },
-  {
-    "source": 57,
-    "target": 34
-  },
-  {
-    "source": 57,
-    "target": 35
-  },
-  {
-    "source": 57,
-    "target": 37
-  },
-  {
-    "source": 57,
-    "target": 58
-  },
-  {
-    "source": 57,
-    "target": 59
-  },
-  {
-    "source": 57,
-    "target": 60
-  },
-  {
-    "source": 57,
-    "target": 61
-  },
-  {
-    "source": 57,
-    "target": 62
-  },
-  {
-    "source": 63,
-    "target": 30
-  },
-  {
-    "source": 63,
-    "target": 64
-  },
-  {
-    "source": 63,
-    "target": 65
-  },
-  {
-    "source": 63,
-    "target": 66
-  },
-  {
-    "source": 63,
-    "target": 67
-  },
-  {
-    "source": 63,
-    "target": 68
-  },
-  {
-    "source": 63,
-    "target": 69
-  },
-  {
-    "source": 63,
-    "target": 70
-  },
-  {
-    "source": 63,
-    "target": 71
-  },
-  {
-    "source": 63,
-    "target": 72
-  },
-  {
-    "source": 63,
-    "target": 73
-  },
-  {
-    "source": 63,
-    "target": 74
-  },
-  {
-    "source": 63,
-    "target": 75
-  },
-  {
-    "source": 63,
-    "target": 76
-  },
-  {
-    "source": 63,
-    "target": 77
-  },
-  {
-    "source": 63,
-    "target": 78
-  },
-  {
-    "source": 63,
-    "target": 79
-  },
-  {
-    "source": 63,
-    "target": 80
-  },
-  {
-    "source": 81,
-    "target": 42
-  },
-  {
-    "source": 81,
-    "target": 82
-  },
-  {
-    "source": 81,
-    "target": 83
-  },
-  {
-    "source": 81,
-    "target": 84
-  },
-  {
-    "source": 81,
-    "target": 85
-  },
-  {
-    "source": 81,
-    "target": 86
-  },
-  {
-    "source": 81,
-    "target": 87
-  },
-  {
-    "source": 81,
-    "target": 88
-  },
-  {
-    "source": 81,
-    "target": 89
-  },
-  {
-    "source": 81,
-    "target": 90
-  },
-  {
-    "source": 81,
-    "target": 91
-  },
-  {
-    "source": 81,
-    "target": 92
-  },
-  {
-    "source": 81,
-    "target": 93
-  },
-  {
-    "source": 81,
-    "target": 94
-  },
-  {
-    "source": 81,
-    "target": 95
-  },
-  {
-    "source": 81,
-    "target": 96
-  },
-  {
-    "source": 81,
-    "target": 97
-  },
-  {
-    "source": 81,
-    "target": 98
-  },
-  {
-    "source": 81,
-    "target": 99
-  },
-  {
-    "source": 81,
-    "target": 100
-  },
-  {
-    "source": 81,
-    "target": 101
-  },
-  {
-    "source": 81,
-    "target": 102
-  },
-  {
-    "source": 81,
-    "target": 103
-  },
-  {
-    "source": 81,
-    "target": 104
-  },
-  {
-    "source": 81,
-    "target": 105
-  },
-  {
-    "source": 81,
-    "target": 106
-  },
-  {
-    "source": 81,
-    "target": 107
-  },
-  {
-    "source": 81,
-    "target": 108
-  },
-  {
-    "source": 81,
-    "target": 109
-  },
-  {
-    "source": 81,
-    "target": 110
-  },
-  {
-    "source": 81,
-    "target": 111
-  },
-  {
-    "source": 81,
-    "target": 112
-  },
-  {
-    "source": 81,
-    "target": 113
-  },
-  {
-    "source": 81,
-    "target": 114
-  },
-  {
-    "source": 81,
-    "target": 115
-  },
-  {
-    "source": 81,
-    "target": 116
-  },
-  {
-    "source": 81,
-    "target": 117
-  },
-  {
-    "source": 81,
-    "target": 118
-  },
-  {
-    "source": 119,
-    "target": 30
-  },
-  {
-    "source": 119,
-    "target": 120
-  },
-  {
-    "source": 119,
-    "target": 121
-  },
-  {
-    "source": 119,
-    "target": 122
-  },
-  {
-    "source": 119,
-    "target": 123
-  },
-  {
-    "source": 119,
-    "target": 124
-  },
-  {
-    "source": 119,
-    "target": 125
-  },
-  {
-    "source": 119,
-    "target": 126
-  },
-  {
-    "source": 119,
-    "target": 127
-  },
-  {
-    "source": 119,
-    "target": 128
-  },
-  {
-    "source": 119,
-    "target": 129
-  },
-  {
-    "source": 119,
-    "target": 130
-  },
-  {
-    "source": 119,
-    "target": 131
-  },
-  {
-    "source": 119,
-    "target": 132
-  },
-  {
-    "source": 119,
-    "target": 133
-  },
-  {
-    "source": 119,
-    "target": 134
-  },
-  {
-    "source": 119,
-    "target": 135
-  },
-  {
-    "source": 119,
-    "target": 136
-  },
-  {
-    "source": 119,
-    "target": 137
-  },
-  {
-    "source": 119,
-    "target": 138
-  },
-  {
-    "source": 119,
-    "target": 139
-  },
-  {
-    "source": 119,
-    "target": 140
-  },
-  {
-    "source": 119,
-    "target": 141
-  },
-  {
-    "source": 119,
-    "target": 142
-  },
-  {
-    "source": 119,
-    "target": 143
-  },
-  {
-    "source": 119,
-    "target": 144
-  },
-  {
-    "source": 119,
-    "target": 145
-  },
-  {
-    "source": 119,
-    "target": 146
-  },
-  {
-    "source": 119,
-    "target": 147
-  },
-  {
-    "source": 148,
-    "target": 149
-  },
-  {
-    "source": 148,
-    "target": 150
-  },
-  {
-    "source": 148,
-    "target": 151
-  },
-  {
-    "source": 148,
-    "target": 152
-  },
-  {
-    "source": 148,
-    "target": 153
-  },
-  {
-    "source": 148,
-    "target": 154
-  },
-  {
-    "source": 148,
-    "target": 155
-  },
-  {
-    "source": 148,
-    "target": 156
-  },
-  {
-    "source": 148,
-    "target": 157
-  },
-  {
-    "source": 148,
-    "target": 158
-  },
-  {
-    "source": 148,
-    "target": 159
-  },
-  {
-    "source": 148,
-    "target": 160
-  },
-  {
-    "source": 148,
-    "target": 161
-  },
-  {
-    "source": 148,
-    "target": 162
-  },
-  {
-    "source": 148,
-    "target": 163
-  },
-  {
-    "source": 148,
-    "target": 164
-  },
-  {
-    "source": 148,
-    "target": 165
-  },
-  {
-    "source": 148,
-    "target": 166
-  },
-  {
-    "source": 148,
-    "target": 167
-  },
-  {
-    "source": 148,
-    "target": 168
-  },
-  {
-    "source": 148,
-    "target": 169
-  },
-  {
-    "source": 148,
-    "target": 170
-  },
-  {
-    "source": 148,
-    "target": 171
-  },
-  {
-    "source": 148,
-    "target": 172
-  },
-  {
-    "source": 148,
-    "target": 173
-  },
-  {
-    "source": 148,
-    "target": 174
-  },
-  {
-    "source": 148,
-    "target": 175
-  },
-  {
-    "source": 148,
-    "target": 176
-  },
-  {
-    "source": 148,
-    "target": 177
-  },
-  {
-    "source": 148,
-    "target": 178
-  },
-  {
-    "source": 148,
-    "target": 179
-  },
-  {
-    "source": 148,
-    "target": 180
-  },
-  {
-    "source": 148,
-    "target": 181
-  },
-  {
-    "source": 148,
-    "target": 182
-  },
-  {
-    "source": 148,
-    "target": 183
-  },
-  {
-    "source": 148,
-    "target": 184
-  },
-  {
-    "source": 148,
-    "target": 185
-  },
-  {
-    "source": 148,
-    "target": 186
-  },
-  {
-    "source": 148,
-    "target": 187
-  },
-  {
-    "source": 148,
-    "target": 188
-  },
-  {
-    "source": 148,
-    "target": 189
-  },
-  {
-    "source": 148,
-    "target": 190
-  },
-  {
-    "source": 191,
-    "target": 30
-  },
-  {
-    "source": 191,
-    "target": 192
-  },
-  {
-    "source": 191,
-    "target": 193
-  },
-  {
-    "source": 191,
-    "target": 194
-  },
-  {
-    "source": 191,
-    "target": 195
-  },
-  {
-    "source": 191,
-    "target": 196
-  },
-  {
-    "source": 191,
-    "target": 197
-  },
-  {
-    "source": 191,
-    "target": 198
-  },
-  {
-    "source": 191,
-    "target": 199
-  },
-  {
-    "source": 191,
-    "target": 200
-  },
-  {
-    "source": 191,
-    "target": 201
-  },
-  {
-    "source": 191,
-    "target": 202
-  },
-  {
-    "source": 191,
-    "target": 203
-  },
-  {
-    "source": 191,
-    "target": 204
-  },
-  {
-    "source": 191,
-    "target": 205
-  },
-  {
-    "source": 191,
-    "target": 206
-  },
-  {
-    "source": 191,
-    "target": 207
+    "source": 13,
+    "target": 22,
+    "context": null
   }
 ]

@@ -1,0 +1,23 @@
+{
+  "name": "Books in Books",
+  "short_name": "Books in Books",
+  "description": "See how the books you own mention each other.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#e8ece9",
+  "theme_color": "#0f5c5c",
+  "icons": [
+    {
+      "src": "/static/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

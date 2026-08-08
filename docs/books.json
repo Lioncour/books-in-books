@@ -1,866 +1,561 @@
 [
   {
-    "id": 105,
-    "title": "????? Steele's answers",
-    "author": "Daniel Steele D.D.",
-    "is_starting": false
-  },
-  {
-    "id": 195,
-    "title": "A  child's garden of verses",
-    "author": "Robert Louis Stevenson",
-    "is_starting": false
-  },
-  {
-    "id": 83,
-    "title": "A Midsummer Night's Dream",
-    "author": "William Shakespeare",
-    "is_starting": false
-  },
-  {
-    "id": 134,
-    "title": "A New York Times Notable Book A Potent Spell",
-    "author": "Janna Malamud Smith",
-    "is_starting": false
-  },
-  {
-    "id": 199,
-    "title": "Ab urbe condita",
-    "author": "Titus Livius",
-    "is_starting": false
-  },
-  {
-    "id": 120,
-    "title": "Aeneis",
-    "author": "Publius Vergilius Maro",
-    "is_starting": false
-  },
-  {
-    "id": 125,
-    "title": "Aigues-Mortes",
-    "author": "Bernard Sournia",
-    "is_starting": false
-  },
-  {
-    "id": 34,
-    "title": "Alcestis",
-    "author": "Euripides",
-    "is_starting": false
-  },
-  {
-    "id": 14,
-    "title": "Alias Grace",
-    "author": "Margaret Atwood",
-    "is_starting": false
-  },
-  {
-    "id": 114,
-    "title": "All Lives Matter",
-    "author": "Deborah WILLIS - undifferentiated",
-    "is_starting": false
-  },
-  {
-    "id": 29,
-    "title": "All My Sons",
-    "author": "Arthur Miller",
-    "is_starting": false
-  },
-  {
-    "id": 207,
-    "title": "Amazing Grace",
-    "author": "Mary Hoffman",
-    "is_starting": false
-  },
-  {
-    "id": 133,
-    "title": "An Instance of the Fingerpost",
-    "author": "Iain Pears",
-    "is_starting": false
-  },
-  {
-    "id": 159,
-    "title": "Animal Farm",
-    "author": "George Orwell",
-    "is_starting": false
-  },
-  {
-    "id": 124,
-    "title": "Anne's House of Dreams",
-    "author": "Lucy Maud Montgomery",
-    "is_starting": false
-  },
-  {
-    "id": 153,
-    "title": "As You Like It",
-    "author": "William Shakespeare",
-    "is_starting": false
-  },
-  {
-    "id": 101,
-    "title": "Atlas Shrugged",
-    "author": "Ayn Rand",
-    "is_starting": false
-  },
-  {
-    "id": 197,
-    "title": "Bambi",
-    "author": "Felix Salten",
-    "is_starting": false
-  },
-  {
-    "id": 30,
-    "title": "Bible",
-    "author": "Bible",
-    "is_starting": false
-  },
-  {
-    "id": 112,
-    "title": "Bill",
-    "author": "Canada. Legislature. Legislative Assembly.",
-    "is_starting": false
-  },
-  {
-    "id": 88,
-    "title": "Black Lives Matter",
-    "author": "Uplifting Uplifting Journals",
-    "is_starting": false
-  },
-  {
-    "id": 130,
-    "title": "Breaking Dawn",
-    "author": "Stephenie Meyer",
-    "is_starting": false
-  },
-  {
-    "id": 174,
-    "title": "Burmese Days",
-    "author": "George Orwell",
-    "is_starting": false
-  },
-  {
-    "id": 158,
-    "title": "Chemistry",
-    "author": "Theodore L. Brown",
-    "is_starting": false
-  },
-  {
-    "id": 186,
-    "title": "Coming Up for Air",
-    "author": "George Orwell",
-    "is_starting": false
-  },
-  {
-    "id": 129,
-    "title": "Confessions",
-    "author": "Augustine of Hippo",
-    "is_starting": false
-  },
-  {
-    "id": 196,
-    "title": "Creating",
-    "author": "The Light of the World",
-    "is_starting": false
-  },
-  {
-    "id": 121,
-    "title": "De civitate Dei",
-    "author": "Augustine of Hippo",
-    "is_starting": false
-  },
-  {
-    "id": 180,
-    "title": "Down and Out in Paris and London",
-    "author": "George Orwell",
-    "is_starting": false
-  },
-  {
-    "id": 9,
-    "title": "Financial Management",
-    "author": "United States. General Accounting Office",
-    "is_starting": false
-  },
-  {
-    "id": 69,
-    "title": "Ghost in the wires",
-    "author": "Kevin D. Mitnick",
-    "is_starting": false
-  },
-  {
-    "id": 126,
-    "title": "Girlboss",
-    "author": "Sophia Amoruso",
-    "is_starting": false
-  },
-  {
-    "id": 110,
-    "title": "Go Down, Moses",
-    "author": "William Faulkner",
-    "is_starting": false
-  },
-  {
-    "id": 166,
-    "title": "Gravity's Rainbow",
-    "author": "Thomas Pynchon",
-    "is_starting": false
-  },
-  {
-    "id": 139,
-    "title": "Gregorii Turonici Historiae Francorum libri decem ... Apedix item sive liber XI ... .",
-    "author": "Gregory Bishop of Tours, Saint",
-    "is_starting": false
-  },
-  {
-    "id": 81,
-    "title": "Hamlet",
-    "author": "Careless People",
-    "is_starting": false
-  },
-  {
-    "id": 148,
-    "title": "Homage to Catalonia",
-    "author": "Nineteen Eighty-Four",
-    "is_starting": false
-  },
-  {
-    "id": 145,
-    "title": "Hong lou meng",
-    "author": "Tsʻao, Hsüeh-chʻin.",
-    "is_starting": false
-  },
-  {
-    "id": 15,
-    "title": "Houghton Mifflin Reading Leveled Readers California",
-    "author": "Houghton Mifflin Company Staff",
-    "is_starting": false
-  },
-  {
-    "id": 16,
-    "title": "How I Won a Nobel Prize",
-    "author": "Julius Taranto",
-    "is_starting": false
-  },
-  {
-    "id": 118,
-    "title": "I Want It That Way",
-    "author": "Ann Aguirre",
-    "is_starting": false
-  },
-  {
-    "id": 132,
-    "title": "Il nome della rosa",
-    "author": "Umberto Eco",
-    "is_starting": false
-  },
-  {
-    "id": 190,
-    "title": "James Burnham and The managerial revolution",
-    "author": "George Orwell",
-    "is_starting": false
-  },
-  {
-    "id": 36,
-    "title": "Jean Felix Piccard, boy balloonist",
-    "author": "Lena Young De Grummond",
-    "is_starting": false
-  },
-  {
-    "id": 77,
-    "title": "Kaleidoscope Designs Adult Coloring Book",
-    "author": "Everybody Loves Coloring Co.",
-    "is_starting": false
-  },
-  {
-    "id": 23,
-    "title": "Kings of Leon",
-    "author": "Kings of Leon",
-    "is_starting": false
-  },
-  {
-    "id": 91,
-    "title": "La nausée",
-    "author": "Jean-Paul Sartre",
-    "is_starting": false
-  },
-  {
-    "id": 109,
-    "title": "Le rouge et le noir",
-    "author": "Stendhal",
-    "is_starting": false
-  },
-  {
-    "id": 113,
-    "title": "Lean In",
-    "author": "Sheryl Sandberg",
-    "is_starting": false
-  },
-  {
-    "id": 122,
-    "title": "Les Misérables",
-    "author": "Victor Hugo",
-    "is_starting": false
-  },
-  {
-    "id": 123,
-    "title": "Life on the Mississippi",
-    "author": "Mark Twain",
-    "is_starting": false
-  },
-  {
-    "id": 183,
-    "title": "Little House in the Big Woods",
-    "author": "Laura Ingalls Wilder",
-    "is_starting": false
-  },
-  {
-    "id": 32,
-    "title": "Macbeth",
-    "author": "William Shakespeare",
-    "is_starting": false
-  },
-  {
-    "id": 140,
-    "title": "Marc Chagall",
-    "author": "Marc Chagall",
-    "is_starting": false
-  },
-  {
-    "id": 147,
-    "title": "Mishneh Torah (Codification of Talmudic laws)",
-    "author": "Moses Maimonides",
-    "is_starting": false
-  },
-  {
-    "id": 22,
-    "title": "Mutual Aid",
-    "author": "Peter Kropotkin",
-    "is_starting": false
-  },
-  {
-    "id": 76,
-    "title": "My lie",
-    "author": "Meredith Maran",
-    "is_starting": false
-  },
-  {
-    "id": 156,
-    "title": "Nineteen Eighty-Four",
-    "author": "George Orwell",
-    "is_starting": false
-  },
-  {
-    "id": 181,
-    "title": "Ninteen Eighties",
-    "author": "Kenneth B. Clark",
-    "is_starting": false
-  },
-  {
-    "id": 25,
-    "title": "Notizbuch",
-    "author": "Coole Notizbucher",
-    "is_starting": false
-  },
-  {
-    "id": 164,
-    "title": "Oranges and Lemons",
-    "author": "Karen King",
-    "is_starting": false
-  },
-  {
-    "id": 35,
-    "title": "Othello",
-    "author": "William Shakespeare",
-    "is_starting": false
-  },
-  {
-    "id": 26,
-    "title": "Our Mutual Friend",
-    "author": "Charles Dickens",
-    "is_starting": false
-  },
-  {
-    "id": 33,
-    "title": "Paperback - the Silent Patient",
-    "author": "Omen King",
-    "is_starting": false
-  },
-  {
-    "id": 74,
-    "title": "Peace Seekers",
-    "author": "Nathan Aaseng",
-    "is_starting": false
-  },
-  {
-    "id": 131,
-    "title": "Perfume",
-    "author": "Patrick Süskind",
-    "is_starting": false
-  },
-  {
-    "id": 18,
-    "title": "Predator 2",
-    "author": "Simon Hawke",
-    "is_starting": false
-  },
-  {
-    "id": 94,
-    "title": "Pretty Woman",
-    "author": "Fern Michaels",
-    "is_starting": false
-  },
-  {
-    "id": 11,
-    "title": "Prey",
-    "author": "Michael Crichton",
-    "is_starting": false
-  },
-  {
-    "id": 1,
-    "title": "Project Hail Mary",
-    "author": "Andy Weir",
-    "is_starting": true
-  },
-  {
-    "id": 79,
-    "title": "Romeo and Juliet",
-    "author": "William Shakespeare",
-    "is_starting": false
-  },
-  {
-    "id": 111,
-    "title": "Running out of road",
-    "author": "Friedman, Daniel",
-    "is_starting": false
-  },
-  {
-    "id": 154,
-    "title": "SCSD, an interim report",
-    "author": "School Construction Systems Development Project.",
-    "is_starting": false
-  },
-  {
-    "id": 24,
-    "title": "Saturday Kitchens Cooking Bible 200 Bestloved Recipes From The Nations Favourite Kitchen",
-    "author": "Saturday Kitchen",
-    "is_starting": false
-  },
-  {
-    "id": 75,
-    "title": "Scarface",
-    "author": "Paul Monette",
-    "is_starting": false
-  },
-  {
-    "id": 10,
-    "title": "Sgt. Pepper's Lonely Hearts Club Band",
-    "author": "Henry Edwards",
-    "is_starting": false
-  },
-  {
-    "id": 96,
-    "title": "She's the Prize He's the Hero",
-    "author": "Christina Courting",
-    "is_starting": false
-  },
-  {
-    "id": 157,
-    "title": "Software and Mind",
-    "author": "Andrei Sorin",
-    "is_starting": false
-  },
-  {
-    "id": 162,
-    "title": "Spanking Stories",
-    "author": "Wendy K.",
-    "is_starting": false
-  },
-  {
-    "id": 68,
-    "title": "Spider-man (Spider-Man)",
-    "author": "Todd McFarlane",
-    "is_starting": false
-  },
-  {
-    "id": 2,
-    "title": "Star Trek 1",
-    "author": "James Blish",
-    "is_starting": false
-  },
-  {
-    "id": 71,
-    "title": "Star Wars - Thrawn",
-    "author": "Timothy Zahn",
-    "is_starting": false
-  },
-  {
-    "id": 70,
-    "title": "State of the Republic",
-    "author": "Harry Gael Michaels",
-    "is_starting": false
-  },
-  {
-    "id": 160,
-    "title": "Study Guide",
-    "author": "SuperSummary",
-    "is_starting": false
-  },
-  {
-    "id": 173,
-    "title": "Study Guide",
-    "author": "SuperSummary",
-    "is_starting": false
-  },
-  {
-    "id": 72,
-    "title": "Summer",
-    "author": "Edith Warton",
-    "is_starting": false
-  },
-  {
-    "id": 193,
-    "title": "Tarzan and the ant men",
-    "author": "Edgar Rice Burroughs",
-    "is_starting": false
-  },
-  {
-    "id": 202,
-    "title": "Tarzan of the Apes",
-    "author": "Edgar Rice Burroughs",
-    "is_starting": false
-  },
-  {
-    "id": 108,
-    "title": "Tell Me Im Worthless",
-    "author": "Alison Rumfitt",
-    "is_starting": false
-  },
-  {
-    "id": 136,
-    "title": "The Alienist",
-    "author": "Caleb Carr",
-    "is_starting": false
-  },
-  {
-    "id": 82,
-    "title": "The Art of War",
-    "author": "孙武",
-    "is_starting": false
-  },
-  {
-    "id": 100,
-    "title": "The Canterbury Tales",
-    "author": "Geoffrey Chaucer",
-    "is_starting": false
-  },
-  {
-    "id": 137,
-    "title": "The Castle of Otranto",
-    "author": "Horace Walpole",
-    "is_starting": false
-  },
-  {
-    "id": 99,
-    "title": "The Citizen Kane Book",
-    "author": "Pauline Kael",
-    "is_starting": false
-  },
-  {
-    "id": 169,
-    "title": "The Collected Essays, Journalism and Letters of George Orwell",
-    "author": "George Orwell",
-    "is_starting": false
-  },
-  {
-    "id": 179,
-    "title": "The Crying of Lot 49",
-    "author": "Thomas Pynchon",
-    "is_starting": false
-  },
-  {
-    "id": 151,
-    "title": "The Declaration of independence",
-    "author": "Henry B. F. Macfarland",
-    "is_starting": false
-  },
-  {
-    "id": 73,
-    "title": "The Denial of Death",
-    "author": "Ernest Becker",
-    "is_starting": false
-  },
-  {
-    "id": 37,
-    "title": "The Devil You Know",
-    "author": "Mike Carey",
-    "is_starting": false
-  },
-  {
-    "id": 167,
-    "title": "The Devil's Dictionary",
-    "author": "Ambrose Bierce",
-    "is_starting": false
-  },
-  {
-    "id": 12,
-    "title": "The Floor Is Lava",
-    "author": "N a Melamed",
-    "is_starting": false
-  },
-  {
-    "id": 20,
-    "title": "The Girl on the Train",
-    "author": "Paula Hawkins",
-    "is_starting": true
-  },
-  {
-    "id": 138,
-    "title": "The Handmaid's Tale",
-    "author": "Margaret Atwood",
-    "is_starting": false
-  },
-  {
-    "id": 177,
-    "title": "The Hate U Give",
-    "author": "Angie Thomas",
-    "is_starting": false
-  },
-  {
-    "id": 5,
-    "title": "The Island of Dr. Moreau",
-    "author": "H. G. Wells",
-    "is_starting": false
-  },
-  {
-    "id": 21,
-    "title": "The Killer Angels",
-    "author": "Michael Shaara",
-    "is_starting": false
-  },
-  {
-    "id": 67,
-    "title": "The Lord of the Rings",
-    "author": "J.R.R. Tolkien",
-    "is_starting": false
-  },
-  {
-    "id": 17,
-    "title": "The Martian Chronicles",
-    "author": "Ray Bradbury",
-    "is_starting": false
-  },
-  {
-    "id": 185,
-    "title": "The New American Newspeak Dictionary",
-    "author": "Adrian Krieg",
-    "is_starting": false
-  },
-  {
-    "id": 4,
-    "title": "The Nobel prize",
-    "author": "Yuri Krotkov",
-    "is_starting": false
-  },
-  {
-    "id": 203,
-    "title": "The Picture of Dorian Gray",
-    "author": "Oscar Wilde",
-    "is_starting": false
+    "id": 42,
+    "title": "Alice in Wonderland",
+    "author": "Gemma Louise Lowe",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL19355954W",
+    "cover_id": "8470182",
+    "cover_url": "https://covers.openlibrary.org/b/id/8470182-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
     "id": 19,
-    "title": "The Poseidon adventure",
-    "author": "Paul Gallico",
-    "is_starting": false
+    "title": "Aliens",
+    "author": "Alan Dean Foster",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL102584W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 45,
-    "title": "The Predator",
-    "author": "RuNyx",
-    "is_starting": false
+    "id": 20,
+    "title": "Also sprach Zarathustra",
+    "author": "Friedrich Nietzsche",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL98130W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 66,
-    "title": "The Pulitzer prizes 1989",
-    "author": "Kendall J. Wills",
-    "is_starting": false
+    "id": 6,
+    "title": "Amazing Grace",
+    "author": "Mary Hoffman",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL86616W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 152,
-    "title": "The Road to Wigan Pier",
-    "author": "George Orwell",
-    "is_starting": false
+    "id": 22,
+    "title": "Battlestar Galactica",
+    "author": "Glen A. Larson",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL6811904W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 3,
+    "title": "Beautiful Child",
+    "author": "Torey L Hayden",
+    "is_starting": true,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL274213W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 24,
+    "incoming_count": 1
+  },
+  {
+    "id": 36,
+    "title": "Best Friends",
+    "author": "Shannon Hale",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL20112777W",
+    "cover_id": "8771908",
+    "cover_url": "https://covers.openlibrary.org/b/id/8771908-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 34,
+    "title": "Bread and jam for Frances",
+    "author": "Russell Hoban",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL74290W",
+    "cover_id": "23710",
+    "cover_url": "https://covers.openlibrary.org/b/id/23710-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 38,
+    "title": "Candy Land",
+    "author": "Lissa Kasey",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL30027912W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 14,
+    "title": "Castaway",
+    "author": "Frances Murray",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL5096420W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 44,
+    "title": "Dilly Dilly",
+    "author": "Tiny Camel Books",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL29946743W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 16,
+    "title": "Earthside",
+    "author": "Dennis E. Taylor",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL38050716W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 21,
+    "title": "Exploring the Galaxy",
+    "author": "Thomas K. Adamson",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL5827629W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 40,
+    "title": "First Prize",
+    "author": "Jodi Dawson",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL5691584W",
+    "cover_id": "2406971",
+    "cover_url": "https://covers.openlibrary.org/b/id/2406971-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
     "id": 28,
-    "title": "The Silent Patient",
-    "author": "Alex Michaelides",
-    "is_starting": true
+    "title": "Frog and Toad Are Friends",
+    "author": "Arnold Lobel",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL449277W",
+    "cover_id": "11303047",
+    "cover_url": "https://covers.openlibrary.org/b/id/11303047-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 57,
-    "title": "The Silent Patient",
-    "author": "The Silent Patient",
-    "is_starting": false
+    "id": 35,
+    "title": "Frog and Toad Together",
+    "author": "Arnold Lobel",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL1973422W",
+    "cover_id": "11304253",
+    "cover_url": "https://covers.openlibrary.org/b/id/11304253-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 63,
-    "title": "The Subtle Art of Not Giving a",
-    "author": "Mark Manson",
-    "is_starting": true
+    "id": 29,
+    "title": "High hopes",
+    "author": "Gerard Sullivan",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL17697835W",
+    "cover_id": "7971872",
+    "cover_url": "https://covers.openlibrary.org/b/id/7971872-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 13,
-    "title": "The Thin Red Line",
-    "author": "James Jones",
-    "is_starting": false
+    "id": 30,
+    "title": "In the cool of the evening",
+    "author": "Janet Spaeth",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL16707461W",
+    "cover_id": "13434757",
+    "cover_url": "https://covers.openlibrary.org/b/id/13434757-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 119,
-    "title": "The dream of Scipio",
-    "author": "Iain Pears",
-    "is_starting": true
+    "id": 32,
+    "title": "Jingle Bells",
+    "author": "James Pierpont",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL1913862W",
+    "cover_id": "8744729",
+    "cover_url": "https://covers.openlibrary.org/b/id/8744729-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 27,
-    "title": "The grand prix champions",
-    "author": "Mary Schnall Heglar",
-    "is_starting": false
-  },
-  {
-    "id": 90,
-    "title": "The little red book",
-    "author": "Bill W.",
-    "is_starting": false
-  },
-  {
-    "id": 86,
-    "title": "The settlers of Catan",
-    "author": "Rebecca Gablé",
-    "is_starting": false
-  },
-  {
-    "id": 64,
-    "title": "The value of suffering",
-    "author": "Diane Clark Duck",
-    "is_starting": false
-  },
-  {
-    "id": 198,
-    "title": "Theological Wordbook of the Old Testament",
-    "author": "R. Laird Harris",
-    "is_starting": false
-  },
-  {
-    "id": 189,
-    "title": "Things as they are",
-    "author": "Paul Horgan",
-    "is_starting": false
-  },
-  {
-    "id": 97,
-    "title": "Ticket to ride",
-    "author": "Edward Gorman",
-    "is_starting": false
-  },
-  {
-    "id": 191,
-    "title": "To Kill a Mockingbird",
-    "author": "Harper Lee",
-    "is_starting": true
-  },
-  {
-    "id": 200,
-    "title": "Tom Swift and his Motor Cycle",
-    "author": "Howard Roger Garis",
-    "is_starting": false
-  },
-  {
-    "id": 93,
-    "title": "Tomb Raiders",
-    "author": "Philip Steele",
-    "is_starting": false
-  },
-  {
-    "id": 84,
-    "title": "Too Big to Fail",
-    "author": "Andrew Ross Sorkin",
-    "is_starting": false
-  },
-  {
-    "id": 171,
-    "title": "Unicorn Coloring Book",
-    "author": "kids M. shop notebook",
-    "is_starting": false
-  },
-  {
-    "id": 165,
-    "title": "Vineland",
-    "author": "Thomas Pynchon",
-    "is_starting": false
+    "id": 4,
+    "title": "Jubilee",
+    "author": "Margaret Walker",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL1182539W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
     "id": 31,
-    "title": "Vorlesungen zur Einführung in die Psychoanalyse",
-    "author": "Sigmund Freud",
-    "is_starting": false
+    "title": "Little Arrows",
+    "author": "Jack Cartwright",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL29407006W",
+    "cover_id": "13912871",
+    "cover_url": "https://covers.openlibrary.org/b/id/13912871-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 178,
-    "title": "War and Peace",
-    "author": "Лев Толстой",
-    "is_starting": false
+    "id": 27,
+    "title": "Lord of the Flies",
+    "author": "William Golding",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL455327W",
+    "cover_id": "8684447",
+    "cover_url": "https://covers.openlibrary.org/b/id/8684447-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 206,
-    "title": "We're Going on a Bear Hunt",
-    "author": "Michael Rosen",
-    "is_starting": false
+    "id": 24,
+    "title": "Masters of the Universe",
+    "author": "Kevin Smith",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL24677651W",
+    "cover_id": "11379962",
+    "cover_url": "https://covers.openlibrary.org/b/id/11379962-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 168,
-    "title": "Why I Write",
-    "author": "George Orwell",
-    "is_starting": false
+    "id": 25,
+    "title": "My Little Pony",
+    "author": "Scout Driggs",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL274352W",
+    "cover_id": "34066",
+    "cover_url": "https://covers.openlibrary.org/b/id/34066-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 106,
-    "title": "Wicked",
-    "author": "Gregory Maguire",
-    "is_starting": false
+    "id": 12,
+    "title": "On the Road Again!",
+    "author": "David Homel",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL889078W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 163,
-    "title": "Worm",
-    "author": "Two Minutes Hate",
-    "is_starting": false
+    "id": 26,
+    "title": "Psycho Girl",
+    "author": "Shawna Savage",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL24640080W",
+    "cover_id": "11321258",
+    "cover_url": "https://covers.openlibrary.org/b/id/11321258-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 143,
-    "title": "Οἰδίπους Τύραννος (Oidípous Týrannos)",
-    "author": "Sophocles",
-    "is_starting": false
+    "id": 10,
+    "title": "Someday",
+    "author": "Alison McGhee",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL50198W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 116,
-    "title": "Συμπόσιον",
-    "author": "Πλάτων",
-    "is_starting": false
+    "id": 18,
+    "title": "Star Trek",
+    "author": "Gene Roddenberry",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL6568087W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 2
   },
   {
-    "id": 127,
-    "title": "πολιτεία",
-    "author": "Πλάτων",
-    "is_starting": false
+    "id": 15,
+    "title": "Star Wars",
+    "author": "Drew Karpyshyn",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL5684849W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 135,
-    "title": "Ἀνάβασις",
-    "author": "Xenophon",
-    "is_starting": false
+    "id": 17,
+    "title": "Stargate",
+    "author": "Dean Devlin",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL15152872W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
-    "id": 141,
-    "title": "Ἰλιάς",
-    "author": "Όμηρος",
-    "is_starting": false
+    "id": 7,
+    "title": "Tarzan and the Ant Men",
+    "author": "Edgar Rice Burroughs",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL1418079W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 11,
+    "title": "The Art of War",
+    "author": "孙武 (Sun Tzu)",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL244537W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 23,
+    "title": "The Gingerbread Boy",
+    "author": "Paul Galdone",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL5098899W",
+    "cover_id": "255548",
+    "cover_url": "https://covers.openlibrary.org/b/id/255548-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 5,
+    "title": "The Gray Ghost",
+    "author": "Schulkers, Robert Franc",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL7767675W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 2,
+    "title": "The Light of the World",
+    "author": "Elizabeth Alexander",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL19998759W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 33,
+    "title": "The Night Before Christmas",
+    "author": "Clement Clarke Moore",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL655908W",
+    "cover_id": "8236410",
+    "cover_url": "https://covers.openlibrary.org/b/id/8236410-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 45,
+    "title": "The saddest girl in the world",
+    "author": "Cathy Glass",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL18165017W",
+    "cover_id": "8329564",
+    "cover_url": "https://covers.openlibrary.org/b/id/8329564-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 9,
+    "title": "The way to Eden",
+    "author": "Gerhard Köpf",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL1872847W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 1,
+    "title": "To Kill a Mockingbird",
+    "author": "Harper Lee",
+    "is_starting": true,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL3140822W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 6,
+    "incoming_count": 0
+  },
+  {
+    "id": 41,
+    "title": "Treasure Island",
+    "author": "Robert Louis Stevenson",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL24034W",
+    "cover_id": "13859660",
+    "cover_url": "https://covers.openlibrary.org/b/id/13859660-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 13,
+    "title": "We Are Legion",
+    "author": "Dennis E. Taylor",
+    "is_starting": true,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL19123425W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 13,
+    "incoming_count": 0
+  },
+  {
+    "id": 43,
+    "title": "Winnie-the-Pooh",
+    "author": "A. A. Milne",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL476641W",
+    "cover_id": "8610816",
+    "cover_url": "https://covers.openlibrary.org/b/id/8610816-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 37,
+    "title": "Would you like to swing on a star?",
+    "author": "Don Johnson - undifferentiated",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL4141364W",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   }
 ]

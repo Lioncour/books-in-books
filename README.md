@@ -1,201 +1,119 @@
-# Books in Books - Literary Links AI Visualizer
+# Books in Books
 
-A web application that visualizes the network of book references found within your book collection. Discover which books reference other books, and explore the interconnected web of literary connections.
+Visualize how the books you own mention other books — a literary network of your shelves.
 
-![Books in Books](https://img.shields.io/badge/status-active-success)
 ![Python](https://img.shields.io/badge/python-3.8+-blue)
 ![Flask](https://img.shields.io/badge/flask-2.3+-green)
+![D3](https://img.shields.io/badge/graph-D3-teal)
 
-## Features
+## What it does
 
-- 📚 **EPUB & TXT Support**: Process your book files in EPUB or plain text format
-- 🔍 **AI-Powered Extraction**: Uses spaCy NLP to automatically detect book references in text
-- 🌐 **Interactive Network Graph**: Visualize book relationships with an interactive node network
-- 🎨 **Synthwave UI**: Beautiful retro-futuristic interface
-- 🔎 **Search & Filter**: Find books quickly by title or author
-- 📊 **Real-time Stats**: Track total books and references in your network
-- 🎯 **Starting Books**: Distinguishes books you own from referenced books
+1. **Add** EPUB or TXT files from your library  
+2. **Extract** book titles mentioned in the text (spaCy + Open Library verification)  
+3. **Explore** an interactive force-directed graph of connections  
 
-## Screenshots
+Owned books sit in the sidebar with covers; referenced titles appear as linked nodes. Mentions that fail a strong Open Library match are skipped (and listed in the detail panel).
 
-The visualization shows:
-- **Gold nodes**: Books you own (starting books)
-- **Blue nodes**: Referenced books (varying intensity by connection count)
-- **Gray nodes**: Isolated books
-- **Edges**: References between books
+## Quick start (Windows)
 
-## Installation
-
-### Prerequisites
-
-- Python 3.8 or higher
-- pip (Python package manager)
-
-### Step 1: Clone or Download
-
-```bash
+```powershell
 cd "books in books"
-```
-
-### Step 2: Install Dependencies
-
-```bash
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
-### Step 3: Install spaCy Language Model
-
-The project uses spaCy's English transformer model for entity recognition:
-
-```bash
 python -m spacy download en_core_web_trf
+.\.venv\Scripts\python app.py
 ```
 
-**Note**: This is a large model (~500MB). For a smaller alternative, you can use:
-```bash
-python -m spacy download en_core_web_sm
-```
-Then update `process_books.py` line 23 to use `en_core_web_sm` instead.
+Open [http://localhost:5000](http://localhost:5000).
 
-## Usage
+**macOS / Linux:** use `source .venv/bin/activate` and `python app.py`.
 
-### Step 1: Add Your Books
+### spaCy model
 
-Place your book files in the `books/` directory. Supported formats:
-- `.epub` files
-- `.txt` files
+The default model is `en_core_web_trf` (~500MB, best quality). First extraction can take several minutes per book.
 
-**Recommended filename format**: `Author - Title.epub`
-- Example: `Andy Weir - Project Hail Mary.epub`
-- The system will automatically extract the title and author
+## Using the app
 
-### Step 2: Process Books
+1. Click **Add books** and upload `.epub` / `.txt` files  
+   Prefer names like `Author - Title.epub`
+2. Wait for **Extract references** (progress banner survives page reloads)
+3. Click a library book to focus its mentions; click nodes for detail + quote context
+4. Optional: **Export network** (JSON), **Import network**, or **Save image** (PNG of the graph)
 
-Run the processing script to extract book references:
+Keyboard: `/` focuses search, `Esc` closes panels.
 
-```bash
-python process_books.py
-```
+## Share a view-only site (GitHub Pages)
 
-This will:
-- Initialize the SQLite database
-- Process all books in the `books/` directory
-- Extract book references using NLP
-- Store data in `database.db`
+Process locally, then export static files:
 
-**First run**: This may take several minutes depending on:
-- Number of books
-- Book file sizes
-- Internet connection (for Open Library API lookups)
-
-### Step 3: Start the Web Server
-
-```bash
-python app.py
+```powershell
+.\.venv\Scripts\python export_static.py
 ```
 
-The server will start on `http://localhost:5000`
+This writes `docs/` with the literary UI, `books.json`, and `references.json`. Commit `docs/`, then enable Pages from the `/docs` folder. Guests can explore the graph without Python or spaCy; uploading stays on your machine.
 
-Open your browser and navigate to the URL to see your book network visualization!
-
-## Adding More Books
-
-To add more books to your network:
-
-1. Add new `.epub` or `.txt` files to the `books/` directory
-2. Run `python process_books.py` again
-3. The script will:
-   - Skip already processed books (based on filename)
-   - Process only new books
-   - Add new references to the database
-4. Refresh your browser to see the updated network
-
-## Project Structure
+## Project structure
 
 ```
 books in books/
-├── app.py                 # Flask web server
-├── process_books.py       # Book processing script
-├── debug_titles.py        # Debugging utility
-├── test_api.py           # API testing script
-├── database.db            # SQLite database (created on first run)
-├── requirements.txt       # Python dependencies
-├── README.md             # This file
-├── books/                 # Place your book files here
-│   ├── Author - Title.epub
-│   └── ...
-├── templates/
-│   └── index.html        # Main web interface
-└── static/
-    ├── main.js           # Frontend JavaScript
-    └── style.css        # Styling
+├── app.py                 # Flask server + APIs
+├── process_books.py       # NLP extraction + Open Library matching
+├── export_static.py       # Build docs/ for GitHub Pages
+├── requirements.txt
+├── books/                 # Your EPUB/TXT files
+├── templates/             # index.html, verify.html
+├── static/                # CSS, JS, brand mark, favicon
+└── docs/                  # Static export (optional)
 ```
 
-## API Endpoints
+## API (local server)
 
-- `GET /` - Main web interface
-- `GET /api/books` - List all books with metadata
-- `GET /api/references` - List all book reference pairs
-- `GET /api/stats` - Get statistics (total books, references, starting books)
-- `GET /api/search?q=query` - Search books by title or author
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/books` | Books + ownership, covers, verification |
+| GET | `/api/references` | Source → target edges |
+| GET | `/api/book/<id>/references` | Outgoing, incoming, skipped mentions |
+| POST | `/api/upload` | Upload EPUB/TXT |
+| POST | `/api/process` | Start extraction |
+| GET | `/api/process/status` | Progress (also `process_status.json`) |
+| POST | `/api/book/<id>/reprocess` | Re-extract one owned book |
+| GET | `/api/network/export` | Portable `{books, references}` JSON |
+| POST | `/api/network/import` | Merge a network export into the DB |
+| GET | `/api/health` | spaCy / books dir / database checks |
+| GET | `/verify` | Manual verification UI |
 
-## How It Works
+## How extraction works
 
-1. **Text Extraction**: EPUB files are parsed and HTML tags are removed
-2. **NLP Processing**: spaCy identifies `WORK_OF_ART` entities (book titles)
-3. **Book Lookup**: Each detected title is looked up in Open Library API
-4. **Database Storage**: Books and references are stored in SQLite
-5. **Visualization**: Sigma.js renders an interactive force-directed graph
+1. Text is pulled from EPUB/TXT  
+2. spaCy tags `WORK_OF_ART` entities  
+3. Strong Open Library title matches become nodes (Google Books only for borderline scores)  
+4. Weak or media-like hits are logged as skipped mentions  
+5. SQLite stores books, references (with context snippets), and covers  
+
+Duplicate rows with the same Open Library id or compatible title/author are merged on startup.
 
 ## Troubleshooting
 
-### "spaCy model not found"
-Run: `python -m spacy download en_core_web_trf`
+**spaCy model not found**  
+`python -m spacy download en_core_web_trf`
 
-### "ebooklib not found"
-Run: `pip install ebooklib`
+**Processing interrupted after refresh**  
+Status is restored from `process_status.json`; click Extract again if needed.
 
-### Database errors
-Delete `database.db` and run `process_books.py` again to recreate it.
+**No nodes for a mention**  
+It may have failed Open Library verification — check the detail panel’s skipped list or `/verify`.
 
-### No books found
-- Ensure files are in the `books/` directory
-- Check file extensions are `.epub` or `.txt`
-- Verify file permissions
-
-### Processing is slow
-- Large EPUB files take time to process
-- Open Library API calls add latency
-- Consider processing books in smaller batches
-
-## Future Enhancements
-
-Potential improvements:
-- [ ] Batch processing with progress bar
-- [ ] Export network data (JSON/CSV)
-- [ ] Book cover images from Open Library
-- [ ] Reference context (quotes/excerpts)
-- [ ] Community book database
-- [ ] Advanced filtering (by author, genre, etc.)
-- [ ] Network analysis metrics (centrality, clusters)
-
-## Contributing
-
-Feel free to submit issues or pull requests!
+**Database reset**  
+Delete `database.db` and re-run processing (files in `books/` are kept).
 
 ## License
 
-This project is open source. Use it freely for your personal book collection.
+Open source — use freely for your personal book collection.
 
 ## Credits
 
-- **spaCy**: Natural language processing
-- **Flask**: Web framework
-- **Sigma.js**: Graph visualization
-- **Open Library**: Book metadata API
-
----
-
-**Happy reading and exploring! 📖✨**
-
-
+- spaCy — NLP  
+- Flask — web server  
+- D3 — graph visualization  
+- Open Library — metadata and covers  
