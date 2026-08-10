@@ -43,6 +43,19 @@ The default model is `en_core_web_trf` (~500MB, best quality). First extraction 
 
 Keyboard: `/` focuses search, `Esc` closes panels.
 
+## Shared catalog (product direction)
+
+Long-term: a curated **mention graph** so users can add a book by title and get “books mentioned inside it” without uploading an EPUB.
+
+**Catalog admin (local):** open [http://localhost:5000/admin](http://localhost:5000/admin)
+
+- Login token defaults to `books-admin` (set `ADMIN_TOKEN` to change)
+- Add works (optional Open Library lookup)
+- Link “this book mentions…” edges
+- **Import from my library** copies your existing verified EPUB extractions into the catalog as a starting point
+
+Public read APIs (for a future shelf UI): `GET /api/catalog/search?q=…`, `GET /api/catalog/works/<id>/mentions`
+
 ## Share a view-only site (GitHub Pages)
 
 Process locally, then export static files:
@@ -85,11 +98,16 @@ books in books/
 
 ## How extraction works
 
+**Borges** reads the EPUB/TXT and finds mentions (books, and with cues: films, music, drinks).  
+**Lucien** checks the right shelves (Open Library / film / music / cocktail lexicon) and files what is real.
+
+The graph **defaults to books only**. Use **Also show → Movies / Music / Drinks** to opt into other layers.
+
 1. Text is pulled from EPUB/TXT  
-2. spaCy tags `WORK_OF_ART` entities  
-3. Strong Open Library title matches become nodes (Google Books only for borderline scores)  
-4. Weak or media-like hits are logged as skipped mentions  
-5. SQLite stores books, references (with context snippets), and covers  
+2. Borges tags candidates and guesses kind  
+3. Lucien verifies per domain  
+4. Weak hits are logged as skipped mentions  
+5. SQLite stores works with a `kind` field (`book|movie|music|cocktail`)  
 
 Duplicate rows with the same Open Library id or compatible title/author are merged on startup.
 

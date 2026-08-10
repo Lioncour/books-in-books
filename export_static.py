@@ -58,6 +58,7 @@ def export_network():
                 "verified": book["verified"],
                 "match_score": book["match_score"],
                 "open_library_id": book.get("open_library_id"),
+                "kind": book.get("kind") or "book",
                 "cover_id": book.get("cover_id"),
                 "cover_url": book.get("cover_url"),
                 "outgoing_count": book.get("outgoing_count"),

@@ -24,12 +24,12 @@
                     <p class="brand">Books in Books</p>
                 </div>
                 <h1 class="headline">See how your shelves talk to each other</h1>
-                <p class="lede">Add the books you own. We find the titles they mention, then draw the web between them.</p>
+                <p class="lede">Add the books you own. Borges finds the titles they mention; Lucien files them on the shelf — then we draw the web.</p>
             </header>
 
             <div class="sidebar-actions">
                 <button type="button" class="btn btn-primary" id="open-upload">Add books</button>
-                <button type="button" class="btn btn-ghost" id="run-process" hidden>Extract references</button>
+                <button type="button" class="btn btn-ghost" id="run-process" hidden>Ask Borges &amp; Lucien</button>
             </div>
 
             <div class="search-wrap">
@@ -55,6 +55,7 @@
                     <button type="button" class="quiet-link as-button" id="import-network">Import network</button>
                     <input type="file" id="import-file" accept="application/json,.json" hidden>
                 </div>
+                <a href="/admin" class="quiet-link">Catalog admin</a>
                 <a href="/verify" class="quiet-link">Verify references</a>
             </footer>
         </aside>
@@ -64,18 +65,27 @@
                 <div class="graph-toolbar">
                     <div class="toolbar-left">
                         <button type="button" id="reset-view" class="btn btn-small">Reset view</button>
+                        <button type="button" id="tidy-layout" class="btn btn-small">Tidy layout</button>
                         <button type="button" id="export-png" class="btn btn-small">Save image</button>
                         <button type="button" id="focus-mode" class="btn btn-small" hidden>Clear focus</button>
                     </div>
-                    <div id="node-counts" class="node-counts" aria-live="polite"></div>
+                    <div class="toolbar-right">
+                        <div class="layer-toggles" id="layer-toggles">
+                            <span class="layer-label">Also show</span>
+                            <label class="layer-chip"><input type="checkbox" data-kind="movie" id="layer-movie"> <span class="kind-swatch kind-movie" aria-hidden="true"></span> Movies</label>
+                            <label class="layer-chip"><input type="checkbox" data-kind="music" id="layer-music"> <span class="kind-swatch kind-music" aria-hidden="true"></span> Music</label>
+                            <label class="layer-chip"><input type="checkbox" data-kind="cocktail" id="layer-cocktail"> <span class="kind-swatch kind-cocktail" aria-hidden="true"></span> Drinks</label>
+                        </div>
+                        <div id="node-counts" class="node-counts" aria-live="polite"></div>
+                    </div>
                 </div>
                 <div id="first-run" class="first-run" hidden>
                     <img class="first-run-mark" src="{{ url_for('static', filename='mark.svg') }}" alt="" width="48" height="48">
                     <h2>Start your literary web</h2>
                     <ol class="first-run-steps">
                         <li><strong>Add books</strong> — upload EPUB or TXT files named like <em>Author - Title</em>.</li>
-                        <li><strong>Extract</strong> — we find titles mentioned in the text and check Open Library.</li>
-                        <li><strong>Explore</strong> — click a library book to focus its mentions on the graph.</li>
+                        <li><strong>Borges reads</strong> — he finds titles mentioned in the text.</li>
+                        <li><strong>Lucien verifies</strong> — he checks Open Library and shelves what is real.</li>
                     </ol>
                     <button type="button" class="btn btn-primary" id="first-run-add">Add your first book</button>
                 </div>
@@ -106,14 +116,15 @@
         <div class="modal-card" role="dialog" aria-labelledby="upload-title" aria-modal="true">
             <button type="button" class="detail-close" data-close-modal aria-label="Close">×</button>
             <h2 id="upload-title">Add books</h2>
-            <p class="modal-copy">Upload <strong>.epub</strong> or <strong>.txt</strong> files. Prefer names like <em>Author - Title.epub</em>.</p>
-            <div id="drop-zone" class="drop-zone">
+            <p class="modal-copy">Upload one or many <strong>.epub</strong> / <strong>.txt</strong> files. Prefer names like <em>Author - Title.epub</em>.</p>
+            <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Choose book files">
                 <input type="file" id="file-input" accept=".epub,.txt,application/epub+zip,text/plain" multiple hidden>
-                <p>Drag files here, or <button type="button" class="linkish" id="pick-files">browse</button></p>
+                <p>Drop files here, or <button type="button" class="linkish" id="pick-files">browse</button> — you can select several at once.</p>
             </div>
             <ul id="upload-queue" class="upload-queue"></ul>
             <p id="upload-status" class="upload-status" hidden></p>
             <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" id="upload-clear" hidden>Clear list</button>
                 <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
                 <button type="button" class="btn btn-primary" id="upload-submit" disabled>Upload &amp; process</button>
             </div>
@@ -122,6 +133,6 @@
 
     <div id="node-tooltip" class="node-tooltip" hidden></div>
 
-    <script src="{{ url_for('static', filename='main.js') }}?v=13"></script>
+    <script src="{{ url_for('static', filename='main.js') }}?v=29"></script>
 </body>
 </html>

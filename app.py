@@ -4,24 +4,29 @@ Books in Books - Flask Web Server
 Serves the main HTML page and JSON API endpoints.
 """
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, session
 import sqlite3
 import threading
 import copy
 import json
 import re
+import os
+import time
 from pathlib import Path
+from functools import wraps
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 80 * 1024 * 1024  # 80 MB
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "books-in-books-dev-secret")
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "books-admin")
 
 ALLOWED_EXTENSIONS = {".epub", ".txt"}
 BOOKS_DIR = Path("books")
 STATUS_FILE = Path("process_status.json")
 
 # Thread-safe processing status for UI polling (also persisted to disk)
-_process_lock = threading.Lock()
+_process_lock = threading.RLock()
 _process_thread = None
 _process_job_args = {"only_filenames": None, "force": False}
 _process_status = {
@@ -34,6 +39,7 @@ _process_status = {
     "books_processed": [],
     "errors": [],
     "message": "Ready",
+    "updated_at": None,
 }
 
 
@@ -43,34 +49,88 @@ def _load_process_status():
         return
     try:
         data = json.loads(STATUS_FILE.read_text(encoding="utf-8"))
-        if isinstance(data, dict):
-            # If a previous run claimed running but process died, mark interrupted
-            if data.get("status") == "running":
-                data["status"] = "error"
-                data["phase"] = "idle"
-                data["message"] = (
-                    "Processing was interrupted (server restarted). "
-                    "Click Extract references to continue."
-                )
-                errors = data.get("errors") or []
-                errors.append("Interrupted by server restart")
-                data["errors"] = errors
-            _process_status.update(data)
+    except Exception:
+        return
+    if not isinstance(data, dict):
+        return
+    # Previous run claimed running but this process just started — worker is gone
+    if data.get("status") == "running":
+        data["status"] = "error"
+        data["phase"] = "idle"
+        data["message"] = (
+            "Borges lost his place (server restarted). "
+            "Click Ask Borges & Lucien to continue."
+        )
+        errors = list(data.get("errors") or [])
+        errors.append("Interrupted by server restart")
+        data["errors"] = errors
+    _process_status.update(data)
+
+
+def _persist_process_status(payload):
+    """Write status to disk (safe to call outside the lock)."""
+    try:
+        STATUS_FILE.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     except Exception:
         pass
 
 
 def _save_process_status():
-    try:
-        STATUS_FILE.write_text(
-            json.dumps(_process_status, indent=2),
-            encoding="utf-8",
-        )
-    except Exception:
-        pass
+    """Persist current in-memory status (caller may already hold the lock)."""
+    _persist_process_status(copy.deepcopy(_process_status))
+
+
+def _worker_alive():
+    return _process_thread is not None and _process_thread.is_alive()
+
+
+def _mark_interrupted_locked(
+    reason="Borges lost his place. Click Ask Borges & Lucien to continue.",
+):
+    errors = list(_process_status.get("errors") or [])
+    if reason not in errors:
+        errors.append(reason)
+    _process_status.update(
+        {
+            "status": "error",
+            "phase": "idle",
+            "message": reason,
+            "errors": errors,
+            "updated_at": time.time(),
+        }
+    )
+
+
+def _reconcile_process_status_locked():
+    """If UI thinks we're running but the worker thread is dead, heal the state."""
+    if _process_status.get("status") != "running":
+        return False
+    if _worker_alive():
+        return False
+    _mark_interrupted_locked(
+        "Borges lost his place (worker stopped). Click Ask Borges & Lucien to continue."
+    )
+    return True
 
 
 _load_process_status()
+
+
+def book_cover_url(book_row, size="M"):
+    """Prefer stored external cover_url; else Open Library cover_id."""
+    keys = book_row.keys() if hasattr(book_row, "keys") else []
+    if "cover_url" in keys and book_row["cover_url"]:
+        return book_row["cover_url"]
+    cover_id = None
+    if isinstance(book_row, dict):
+        if book_row.get("cover_url"):
+            return book_row["cover_url"]
+        cover_id = book_row.get("cover_id")
+    elif "cover_id" in keys:
+        cover_id = book_row["cover_id"]
+    if cover_id:
+        return f"https://covers.openlibrary.org/b/id/{cover_id}-{size}.jpg"
+    return None
 
 
 def get_db_connection():
@@ -82,20 +142,10 @@ def get_db_connection():
 
 def extract_title_from_filename(filename: str) -> str:
     """Extract title from filename (handles both 'Author - Title' and 'Title - Author' formats)."""
-    stem = Path(filename).stem
-    if " - " in stem:
-        parts = stem.split(" - ", 1)
-        if len(parts) == 2:
-            part1 = parts[0].strip()
-            part2 = parts[1].strip()
-            part1_words = len(part1.split())
-            part2_words = len(part2.split())
-            if part1_words <= 2 and part2_words >= 3:
-                return part2
-            if part2_words <= 2 and part1_words >= 3:
-                return part1
-            return part2
-    return stem
+    from process_books import extract_title_and_author
+
+    title, _author = extract_title_and_author(filename)
+    return title
 
 
 def parse_filename_parts(stem: str):
@@ -177,12 +227,19 @@ def match_starting_books(books_rows):
             if is_starting and matched_file_idx >= 0:
                 matched_files.add(matched_file_idx)
 
-        # Library books always shown; other nodes must be Open Library–verified
+        # Library books always shown; other nodes must be verified (any kind)
         if not is_starting:
             if not db_author or db_author == "unknown":
-                continue
+                # Allow cocktail/film labels that use kind as author-ish
+                kind_val = book["kind"] if "kind" in book.keys() and book["kind"] else "book"
+                if kind_val == "book":
+                    continue
             if not (bool(book["verified"]) if "verified" in book.keys() else False):
                 continue
+
+        kind = "book"
+        if "kind" in book.keys() and book["kind"]:
+            kind = book["kind"]
 
         cursor.execute(
             "SELECT COUNT(*) as count FROM book_references WHERE source_book_id = ?",
@@ -208,12 +265,9 @@ def match_starting_books(books_rows):
                 "open_library_id": (
                     book["open_library_id"] if "open_library_id" in book.keys() else None
                 ),
+                "kind": kind,
                 "cover_id": book["cover_id"] if "cover_id" in book.keys() else None,
-                "cover_url": (
-                    f"https://covers.openlibrary.org/b/id/{book['cover_id']}-M.jpg"
-                    if ("cover_id" in book.keys() and book["cover_id"])
-                    else None
-                ),
+                "cover_url": book_cover_url(book, size="M"),
                 "source_filename": source_filename,
             }
         )
@@ -224,13 +278,23 @@ def match_starting_books(books_rows):
 
 def get_process_status_snapshot():
     with _process_lock:
-        return copy.deepcopy(_process_status)
+        healed = _reconcile_process_status_locked()
+        snap = copy.deepcopy(_process_status)
+    if healed:
+        _persist_process_status(snap)
+    return snap
 
 
 def update_process_status(updates):
+    """Update in-memory status quickly; persist to disk without holding the lock."""
+    if not isinstance(updates, dict):
+        return
+    payload = dict(updates)
+    payload["updated_at"] = time.time()
     with _process_lock:
-        _process_status.update(updates)
-        _save_process_status()
+        _process_status.update(payload)
+        snap = copy.deepcopy(_process_status)
+    _persist_process_status(snap)
 
 
 def run_processing_job(only_filenames=None, force=False):
@@ -245,7 +309,8 @@ def run_processing_job(only_filenames=None, force=False):
             {
                 "status": "running",
                 "phase": "starting",
-                "message": "Starting processing. This may take a few minutes.",
+                "message": "Borges: Opening the stack. This may take a few minutes.",
+                "agent": "borges",
                 "errors": [],
                 "books_processed": [],
             }
@@ -256,7 +321,17 @@ def run_processing_job(only_filenames=None, force=False):
             only_filenames=only_filenames,
             force=force,
         )
-        update_process_status(result)
+        if isinstance(result, dict):
+            update_process_status(result)
+        else:
+            update_process_status(
+                {
+                    "status": "done",
+                    "phase": "idle",
+                    "message": "Shelving complete.",
+                    "current_file": None,
+                }
+            )
     except Exception as e:
         update_process_status(
             {
@@ -267,6 +342,19 @@ def run_processing_job(only_filenames=None, force=False):
                 "errors": [str(e)],
             }
         )
+    finally:
+        # Never leave a zombie "running" flag after this worker exits
+        with _process_lock:
+            still_this_worker = _process_thread is threading.current_thread()
+            if still_this_worker and _process_status.get("status") == "running":
+                _mark_interrupted_locked(
+                    "Borges lost his place (worker stopped). Click Ask Borges & Lucien to continue."
+                )
+                snap = copy.deepcopy(_process_status)
+            else:
+                snap = None
+        if snap is not None:
+            _persist_process_status(snap)
 
 
 @app.route("/")
@@ -283,7 +371,7 @@ def api_books():
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT id, title, author, verified, match_score, cover_id, open_library_id
+            SELECT id, title, author, verified, match_score, cover_id, cover_url, open_library_id, kind
             FROM books ORDER BY title
             """
         )
@@ -395,7 +483,7 @@ def api_book_references(book_id):
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, title, author, verified, match_score, cover_id FROM books WHERE id = ?",
+            "SELECT id, title, author, verified, match_score, cover_id, cover_url, kind FROM books WHERE id = ?",
             (book_id,),
         )
         source_book = cursor.fetchone()
@@ -405,7 +493,7 @@ def api_book_references(book_id):
 
         cursor.execute(
             """
-            SELECT b.id, b.title, b.author, b.verified, b.match_score, b.cover_id, br.context
+            SELECT b.id, b.title, b.author, b.verified, b.match_score, b.cover_id, b.cover_url, b.kind, br.context
             FROM book_references br
             JOIN books b ON br.referenced_book_id = b.id
             WHERE br.source_book_id = ?
@@ -420,19 +508,16 @@ def api_book_references(book_id):
                 "author": r["author"],
                 "verified": bool(r["verified"]),
                 "match_score": r["match_score"],
+                "kind": r["kind"] if "kind" in r.keys() and r["kind"] else "book",
                 "context": r["context"],
-                "cover_url": (
-                    f"https://covers.openlibrary.org/b/id/{r['cover_id']}-S.jpg"
-                    if r["cover_id"]
-                    else None
-                ),
+                "cover_url": book_cover_url(r, size="S"),
             }
             for r in cursor.fetchall()
         ]
 
         cursor.execute(
             """
-            SELECT b.id, b.title, b.author, b.verified, b.match_score, b.cover_id
+            SELECT b.id, b.title, b.author, b.verified, b.match_score, b.cover_id, b.cover_url, b.kind
             FROM book_references br
             JOIN books b ON br.source_book_id = b.id
             WHERE br.referenced_book_id = ?
@@ -447,11 +532,8 @@ def api_book_references(book_id):
                 "author": r["author"],
                 "verified": bool(r["verified"]),
                 "match_score": r["match_score"],
-                "cover_url": (
-                    f"https://covers.openlibrary.org/b/id/{r['cover_id']}-S.jpg"
-                    if r["cover_id"]
-                    else None
-                ),
+                "kind": r["kind"] if "kind" in r.keys() and r["kind"] else "book",
+                "cover_url": book_cover_url(r, size="S"),
             }
             for r in cursor.fetchall()
         ]
@@ -474,7 +556,6 @@ def api_book_references(book_id):
             skipped = []
 
         conn.close()
-        cover_id = source_book["cover_id"] if "cover_id" in source_book.keys() else None
         return jsonify(
             {
                 "source_book": {
@@ -483,12 +564,15 @@ def api_book_references(book_id):
                     "author": source_book["author"],
                     "verified": bool(source_book["verified"]),
                     "match_score": source_book["match_score"],
-                    "cover_id": cover_id,
-                    "cover_url": (
-                        f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg"
-                        if cover_id
-                        else None
+                    "kind": (
+                        source_book["kind"]
+                        if "kind" in source_book.keys() and source_book["kind"]
+                        else "book"
                     ),
+                    "cover_id": source_book["cover_id"]
+                    if "cover_id" in source_book.keys()
+                    else None,
+                    "cover_url": book_cover_url(source_book, size="M"),
                 },
                 "references": outgoing,
                 "outgoing": outgoing,
@@ -585,20 +669,21 @@ def api_process():
         only_filenames = [only_filenames]
 
     with _process_lock:
-        if _process_status.get("status") == "running":
-            return jsonify(
+        already = _process_status.get("status") == "running" or (
+            _process_thread is not None and _process_thread.is_alive()
+        )
+        snap = copy.deepcopy(_process_status) if already else None
+
+    if already:
+        return (
+            jsonify(
                 {
                     "error": "Processing is already running. Wait for it to finish, or watch the progress banner.",
-                    **get_process_status_snapshot(),
+                    **snap,
                 }
-            ), 409
-        if _process_thread and _process_thread.is_alive():
-            return jsonify(
-                {
-                    "error": "Processing is already running. Wait for it to finish, or watch the progress banner.",
-                    **get_process_status_snapshot(),
-                }
-            ), 409
+            ),
+            409,
+        )
 
     thread = threading.Thread(
         target=run_processing_job,
@@ -611,7 +696,8 @@ def api_process():
             {
                 "status": "running",
                 "phase": "starting",
-                "message": "Queued for processing",
+                "message": "Borges: In the queue — getting ready to read…",
+                "agent": "borges",
                 "processed": 0,
                 "total": 0,
                 "errors": [],
@@ -631,7 +717,7 @@ def api_reprocess_book(book_id):
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, title, author, verified, match_score, cover_id FROM books WHERE id = ?",
+            "SELECT id, title, author, verified, match_score, cover_id, kind FROM books WHERE id = ?",
             (book_id,),
         )
         row = cursor.fetchone()
@@ -647,10 +733,11 @@ def api_reprocess_book(book_id):
             return jsonify({"error": "Could not find the source file for this book"}), 404
 
         with _process_lock:
-            if _process_status.get("status") == "running" or (
-                _process_thread and _process_thread.is_alive()
-            ):
-                return jsonify({"error": "Processing already in progress"}), 409
+            already = _process_status.get("status") == "running" or (
+                _process_thread is not None and _process_thread.is_alive()
+            )
+        if already:
+            return jsonify({"error": "Processing already in progress"}), 409
 
         thread = threading.Thread(
             target=run_processing_job,
@@ -663,7 +750,8 @@ def api_reprocess_book(book_id):
                 {
                     "status": "running",
                     "phase": "starting",
-                    "message": f"Reprocessing {filename}",
+                    "message": f"Borges: Re-reading {filename}",
+                    "agent": "borges",
                     "processed": 0,
                     "total": 1,
                     "errors": [],
@@ -680,8 +768,54 @@ def api_reprocess_book(book_id):
 
 @app.route("/api/process/status")
 def api_process_status():
-    """Poll processing progress."""
-    return jsonify(get_process_status_snapshot())
+    """Poll processing progress (also auto-heals dead workers)."""
+    snap = get_process_status_snapshot()
+    snap["worker_alive"] = _worker_alive()
+    return jsonify(snap)
+
+
+@app.route("/api/process/reset", methods=["POST"])
+def api_process_reset():
+    """Clear a stuck running flag when no worker is alive."""
+    with _process_lock:
+        if _worker_alive():
+            return (
+                jsonify(
+                    {
+                        "error": "Processing is still actively running.",
+                        **copy.deepcopy(_process_status),
+                    }
+                ),
+                409,
+            )
+        _process_status.update(
+            {
+                "status": "idle",
+                "phase": "idle",
+                "current_file": None,
+                "message": "Ready",
+                "errors": [],
+                "updated_at": time.time(),
+            }
+        )
+        snap = copy.deepcopy(_process_status)
+    _persist_process_status(snap)
+    return jsonify(snap)
+
+
+@app.route("/api/covers/backfill", methods=["POST"])
+def api_covers_backfill():
+    """Fetch Open Library covers for books that are missing them."""
+    try:
+        from process_books import backfill_missing_covers
+
+        body = request.get_json(silent=True) or {}
+        limit = int(body.get("limit") or 80)
+        limit = max(1, min(limit, 200))
+        result = backfill_missing_covers(limit=limit, quiet=True)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/health")
@@ -726,7 +860,7 @@ def api_network_export():
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT id, title, author, verified, match_score, cover_id, open_library_id
+            SELECT id, title, author, verified, match_score, cover_id, cover_url, open_library_id, kind
             FROM books ORDER BY title
             """
         )
@@ -761,6 +895,7 @@ def api_network_export():
                     "open_library_id": book.get("open_library_id"),
                     "cover_id": book.get("cover_id"),
                     "cover_url": book.get("cover_url"),
+                    "kind": book.get("kind") or "book",
                     "outgoing_count": book.get("outgoing_count"),
                     "incoming_count": book.get("incoming_count"),
                 }
@@ -1068,6 +1203,294 @@ def api_verify():
         return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
 
 
+# —— Shared catalog admin ——
+
+
+def _admin_authorized() -> bool:
+    header = request.headers.get("X-Admin-Token", "")
+    query = request.args.get("token", "")
+    body_token = ""
+    if request.is_json and isinstance(request.json, dict):
+        body_token = request.json.get("token") or ""
+    form_token = request.form.get("token", "") if request.form else ""
+    session_token = session.get("admin_token", "")
+    provided = header or query or body_token or form_token or session_token
+    return bool(provided) and provided == ADMIN_TOKEN
+
+
+def require_admin(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not _admin_authorized():
+            return jsonify({"error": "Unauthorized. Set ADMIN_TOKEN or log in at /admin."}), 401
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
+@app.route("/admin")
+def admin_page():
+    """Simple catalog curation dashboard."""
+    return render_template("admin.html", default_hint="books-admin")
+
+
+@app.route("/api/admin/login", methods=["POST"])
+def api_admin_login():
+    data = request.get_json(silent=True) or {}
+    token = (data.get("token") or "").strip()
+    if token != ADMIN_TOKEN:
+        return jsonify({"error": "Invalid token"}), 401
+    session["admin_token"] = token
+    return jsonify({"ok": True})
+
+
+@app.route("/api/admin/logout", methods=["POST"])
+def api_admin_logout():
+    session.pop("admin_token", None)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/admin/session")
+def api_admin_session():
+    return jsonify({"authenticated": _admin_authorized()})
+
+
+@app.route("/api/admin/catalog/stats")
+@require_admin
+def api_admin_catalog_stats():
+    from catalog import catalog_stats, get_conn, init_catalog
+
+    init_catalog(quiet=True)
+    conn = get_conn()
+    stats = catalog_stats(conn)
+    conn.close()
+    return jsonify(stats)
+
+
+@app.route("/api/admin/catalog/works")
+@require_admin
+def api_admin_catalog_works():
+    from catalog import get_conn, init_catalog, list_works
+
+    init_catalog(quiet=True)
+    q = request.args.get("q", "")
+    conn = get_conn()
+    works = list_works(conn, query=q)
+    conn.close()
+    return jsonify(works)
+
+
+@app.route("/api/admin/catalog/works", methods=["POST"])
+@require_admin
+def api_admin_catalog_create_work():
+    from catalog import get_conn, init_catalog, upsert_work, get_work
+
+    init_catalog(quiet=True)
+    data = request.get_json(silent=True) or {}
+    title = (data.get("title") or "").strip()
+    if not title:
+        return jsonify({"error": "Title is required"}), 400
+    try:
+        conn = get_conn()
+        work_id, created = upsert_work(
+            conn,
+            title=title,
+            author=data.get("author"),
+            open_library_id=data.get("open_library_id"),
+            cover_id=data.get("cover_id"),
+            notes=data.get("notes"),
+        )
+        work = get_work(conn, work_id)
+        conn.close()
+        return jsonify({"work": work, "created": created})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/api/admin/catalog/works/<int:work_id>")
+@require_admin
+def api_admin_catalog_work_detail(work_id):
+    from catalog import get_conn, get_work, list_mentions_for_work
+
+    conn = get_conn()
+    work = get_work(conn, work_id)
+    if not work:
+        conn.close()
+        return jsonify({"error": "Work not found"}), 404
+    mentions = list_mentions_for_work(conn, work_id)
+    conn.close()
+    return jsonify({"work": work, **mentions})
+
+
+@app.route("/api/admin/catalog/works/<int:work_id>", methods=["PATCH"])
+@require_admin
+def api_admin_catalog_update_work(work_id):
+    from catalog import get_conn, update_work, get_work
+
+    data = request.get_json(silent=True) or {}
+    conn = get_conn()
+    ok = update_work(
+        conn,
+        work_id,
+        title=data.get("title"),
+        author=data.get("author"),
+        open_library_id=data.get("open_library_id"),
+        cover_id=data.get("cover_id"),
+        notes=data.get("notes"),
+    )
+    if not ok:
+        conn.close()
+        return jsonify({"error": "Work not found"}), 404
+    work = get_work(conn, work_id)
+    conn.close()
+    return jsonify({"work": work})
+
+
+@app.route("/api/admin/catalog/works/<int:work_id>", methods=["DELETE"])
+@require_admin
+def api_admin_catalog_delete_work(work_id):
+    from catalog import get_conn, delete_work
+
+    conn = get_conn()
+    ok = delete_work(conn, work_id)
+    conn.close()
+    if not ok:
+        return jsonify({"error": "Work not found"}), 404
+    return jsonify({"ok": True})
+
+
+@app.route("/api/admin/catalog/mentions", methods=["POST"])
+@require_admin
+def api_admin_catalog_add_mention():
+    from catalog import get_conn, add_mention, upsert_work
+
+    data = request.get_json(silent=True) or {}
+    source_id = data.get("source_work_id")
+    if not source_id:
+        return jsonify({"error": "source_work_id is required"}), 400
+
+    conn = get_conn()
+    try:
+        target_id = data.get("target_work_id")
+        if not target_id:
+            title = (data.get("target_title") or "").strip()
+            if not title:
+                conn.close()
+                return jsonify({"error": "Provide target_work_id or target_title"}), 400
+            target_id, _ = upsert_work(
+                conn,
+                title=title,
+                author=data.get("target_author"),
+                open_library_id=data.get("target_open_library_id"),
+                cover_id=data.get("target_cover_id"),
+            )
+        mention_id, created = add_mention(
+            conn,
+            int(source_id),
+            int(target_id),
+            context=data.get("context"),
+            confidence=float(data.get("confidence") or 1.0),
+        )
+        conn.close()
+        return jsonify(
+            {
+                "mention_id": mention_id,
+                "target_work_id": int(target_id),
+                "created": created,
+            }
+        )
+    except Exception as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/api/admin/catalog/mentions/<int:mention_id>", methods=["DELETE"])
+@require_admin
+def api_admin_catalog_delete_mention(mention_id):
+    from catalog import get_conn, delete_mention
+
+    conn = get_conn()
+    ok = delete_mention(conn, mention_id)
+    conn.close()
+    if not ok:
+        return jsonify({"error": "Mention not found"}), 404
+    return jsonify({"ok": True})
+
+
+@app.route("/api/admin/catalog/lookup")
+@require_admin
+def api_admin_catalog_lookup():
+    """Open Library lookup helper for the admin form."""
+    title = (request.args.get("title") or "").strip()
+    if not title:
+        return jsonify({"error": "title query required"}), 400
+    try:
+        from process_books import lookup_open_library
+
+        match = lookup_open_library(title)
+        if not match:
+            return jsonify({"match": None})
+        return jsonify(
+            {
+                "match": {
+                    "title": match.get("title"),
+                    "author": match.get("author"),
+                    "open_library_id": match.get("open_library_id"),
+                    "cover_id": match.get("cover_id"),
+                    "match_score": match.get("match_score"),
+                    "cover_url": (
+                        f"https://covers.openlibrary.org/b/id/{match['cover_id']}-M.jpg"
+                        if match.get("cover_id")
+                        else None
+                    ),
+                }
+            }
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/admin/catalog/import-local", methods=["POST"])
+@require_admin
+def api_admin_catalog_import_local():
+    """Bootstrap catalog from existing personal library extractions."""
+    from catalog import get_conn, init_catalog, import_from_local_library
+
+    init_catalog(quiet=True)
+    conn = get_conn()
+    result = import_from_local_library(conn)
+    conn.close()
+    return jsonify(result)
+
+
+@app.route("/api/catalog/works/<int:work_id>/mentions")
+def api_public_catalog_mentions(work_id):
+    """Public read API — future shelf lookup uses this."""
+    from catalog import get_conn, get_work, list_mentions_for_work, init_catalog
+
+    init_catalog(quiet=True)
+    conn = get_conn()
+    work = get_work(conn, work_id)
+    if not work:
+        conn.close()
+        return jsonify({"error": "Work not found"}), 404
+    mentions = list_mentions_for_work(conn, work_id)
+    conn.close()
+    return jsonify({"work": work, **mentions})
+
+
+@app.route("/api/catalog/search")
+def api_public_catalog_search():
+    from catalog import get_conn, init_catalog, list_works
+
+    init_catalog(quiet=True)
+    q = request.args.get("q", "")
+    conn = get_conn()
+    works = list_works(conn, query=q, limit=40)
+    conn.close()
+    return jsonify(works)
+
+
 def ensure_runtime_dirs():
     Path("templates").mkdir(exist_ok=True)
     Path("static").mkdir(exist_ok=True)
@@ -1076,6 +1499,12 @@ def ensure_runtime_dirs():
         from process_books import init_database
 
         init_database(quiet=True)
+    except Exception:
+        pass
+    try:
+        from catalog import init_catalog
+
+        init_catalog(quiet=True)
     except Exception:
         pass
 
@@ -1088,4 +1517,4 @@ if __name__ == "__main__":
     print("Server starting on http://localhost:5000")
     print("Press Ctrl+C to stop")
     print()
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000, threaded=True, use_reloader=False)

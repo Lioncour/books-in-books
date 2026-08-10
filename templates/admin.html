@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalog admin — Books in Books</title>
+    <meta name="theme-color" content="#0f5c5c">
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body class="admin-body">
+    <div class="admin-shell">
+        <header class="admin-top">
+            <div>
+                <a class="admin-back" href="/">← App</a>
+                <h1 class="admin-title">Shared catalog</h1>
+                <p class="admin-lede">Lucien’s shelves. Borges finds mentions in EPUBs; Lucien files verified works here so friends can look them up without uploading files.</p>
+            </div>
+            <div class="admin-stats" id="admin-stats" hidden>
+                <div><strong id="stat-works">0</strong> works</div>
+                <div><strong id="stat-mentions">0</strong> mentions</div>
+            </div>
+        </header>
+
+        <section id="login-panel" class="admin-card">
+            <h2>Admin login</h2>
+            <p class="admin-hint">Default token is <code>{{ default_hint }}</code> (override with <code>ADMIN_TOKEN</code> env var).</p>
+            <form id="login-form" class="admin-form-row">
+                <label class="sr-only" for="admin-token">Token</label>
+                <input type="password" id="admin-token" placeholder="Admin token" autocomplete="current-password" required>
+                <button type="submit" class="btn btn-primary">Unlock</button>
+            </form>
+            <p id="login-error" class="admin-error" hidden></p>
+        </section>
+
+        <div id="admin-app" hidden>
+            <div class="admin-toolbar">
+                <input type="search" id="works-search" class="search-input" placeholder="Search catalog…" autocomplete="off">
+                <button type="button" class="btn btn-ghost" id="import-local">Import from my library</button>
+                <button type="button" class="btn btn-ghost" id="logout-btn">Log out</button>
+            </div>
+
+            <div class="admin-grid">
+                <section class="admin-card">
+                    <h2>Add a work</h2>
+                    <form id="add-work-form" class="admin-stack">
+                        <label>Title
+                            <input type="text" id="work-title" required placeholder="To Kill a Mockingbird">
+                        </label>
+                        <label>Author
+                            <input type="text" id="work-author" placeholder="Harper Lee">
+                        </label>
+                        <div class="admin-form-row">
+                            <button type="button" class="btn btn-ghost" id="lookup-ol">Look up on Open Library</button>
+                            <span id="lookup-status" class="admin-muted"></span>
+                        </div>
+                        <label>Open Library id
+                            <input type="text" id="work-ol" placeholder="/works/OL…">
+                        </label>
+                        <label>Cover id
+                            <input type="text" id="work-cover" placeholder="Optional">
+                        </label>
+                        <label>Notes
+                            <textarea id="work-notes" rows="2" placeholder="Optional curation note"></textarea>
+                        </label>
+                        <button type="submit" class="btn btn-primary">Save work</button>
+                    </form>
+                </section>
+
+                <section class="admin-card">
+                    <div class="admin-card-head">
+                        <h2>Works</h2>
+                        <span id="works-count" class="admin-muted"></span>
+                    </div>
+                    <ul id="works-list" class="admin-list"></ul>
+                </section>
+            </div>
+
+            <section id="detail-panel" class="admin-card admin-detail" hidden>
+                <div class="admin-card-head">
+                    <div>
+                        <p class="admin-kicker">Editing</p>
+                        <h2 id="detail-title">—</h2>
+                        <p id="detail-author" class="admin-muted"></p>
+                    </div>
+                    <div class="admin-form-row">
+                        <button type="button" class="btn btn-ghost" id="detail-close">Close</button>
+                        <button type="button" class="btn btn-ghost danger" id="detail-delete">Delete work</button>
+                    </div>
+                </div>
+
+                <form id="add-mention-form" class="admin-stack">
+                    <h3>This book mentions…</h3>
+                    <label>Search existing work
+                        <input type="search" id="mention-search" placeholder="Start typing a title" autocomplete="off">
+                    </label>
+                    <ul id="mention-suggestions" class="admin-list compact" hidden></ul>
+                    <p class="admin-muted">Or create a new target:</p>
+                    <div class="admin-form-row">
+                        <input type="text" id="mention-title" placeholder="Mentioned title">
+                        <input type="text" id="mention-author" placeholder="Author (optional)">
+                    </div>
+                    <label>Context snippet
+                        <input type="text" id="mention-context" placeholder="Optional short quote / note">
+                    </label>
+                    <input type="hidden" id="mention-target-id" value="">
+                    <button type="submit" class="btn btn-primary">Add mention</button>
+                </form>
+
+                <div class="admin-mention-cols">
+                    <div>
+                        <h3>Outgoing</h3>
+                        <ul id="outgoing-list" class="admin-list"></ul>
+                    </div>
+                    <div>
+                        <h3>Incoming</h3>
+                        <ul id="incoming-list" class="admin-list"></ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div id="toast-region" class="toast-region" aria-live="polite"></div>
+    <script src="{{ url_for('static', filename='admin.js') }}?v=1"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@
 
   // —— State ——
   let svg, simulation, zoom;
-  let linkGroup, nodeGroup;
+  let linkGroup, nodeGroup, labelGroup;
   let nodes = [];
   let links = [];
   let allBooks = [];
@@ -15,9 +15,71 @@
   let hiddenNodeIds = new Set();
   let pendingFiles = [];
   let processPollTimer = null;
+  let processStartInFlight = false;
+  let processPollInFlight = false;
   let isStaticMode = false;
   let searchTimer = null;
   let focusBookId = null;
+  /** Books always on; opt-in cultural layers */
+  let enabledKinds = loadEnabledKinds();
+
+  const KIND_COLORS = {
+    book: { fill: "#7a8f9c", stroke: "#4a5c66" },
+    movie: { fill: "#d4a84b", stroke: "#8a6a24" },
+    music: { fill: "#4f7ec8", stroke: "#2f528a" },
+    cocktail: { fill: "#c45f6a", stroke: "#8a3540" },
+  };
+
+  const SELECTED_FILL = "#2f9e6b";
+  const SELECTED_STROKE = "#1d6b48";
+
+  function loadEnabledKinds() {
+    const base = new Set(["book"]);
+    try {
+      const raw = localStorage.getItem("bib-enabled-kinds");
+      if (!raw) return base;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((k) => {
+          if (k && k !== "book") base.add(k);
+        });
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return base;
+  }
+
+  function saveEnabledKinds() {
+    try {
+      localStorage.setItem(
+        "bib-enabled-kinds",
+        JSON.stringify([...enabledKinds].filter((k) => k !== "book"))
+      );
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function kindOf(bookOrNode) {
+    const raw = (bookOrNode && bookOrNode.kind) || "book";
+    const kind = String(raw).toLowerCase().trim();
+    if (kind === "film" || kind === "films" || kind === "movies") return "movie";
+    if (kind === "song" || kind === "songs" || kind === "album") return "music";
+    if (kind === "drink" || kind === "drinks" || kind === "cocktail") return "cocktail";
+    if (KIND_COLORS[kind]) return kind;
+    return "book";
+  }
+
+  function isKindVisible(kind) {
+    return enabledKinds.has(kindOf({ kind }));
+  }
+
+  function nodeShouldStay(bookOrNode) {
+    if (!bookOrNode) return false;
+    if (bookOrNode.isStarting || bookOrNode.is_starting) return true;
+    return isKindVisible(kindOf(bookOrNode));
+  }
 
   // —— Helpers ——
   function $(id) {
@@ -207,7 +269,7 @@
                 ${
                   isStaticMode
                     ? ""
-                    : `<button type="button" data-action="reprocess" data-book-id="${id}" title="Re-extract references">Retry</button>`
+                    : `<button type="button" data-action="reprocess" data-book-id="${id}" title="Ask Borges to re-read">Retry</button>`
                 }
               </div>
             </div>
@@ -258,8 +320,8 @@
       const res = await fetch(`/api/book/${bookId}/reprocess`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not reprocess");
-      notify("Reprocessing", "Extracting references again…", "info");
-      showProcessBanner(data.message || "Reprocessing…", 5, "info");
+      notify("Re-reading", "Borges is opening the book again…", "info");
+      showProcessBanner(data.message || "Borges: Re-reading…", 5, "info");
       pollProcessStatus();
     } catch (err) {
       notify("Reprocess failed", err.message, "error", 8000);
@@ -318,9 +380,14 @@
     data.skipped = data.skipped || [];
 
     content.innerHTML = `
-      <p class="detail-kicker">${isOwned ? "In your library" : "Referenced book"}</p>
+      <p class="detail-kicker">${isOwned ? "In your library" : kindLabel(book.kind)}</p>
       <h2 class="detail-title">${escapeHtml(book.title)}</h2>
       <p class="detail-author">${escapeHtml(book.author || "Unknown author")}</p>
+      ${
+        book.kind && book.kind !== "book"
+          ? `<p class="kind-badge kind-${escapeHtml(book.kind)}">${escapeHtml(kindLabel(book.kind))}</p>`
+          : ""
+      }
       ${
         book.cover_url
           ? `<img class="detail-cover" src="${escapeHtml(book.cover_url)}" alt="">`
@@ -335,7 +402,7 @@
       }
       ${
         isOwned && !isStaticMode
-          ? `<p style="margin-top:0.75rem"><button type="button" class="btn btn-ghost" id="detail-reprocess" data-book-id="${book.id}">Re-extract references</button></p>`
+          ? `<p style="margin-top:0.75rem"><button type="button" class="btn btn-ghost" id="detail-reprocess" data-book-id="${book.id}">Ask Borges to re-read</button></p>`
           : ""
       }
 
@@ -348,7 +415,11 @@
                   (r) => `
               <li>
                 <button type="button" data-jump-id="${r.id}">
-                  ${escapeHtml(r.title)}${r.verified ? ' <span class="inline-verified">verified</span>' : ""}
+                  ${escapeHtml(r.title)}${r.verified ? ' <span class="inline-verified">verified</span>' : ""}${
+                    r.kind && r.kind !== "book"
+                      ? ` <span class="inline-kind">${escapeHtml(kindLabel(r.kind))}</span>`
+                      : ""
+                  }
                   <span class="ref-author">${escapeHtml(r.author || "")}</span>
                   ${r.context ? `<span class="context-snippet">…${escapeHtml(r.context)}…</span>` : ""}
                 </button>
@@ -368,7 +439,11 @@
                   (r) => `
               <li>
                 <button type="button" data-jump-id="${r.id}">
-                  ${escapeHtml(r.title)}${r.verified ? ' <span class="inline-verified">verified</span>' : ""}
+                  ${escapeHtml(r.title)}${r.verified ? ' <span class="inline-verified">verified</span>' : ""}${
+                    r.kind && r.kind !== "book"
+                      ? ` <span class="inline-kind">${escapeHtml(kindLabel(r.kind))}</span>`
+                      : ""
+                  }
                   <span class="ref-author">${escapeHtml(r.author || "")}</span>
                 </button>
               </li>`
@@ -531,6 +606,7 @@
     const fileInput = $("file-input");
     const dropZone = $("drop-zone");
     const submit = $("upload-submit");
+    const clearBtn = $("upload-clear");
     const runProcess = $("run-process");
 
     if (isStaticMode) {
@@ -553,7 +629,19 @@
     modal?.querySelectorAll("[data-close-modal]").forEach((el) => {
       el.addEventListener("click", closeModal);
     });
-    pickBtn?.addEventListener("click", () => fileInput?.click());
+    const openPicker = (e) => {
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
+      fileInput?.click();
+    };
+    pickBtn?.addEventListener("click", openPicker);
+    dropZone?.addEventListener("click", (e) => {
+      if (e.target === pickBtn || pickBtn?.contains(e.target)) return;
+      openPicker(e);
+    });
+    dropZone?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") openPicker(e);
+    });
     fileInput?.addEventListener("change", () => {
       addPendingFiles(fileInput.files);
       fileInput.value = "";
@@ -570,6 +658,11 @@
       addPendingFiles(e.dataTransfer.files);
     });
 
+    clearBtn?.addEventListener("click", () => {
+      pendingFiles = [];
+      renderUploadQueue();
+      setUploadStatus("List cleared.", "info");
+    });
     submit?.addEventListener("click", uploadAndProcess);
     runProcess?.addEventListener("click", () => startProcess());
   }
@@ -578,9 +671,10 @@
     const modal = $("upload-modal");
     if (!modal) return;
     modal.hidden = false;
-    pendingFiles = [];
+    // Keep any files already queued so users can add more in another browse pass
     renderUploadQueue();
-    setUploadStatus("", "info");
+    if (!pendingFiles.length) setUploadStatus("", "info");
+    else setUploadStatus(`${pendingFiles.length} file(s) ready to upload.`, "info");
   }
 
   function closeModal() {
@@ -592,34 +686,58 @@
     if (!fileList) return;
     let added = 0;
     let rejected = 0;
+    let dupes = 0;
+    const existing = new Set(pendingFiles.map((f) => f.name.toLowerCase()));
     Array.from(fileList).forEach((file) => {
       const name = file.name.toLowerCase();
       if (!name.endsWith(".epub") && !name.endsWith(".txt")) {
         rejected += 1;
         return;
       }
+      if (existing.has(name)) {
+        dupes += 1;
+        return;
+      }
+      existing.add(name);
       pendingFiles.push(file);
       added += 1;
     });
     renderUploadQueue();
-    if (rejected && !added) {
-      setUploadStatus("Only .epub and .txt files are supported.", "error");
-    } else if (rejected) {
-      setUploadStatus(
-        `Added ${added} file(s). Skipped ${rejected} unsupported file(s).`,
-        "info"
-      );
-    } else if (added) {
-      setUploadStatus(`${pendingFiles.length} file(s) ready to upload.`, "info");
+    const bits = [];
+    if (added) bits.push(`Added ${added}`);
+    if (dupes) bits.push(`skipped ${dupes} duplicate(s)`);
+    if (rejected) bits.push(`skipped ${rejected} unsupported`);
+    if (bits.length) {
+      setUploadStatus(`${bits.join(", ")}. ${pendingFiles.length} file(s) ready.`, "info");
     }
   }
 
   function renderUploadQueue() {
     const queue = $("upload-queue");
     const submit = $("upload-submit");
+    const clearBtn = $("upload-clear");
     if (!queue) return;
-    queue.innerHTML = pendingFiles.map((f) => `<li>${escapeHtml(f.name)}</li>`).join("");
+    queue.innerHTML = pendingFiles
+      .map(
+        (f, idx) =>
+          `<li><span>${escapeHtml(f.name)}</span><button type="button" class="queue-remove" data-idx="${idx}" aria-label="Remove">×</button></li>`
+      )
+      .join("");
+    queue.querySelectorAll(".queue-remove").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.getAttribute("data-idx"));
+        if (!Number.isNaN(idx)) {
+          pendingFiles.splice(idx, 1);
+          renderUploadQueue();
+          setUploadStatus(
+            pendingFiles.length ? `${pendingFiles.length} file(s) ready to upload.` : "",
+            "info"
+          );
+        }
+      });
+    });
     if (submit) submit.disabled = pendingFiles.length === 0;
+    if (clearBtn) clearBtn.hidden = pendingFiles.length === 0;
   }
 
   async function uploadAndProcess() {
@@ -658,7 +776,7 @@
       setUploadStatus(msg, "success");
       notify(
         "Upload complete",
-        `${data.saved.length} file(s) saved. Extracting references…`,
+        `${data.saved.length} file(s) saved. Borges & Lucien are on it…`,
         "success"
       );
 
@@ -674,9 +792,31 @@
   }
 
   async function startProcess() {
-    showProcessBanner("Starting… This may take a few minutes.", 5, "info");
+    if (processStartInFlight) return;
+    processStartInFlight = true;
+    showProcessBanner("Borges: Opening the stack. This may take a few minutes.", 5, "info");
     try {
-      const res = await fetch("/api/process", { method: "POST" });
+      // Attach to an in-progress job instead of POSTing again (avoids lock fights)
+      try {
+        const stRes = await fetch("/api/process/status", { signal: AbortSignal.timeout(8000) });
+        if (stRes.ok) {
+          const st = await stRes.json();
+          if (st.status === "running") {
+            notify("Already reading", "Borges & Lucien are already at work.", "info");
+            pollProcessStatus();
+            return;
+          }
+        }
+      } catch (_) {
+        /* fall through and try to start */
+      }
+
+      const res = await fetch("/api/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+        signal: AbortSignal.timeout(15000),
+      });
       let data;
       try {
         data = await res.json();
@@ -685,7 +825,7 @@
       }
 
       if (res.status === 409) {
-        notify("Already running", "Extraction is already in progress.", "info");
+        notify("Already reading", "Borges & Lucien are already at work.", "info");
         pollProcessStatus();
         return;
       }
@@ -708,6 +848,8 @@
       showProcessBanner(err.message, 0, "error");
       notify("Processing failed", err.message, "error", 8000);
       setTimeout(hideProcessBanner, 8000);
+    } finally {
+      processStartInFlight = false;
     }
   }
 
@@ -715,10 +857,16 @@
     clearInterval(processPollTimer);
     let sawRunning = false;
     let ticksWithoutRunning = 0;
+    let staleTicks = 0;
+    let lastMessage = "";
 
     processPollTimer = setInterval(async () => {
+      if (processPollInFlight) return;
+      processPollInFlight = true;
       try {
-        const res = await fetch("/api/process/status");
+        const res = await fetch("/api/process/status", {
+          signal: AbortSignal.timeout(10000),
+        });
         let data;
         try {
           data = await res.json();
@@ -737,8 +885,35 @@
         if (data.status === "running") {
           sawRunning = true;
           ticksWithoutRunning = 0;
+          if (data.message === lastMessage) staleTicks += 1;
+          else {
+            staleTicks = 0;
+            lastMessage = data.message || "";
+          }
+          // Worker died but status was not healed yet — ask server to reset
+          if (data.worker_alive === false || staleTicks > 90) {
+            try {
+              await fetch("/api/process/reset", { method: "POST" });
+            } catch (_) {
+              /* ignore */
+            }
+            clearInterval(processPollTimer);
+            processPollTimer = null;
+            showProcessBanner(
+              "Borges lost his place. Click Ask Borges & Lucien to continue.",
+              0,
+              "error"
+            );
+            notify(
+              "Processing stalled",
+              "Cleared a stuck job. Try Ask Borges & Lucien again.",
+              "error",
+              9000
+            );
+            return;
+          }
           showProcessBanner(
-            data.message || "Processing… This may take a few minutes.",
+            data.message || "Borges: Reading… This may take a few minutes.",
             Math.max(pct, 8),
             "info"
           );
@@ -747,18 +922,17 @@
 
         if (!sawRunning && data.status === "idle") {
           ticksWithoutRunning += 1;
-          // Server may have restarted; keep waiting briefly then warn
           if (ticksWithoutRunning > 8) {
             clearInterval(processPollTimer);
             processPollTimer = null;
             showProcessBanner(
-              "Processing status was lost (server may have restarted). Click Extract references to retry.",
+              "Borges lost his place (server may have restarted). Click Ask Borges & Lucien to retry.",
               0,
               "error"
             );
             notify(
               "Status lost",
-              "The server restarted during processing. Try Extract references again.",
+              "The server restarted while Borges was reading. Try Ask Borges & Lucien again.",
               "error",
               9000
             );
@@ -787,18 +961,33 @@
             8000
           );
         } else {
-          notify("Extraction complete", doneMsg, "success");
+          notify("Shelved", doneMsg, "success");
         }
         await refreshAll();
         setTimeout(hideProcessBanner, 4000);
       } catch (err) {
         console.error(err);
+        // Don't kill the poll on a single timeout — keep trying
+        if (/timeout|abort|Failed to fetch|NetworkError/i.test(String(err.message || err))) {
+          ticksWithoutRunning += 1;
+          if (ticksWithoutRunning < 20) return;
+        }
         clearInterval(processPollTimer);
         processPollTimer = null;
         showProcessBanner(err.message, 0, "error");
         notify("Progress check failed", err.message, "error", 8000);
+      } finally {
+        processPollInFlight = false;
       }
     }, 1200);
+  }
+
+  function formatAgentMessage(message) {
+    const text = message == null ? "" : String(message);
+    return text.replace(
+      /^(Borges|Lucien):\s*/i,
+      '<span class="agent-name">$1</span> '
+    );
   }
 
   function showProcessBanner(message, percent, kind = "info", errors = []) {
@@ -808,10 +997,13 @@
     const errList = $("process-errors");
     if (!banner) return;
     banner.hidden = false;
-    banner.classList.remove("is-error", "is-success");
+    banner.classList.remove("is-error", "is-success", "is-borges", "is-lucien");
     if (kind === "error") banner.classList.add("is-error");
     if (kind === "success") banner.classList.add("is-success");
-    if (msg) msg.textContent = message;
+    const raw = message == null ? "" : String(message);
+    if (/^Borges:/i.test(raw)) banner.classList.add("is-borges");
+    if (/^Lucien:/i.test(raw)) banner.classList.add("is-lucien");
+    if (msg) msg.innerHTML = formatAgentMessage(raw);
     if (bar) {
       bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
       if (bar.parentElement) bar.parentElement.hidden = false;
@@ -836,6 +1028,21 @@
   }
 
   // —— Graph ——
+  function truncateLabel(text, max = 26) {
+    const t = text == null ? "" : String(text).trim();
+    if (!t) return "Untitled";
+    if (t.length <= max) return t;
+    return `${t.slice(0, max - 1)}…`;
+  }
+
+  function shouldShowLabel(d) {
+    if (!d) return false;
+    if (d.isStarting) return true;
+    if (kindOf(d) !== "book") return true;
+    if (selectedNode && String(selectedNode.id) === String(d.id)) return true;
+    return false;
+  }
+
   function init2D() {
     const container = d3.select("#graph-container");
     if (container.empty()) return;
@@ -871,6 +1078,7 @@
 
     linkGroup = svg.append("g").attr("class", "links");
     nodeGroup = svg.append("g").attr("class", "nodes");
+    labelGroup = svg.append("g").attr("class", "labels");
 
     zoom = d3
       .zoom()
@@ -878,6 +1086,7 @@
       .on("zoom", (event) => {
         nodeGroup.attr("transform", event.transform);
         linkGroup.attr("transform", event.transform);
+        labelGroup.attr("transform", event.transform);
       });
     svg.call(zoom);
   }
@@ -889,28 +1098,31 @@
 
     startingBooks = books.filter((b) => b.is_starting).map((b) => String(b.id));
 
-    const booksByTitle = new Map();
+    // Dedupe within kind only — a film and a novel with the same title stay separate
+    const booksByTitleKind = new Map();
     books.forEach((book) => {
-      const titleKey = book.title.toLowerCase().trim();
-      const existing = booksByTitle.get(titleKey);
+      const titleKey = `${kindOf(book)}::${book.title.toLowerCase().trim()}`;
+      const existing = booksByTitleKind.get(titleKey);
       if (!existing) {
-        booksByTitle.set(titleKey, book);
+        booksByTitleKind.set(titleKey, book);
       } else {
         const existingIsStarting = startingBooks.includes(String(existing.id));
         const currentIsStarting = startingBooks.includes(String(book.id));
         if (currentIsStarting && !existingIsStarting) {
-          booksByTitle.set(titleKey, book);
+          booksByTitleKind.set(titleKey, book);
         } else if (currentIsStarting === existingIsStarting && book.id < existing.id) {
-          booksByTitle.set(titleKey, book);
+          booksByTitleKind.set(titleKey, book);
         }
       }
     });
 
-    const uniqueBooks = Array.from(booksByTitle.values());
+    const uniqueBooks = Array.from(booksByTitleKind.values());
     const uniqueBookIds = new Set(uniqueBooks.map((b) => String(b.id)));
     const idRemap = new Map();
     books.forEach((book) => {
-      const uniqueBook = booksByTitle.get(book.title.toLowerCase().trim());
+      const uniqueBook = booksByTitleKind.get(
+        `${kindOf(book)}::${book.title.toLowerCase().trim()}`
+      );
       if (uniqueBook && String(book.id) !== String(uniqueBook.id)) {
         idRemap.set(String(book.id), String(uniqueBook.id));
       }
@@ -937,131 +1149,101 @@
       }
     });
 
-    const connectedBooks = uniqueBooks.filter((b) => connectedBookIds.has(String(b.id)));
+    const connectedBooks = uniqueBooks.filter((b) => {
+      if (!connectedBookIds.has(String(b.id))) return false;
+      // Owned library books always show; other nodes respect layer toggles
+      return nodeShouldStay({ ...b, isStarting: b.is_starting });
+    });
+    const visibleIds = new Set(connectedBooks.map((b) => String(b.id)));
+    startingBooks.forEach((id) => visibleIds.add(String(id)));
+
     const connectedReferences = uniqueReferences.filter(
-      (ref) => connectedBookIds.has(ref.source) && connectedBookIds.has(ref.target)
+      (ref) => visibleIds.has(ref.source) && visibleIds.has(ref.target)
     );
 
     return { connectedBooks, connectedReferences };
   }
 
-  function renderGraph(books, references) {
-    if (typeof d3 === "undefined") return;
-    if (!svg || svg.empty()) init2D();
-    if (!svg) return;
-
-    allBooks = books;
-    allReferences = references;
-
-    const { connectedBooks, connectedReferences } = prepareGraphData(books, references);
-    const container = d3.select("#graph-container");
-    const width = container.node().clientWidth || window.innerWidth - 360;
-    const height = container.node().clientHeight || window.innerHeight;
-
-    linkGroup.selectAll("*").remove();
-    nodeGroup.selectAll("*").remove();
-
-    nodes = connectedBooks.map((book, i) => {
-      const isStarting = startingBooks.includes(String(book.id));
-      const connected = new Set();
-      connectedReferences.forEach((ref) => {
-        if (String(ref.source) === String(book.id)) connected.add(String(ref.target));
-        if (String(ref.target) === String(book.id)) connected.add(String(ref.source));
-      });
-      const connections = connected.size;
-
-      let size, color, strokeColor;
-      if (isStarting) {
-        size = Math.max(14, Math.min(26, 14 + connections * 1.5));
-        color = "#2a9d8f";
-        strokeColor = "#0f5c5c";
-      } else if (connections > 0) {
-        size = Math.max(6, Math.min(14, 6 + connections));
-        color = "#7a8f9c";
-        strokeColor = "#4a5c66";
-      } else {
-        size = 5;
-        color = "#5a6660";
-        strokeColor = "#3d4843";
-      }
-
-      let x, y;
-      if (isStarting) {
-        const startingIndex = startingBooks.indexOf(String(book.id));
-        const angle = (startingIndex / Math.max(startingBooks.length, 1)) * 2 * Math.PI;
-        x = width / 2 + Math.cos(angle) * 90;
-        y = height / 2 + Math.sin(angle) * 90;
-      } else {
-        const angle = (i / Math.max(connectedBooks.length, 1)) * 2 * Math.PI;
-        const radius = 120 + Math.random() * 100;
-        x = width / 2 + Math.cos(angle) * radius;
-        y = height / 2 + Math.sin(angle) * radius;
-      }
-
-      return {
-        id: String(book.id),
-        title: book.title,
-        author: book.author,
-        isStarting,
-        connections,
-        size,
-        color,
-        strokeColor,
-        x,
-        y,
-        vx: 0,
-        vy: 0,
-      };
+  function styleForBook(book, connectedReferences) {
+    const isStarting = startingBooks.includes(String(book.id));
+    const connected = new Set();
+    connectedReferences.forEach((ref) => {
+      if (String(ref.source) === String(book.id)) connected.add(String(ref.target));
+      if (String(ref.target) === String(book.id)) connected.add(String(ref.source));
     });
+    const connections = connected.size;
+    const kind = kindOf(book);
+    let size;
+    let color;
+    let strokeColor;
+    if (isStarting) {
+      size = Math.max(14, Math.min(26, 14 + connections * 1.5));
+      color = "#2a9d8f";
+      strokeColor = "#0f5c5c";
+    } else if (kind !== "book") {
+      const palette = KIND_COLORS[kind] || KIND_COLORS.book;
+      size = Math.max(7, Math.min(15, 7 + connections));
+      color = palette.fill;
+      strokeColor = palette.stroke;
+    } else if (connections > 0) {
+      size = Math.max(6, Math.min(14, 6 + connections));
+      color = "#7a8f9c";
+      strokeColor = "#4a5c66";
+    } else {
+      size = 5;
+      color = "#5a6660";
+      strokeColor = "#3d4843";
+    }
+    return { isStarting, connections, kind, size, color, strokeColor };
+  }
 
-    links = connectedReferences
-      .map((ref) => ({ source: String(ref.source), target: String(ref.target) }))
-      .filter((l) => l.source !== l.target);
+  function linkKey(link) {
+    const s = typeof link.source === "object" ? link.source.id : link.source;
+    const t = typeof link.target === "object" ? link.target.id : link.target;
+    return `${s}|${t}`;
+  }
 
-    if (simulation) simulation.stop();
+  function findAnchorNode(bookId, refs, nodeById) {
+    const id = String(bookId);
+    // Prefer an already-visible neighbor (owned books first)
+    const candidates = [];
+    refs.forEach((ref) => {
+      if (String(ref.source) === id && nodeById.has(String(ref.target))) {
+        candidates.push(nodeById.get(String(ref.target)));
+      }
+      if (String(ref.target) === id && nodeById.has(String(ref.source))) {
+        candidates.push(nodeById.get(String(ref.source)));
+      }
+    });
+    if (!candidates.length) return null;
+    candidates.sort((a, b) => Number(b.isStarting) - Number(a.isStarting));
+    return candidates[0];
+  }
 
-    simulation = d3
-      .forceSimulation(nodes)
-      .force(
-        "link",
-        d3
-          .forceLink(links)
-          .id((d) => d.id)
-          .distance((d) => {
-            const s = typeof d.source === "object" ? d.source : nodes.find((n) => n.id === d.source);
-            const t = typeof d.target === "object" ? d.target : nodes.find((n) => n.id === d.target);
-            if (s?.isStarting && t?.isStarting) return 90;
-            return s?.isStarting || t?.isStarting ? 110 : 150;
-          })
-          .strength(0.45)
-      )
-      .force("charge", d3.forceManyBody().strength((d) => (d.isStarting ? -420 : -320)))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius((d) => d.size + 4).strength(0.85))
-      .alpha(1)
-      .alphaDecay(0.025);
+  /** Center of the live graph — used so new books spawn near the pack, not far off-canvas. */
+  function getClusterCenter(nodeById) {
+    const live = [...nodeById.values()].filter(
+      (n) => n && n.x != null && n.y != null && !n._exiting
+    );
+    if (!live.length) return null;
+    const starters = live.filter((n) => n.isStarting);
+    const pool = starters.length ? starters : live;
+    const x = d3.mean(pool, (n) => n.x);
+    const y = d3.mean(pool, (n) => n.y);
+    let nearest = pool[0];
+    let best = Infinity;
+    pool.forEach((n) => {
+      const d = (n.x - x) ** 2 + (n.y - y) ** 2;
+      if (d < best) {
+        best = d;
+        nearest = n;
+      }
+    });
+    return { x, y, nearest };
+  }
 
-    const link = linkGroup
-      .selectAll("line")
-      .data(links)
-      .enter()
-      .append("line")
-      .attr("stroke", "#6d7c75")
-      .attr("stroke-opacity", 0.55)
-      .attr("stroke-width", 1.6);
-
-    const node = nodeGroup
-      .selectAll("circle")
-      .data(nodes)
-      .enter()
-      .append("circle")
-      .attr("r", 0)
-      .attr("fill", (d) => d.color)
-      .attr("stroke", (d) => d.strokeColor)
-      .attr("stroke-width", (d) => (d.isStarting ? 2.5 : 1.5))
-      .style("cursor", "pointer")
-      .style("filter", "url(#node-shadow)")
-      .style("opacity", 0)
+  function wireNodeInteractions(selection) {
+    selection
       .on("mouseover", function (event, d) {
         showTooltip(event, d);
         d3.select(this).transition().duration(120).attr("r", d.size * 1.12);
@@ -1076,27 +1258,519 @@
       .on("click", function (event, d) {
         event.stopPropagation();
         selectNode(d);
-      })
-      .call(drag(simulation));
+      });
+    if (simulation) selection.call(drag(simulation));
+  }
 
-    let animated = false;
+  function bindGraphTick() {
+    if (!simulation) return;
     simulation.on("tick", () => {
-      link
-        .attr("x1", (d) => (typeof d.source === "object" ? d.source.x : 0))
-        .attr("y1", (d) => (typeof d.source === "object" ? d.source.y : 0))
-        .attr("x2", (d) => (typeof d.target === "object" ? d.target.x : 0))
-        .attr("y2", (d) => (typeof d.target === "object" ? d.target.y : 0));
-      node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+      linkGroup.selectAll("line").each(function (d) {
+        if (!d || d._blooming) return;
+        const s = typeof d.source === "object" ? d.source : null;
+        const t = typeof d.target === "object" ? d.target : null;
+        if (!s || !t) return;
+        d3.select(this)
+          .attr("x1", s.x)
+          .attr("y1", s.y)
+          .attr("x2", t.x)
+          .attr("y2", t.y);
+      });
+      nodeGroup.selectAll("circle").each(function (d) {
+        if (!d || d._exiting || d._growing) return;
+        d3.select(this).attr("cx", d.x).attr("cy", d.y);
+      });
+      if (labelGroup) {
+        labelGroup.selectAll("text").each(function (d) {
+          if (!d || d._exiting || d._growing) return;
+          d3.select(this)
+            .attr("x", d.x)
+            .attr("y", d.y + (d.size || 8) + 10);
+        });
+      }
+    });
+  }
 
-      if (!animated && nodes.length && nodes[0].x != null) {
-        animated = true;
-        node
-          .transition()
-          .duration(420)
-          .delay((_, i) => Math.min(i * 6, 180))
-          .ease(d3.easeCubicOut)
-          .attr("r", (d) => d.size)
-          .style("opacity", 1);
+  /**
+   * Sync graph to current data/layers.
+   * reset=false keeps existing node positions and grows new nodes from neighbors.
+   */
+  function syncGraph({ reset = false } = {}) {
+    if (!svg || !linkGroup || !nodeGroup) return;
+    const container = d3.select("#graph-container");
+    const width = container.node().clientWidth || window.innerWidth - 360;
+    const height = container.node().clientHeight || window.innerHeight;
+
+    const { connectedBooks, connectedReferences } = prepareGraphData(allBooks, allReferences);
+    const oldById = new Map((nodes || []).map((n) => [String(n.id), n]));
+    const desiredIds = new Set(connectedBooks.map((b) => String(b.id)));
+
+    const nextNodes = connectedBooks.map((book, i) => {
+      const id = String(book.id);
+      const style = styleForBook(book, connectedReferences);
+      const existing = !reset ? oldById.get(id) : null;
+      if (existing) {
+        return {
+          ...existing,
+          title: book.title,
+          author: book.author,
+          kind: style.kind,
+          isStarting: style.isStarting,
+          connections: style.connections,
+          size: style.size,
+          color: style.color,
+          strokeColor: style.strokeColor,
+          _isNew: false,
+          _growing: false,
+          _exiting: false,
+          _blooming: false,
+        };
+      }
+
+      let x;
+      let y;
+      let bloomAngle = 0;
+      let bloomParentId = null;
+      let bloomDist = 36 + Math.random() * 28;
+      const anchor = findAnchorNode(id, connectedReferences, oldById);
+      const cluster = !reset ? getClusterCenter(oldById) : null;
+
+      if (anchor && anchor.x != null && anchor.y != null) {
+        // Seed at the mother node; bloom tween pushes petals outward
+        bloomAngle = (Math.PI * 2 * (i % 12)) / 12 + Math.random() * 0.35;
+        bloomParentId = anchor.id;
+        x = anchor.x;
+        y = anchor.y;
+        bloomDist = 32 + Math.random() * 24;
+      } else if (cluster && !reset) {
+        // New library book (or orphan): grow beside the existing pack
+        bloomAngle = Math.random() * Math.PI * 2;
+        bloomParentId = cluster.nearest?.id || null;
+        x = cluster.x;
+        y = cluster.y;
+        bloomDist = style.isStarting ? 42 + Math.random() * 26 : 28 + Math.random() * 22;
+      } else if (style.isStarting) {
+        const startingIndex = startingBooks.indexOf(id);
+        const angle = (startingIndex / Math.max(startingBooks.length, 1)) * 2 * Math.PI;
+        x = width / 2 + Math.cos(angle) * 70;
+        y = height / 2 + Math.sin(angle) * 70;
+      } else {
+        const angle = (i / Math.max(connectedBooks.length, 1)) * 2 * Math.PI;
+        const radius = 70 + Math.random() * 50;
+        x = width / 2 + Math.cos(angle) * radius;
+        y = height / 2 + Math.sin(angle) * radius;
+      }
+
+      return {
+        id,
+        title: book.title,
+        author: book.author,
+        kind: style.kind,
+        isStarting: style.isStarting,
+        connections: style.connections,
+        size: style.size,
+        color: style.color,
+        strokeColor: style.strokeColor,
+        x,
+        y,
+        vx: 0,
+        vy: 0,
+        _isNew: !reset,
+        _growing: !reset,
+        _bloomAngle: bloomAngle,
+        _bloomParentId: bloomParentId,
+        _bloomDelay: 0,
+        _bloomFromX: x,
+        _bloomFromY: y,
+        _bloomTargetDist: bloomDist,
+      };
+    });
+
+    // Petal order: siblings around the same parent bloom in angle order
+    if (!reset) {
+      const byParent = new Map();
+      nextNodes.forEach((n) => {
+        if (!n._growing || !n._bloomParentId) return;
+        if (!byParent.has(n._bloomParentId)) byParent.set(n._bloomParentId, []);
+        byParent.get(n._bloomParentId).push(n);
+      });
+      byParent.forEach((siblings) => {
+        siblings.sort((a, b) => a._bloomAngle - b._bloomAngle);
+        siblings.forEach((n, idx) => {
+          n._bloomDelay = 120 + idx * 140;
+          // Even spacing around the parent for a clearer flower
+          n._bloomAngle = (idx / Math.max(siblings.length, 1)) * Math.PI * 2 - Math.PI / 2;
+          if (n._bloomParentId && oldById.has(n._bloomParentId)) {
+            const parent = oldById.get(n._bloomParentId);
+            n._bloomFromX = parent.x;
+            n._bloomFromY = parent.y;
+            n.x = parent.x;
+            n.y = parent.y;
+          }
+        });
+      });
+      let orphanIdx = 0;
+      nextNodes.forEach((n) => {
+        if (!n._growing) return;
+        if (n._bloomParentId) return;
+        n._bloomDelay = 200 + orphanIdx * 120;
+        orphanIdx += 1;
+      });
+    }
+
+    const nextLinks = connectedReferences
+      .map((ref) => ({
+        source: String(ref.source),
+        target: String(ref.target),
+      }))
+      .filter((l) => l.source !== l.target && desiredIds.has(l.source) && desiredIds.has(l.target));
+
+    // Layer toggle with nothing to add/remove: refresh styles only — don't jolt the layout
+    if (!reset && simulation && nodes.length) {
+      const prevIds = new Set(nodes.map((n) => String(n.id)));
+      const nextIds = new Set(nextNodes.map((n) => String(n.id)));
+      const sameNodes =
+        prevIds.size === nextIds.size && [...nextIds].every((id) => prevIds.has(id));
+      const prevLinks = new Set((links || []).map((l) => linkKey(l)));
+      const nextLinkSet = new Set(nextLinks.map((l) => linkKey(l)));
+      const sameLinks =
+        prevLinks.size === nextLinkSet.size &&
+        [...nextLinkSet].every((k) => prevLinks.has(k));
+
+      if (sameNodes && sameLinks) {
+        const byId = new Map(nextNodes.map((n) => [String(n.id), n]));
+        nodes.forEach((n) => {
+          const fresh = byId.get(String(n.id));
+          if (!fresh) return;
+          n.title = fresh.title;
+          n.author = fresh.author;
+          n.kind = fresh.kind;
+          n.isStarting = fresh.isStarting;
+          n.connections = fresh.connections;
+          n.size = fresh.size;
+          n.color = fresh.color;
+          n.strokeColor = fresh.strokeColor;
+        });
+        nodeGroup
+          .selectAll("circle")
+          .attr("fill", (d) =>
+            selectedNode && String(selectedNode.id) === String(d.id) ? SELECTED_FILL : d.color
+          )
+          .attr("stroke", (d) =>
+            selectedNode && String(selectedNode.id) === String(d.id)
+              ? SELECTED_STROKE
+              : d.strokeColor
+          )
+          .attr("r", (d) => d.size);
+        syncNodeLabels();
+        renderLibrary();
+        updateNodeVisibility();
+        updateNodeCounts();
+        return;
+      }
+    }
+
+    nodes = nextNodes;
+    links = nextLinks;
+
+    if (!simulation || reset) {
+      if (simulation) simulation.stop();
+      simulation = d3
+        .forceSimulation(nodes)
+        .force(
+          "link",
+          d3
+            .forceLink(links)
+            .id((d) => d.id)
+            .distance((d) => {
+              const s = typeof d.source === "object" ? d.source : nodes.find((n) => n.id === d.source);
+              const t = typeof d.target === "object" ? d.target : nodes.find((n) => n.id === d.target);
+              if (s?.isStarting && t?.isStarting) return 70;
+              return s?.isStarting || t?.isStarting ? 85 : 110;
+            })
+            .strength(0.55)
+        )
+        .force("charge", d3.forceManyBody().strength((d) => (d.isStarting ? -240 : -160)))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collision", d3.forceCollide().radius((d) => d.size + 3).strength(0.9))
+        .alpha(reset ? 1 : 0.22)
+        .alphaDecay(reset ? 0.028 : 0.022);
+    } else {
+      simulation.nodes(nodes);
+      const linkForce = simulation.force("link");
+      if (linkForce) {
+        linkForce.links(links);
+        linkForce.distance((d) => {
+          const s = typeof d.source === "object" ? d.source : nodes.find((n) => n.id === d.source);
+          const t = typeof d.target === "object" ? d.target : nodes.find((n) => n.id === d.target);
+          if (s?.isStarting && t?.isStarting) return 70;
+          return s?.isStarting || t?.isStarting ? 85 : 110;
+        });
+        linkForce.strength(0.55);
+      }
+      simulation.force(
+        "charge",
+        d3.forceManyBody().strength((d) => (d.isStarting ? -240 : -160))
+      );
+      simulation.force(
+        "collision",
+        d3.forceCollide().radius((d) => d.size + 3).strength(0.9)
+      );
+      // Gentle bloom — don't explode the existing layout
+      simulation.alpha(0.22).alphaDecay(0.02).alphaTarget(0).restart();
+    }
+
+    const nodeById = new Map(nodes.map((n) => [String(n.id), n]));
+
+    const link = linkGroup
+      .selectAll("line")
+      .data(links, linkKey)
+      .join(
+        (enter) =>
+          enter
+            .append("line")
+            .attr("stroke", "#6d7c75")
+            .attr("stroke-width", 0)
+            .attr("stroke-opacity", 0)
+            .each(function (d) {
+              d._blooming = !reset;
+            }),
+        (update) =>
+          update
+            .attr("stroke", "#6d7c75")
+            .attr("stroke-dasharray", null)
+            .attr("stroke-width", 1.6)
+            .attr("stroke-opacity", 0.55)
+            .each((d) => {
+              d._blooming = false;
+            }),
+        (exit) =>
+          exit
+            .interrupt()
+            .each((d) => {
+              if (d) d._blooming = false;
+            })
+            .transition()
+            .duration(380)
+            .ease(d3.easeCubicIn)
+            .attr("stroke-opacity", 0)
+            .attr("stroke-width", 0)
+            .remove()
+      );
+
+    // Grow stems from the mother node toward the new petal
+    if (reset) {
+      link
+        .interrupt()
+        .transition()
+        .duration(500)
+        .delay(40)
+        .ease(d3.easeCubicOut)
+        .attr("stroke-width", 1.6)
+        .attr("stroke-opacity", 0.55);
+    } else {
+      link
+        .filter((d) => d._blooming)
+        .interrupt()
+        .attr("stroke-width", 1.35)
+        .attr("stroke-opacity", 0)
+        .transition()
+        .delay((d) => {
+          const s = nodeById.get(String(typeof d.source === "object" ? d.source.id : d.source));
+          const t = nodeById.get(String(typeof d.target === "object" ? d.target.id : d.target));
+          return Math.max(s?._bloomDelay || 0, t?._bloomDelay || 0) + 80;
+        })
+        .duration(1100)
+        .ease(d3.easeCubicOut)
+        .tween("growStem", function (d) {
+          return function (t) {
+            const s = typeof d.source === "object" ? d.source : nodeById.get(String(d.source));
+            const tgt = typeof d.target === "object" ? d.target : nodeById.get(String(d.target));
+            if (!s || !tgt) return;
+            // Prefer growing out of the already-visible mother
+            let mother = s;
+            let child = tgt;
+            if (s._growing && !tgt._growing) {
+              mother = tgt;
+              child = s;
+            } else if (tgt._growing && !s._growing) {
+              mother = s;
+              child = tgt;
+            } else if ((s._bloomParentId && String(s._bloomParentId) === String(tgt.id)) || tgt.isStarting) {
+              mother = tgt;
+              child = s;
+            }
+            const eased = d3.easeCubicOut(t);
+            const x2 = mother.x + (child.x - mother.x) * eased;
+            const y2 = mother.y + (child.y - mother.y) * eased;
+            d3.select(this)
+              .attr("x1", mother.x)
+              .attr("y1", mother.y)
+              .attr("x2", x2)
+              .attr("y2", y2)
+              .attr("stroke-opacity", 0.55 * eased)
+              .attr("stroke-width", 1.6);
+          };
+        })
+        .on("end", function (d) {
+          if (d) d._blooming = false;
+        });
+    }
+
+    const node = nodeGroup
+      .selectAll("circle")
+      .data(nodes, (d) => String(d.id))
+      .join(
+        (enter) => {
+          const sel = enter
+            .append("circle")
+            .attr("r", 0)
+            .attr("fill", (d) => d.color)
+            .attr("stroke", (d) => d.strokeColor)
+            .attr("stroke-width", (d) => (d.isStarting ? 2.5 : 1.5))
+            .style("cursor", "pointer")
+            .style("filter", "url(#node-shadow)")
+            .style("opacity", 0)
+            .attr("cx", (d) => d.x)
+            .attr("cy", (d) => d.y);
+          wireNodeInteractions(sel);
+          return sel;
+        },
+        (update) =>
+          update
+            .attr("fill", (d) => d.color)
+            .attr("stroke", (d) => d.strokeColor)
+            .attr("stroke-width", (d) => (d.isStarting ? 2.5 : 1.5)),
+        (exit) =>
+          exit
+            .interrupt()
+            .each((d) => {
+              if (!d) return;
+              d.fx = null;
+              d.fy = null;
+              d._exiting = true;
+              d._growing = false;
+            })
+            .transition()
+            .duration(420)
+            .ease(d3.easeCubicIn)
+            .attr("r", 0)
+            .style("opacity", 0)
+            .remove()
+      );
+
+    if (reset) {
+      node
+        .interrupt()
+        .attr("r", 0)
+        .style("opacity", 0)
+        .transition()
+        .duration(420)
+        .delay((_, i) => Math.min(i * 6, 180))
+        .ease(d3.easeCubicOut)
+        .attr("r", (d) => d.size)
+        .style("opacity", 1);
+    } else {
+      // Soft pulse on mother nodes that are sprouting petals
+      const motherIds = new Set(
+        nodes.filter((n) => n._growing && n._bloomParentId).map((n) => String(n._bloomParentId))
+      );
+
+      node
+        .filter((d) => d._growing)
+        .interrupt()
+        .each((d) => {
+          d.fx = d._bloomFromX;
+          d.fy = d._bloomFromY;
+          d.x = d._bloomFromX;
+          d.y = d._bloomFromY;
+          d.vx = 0;
+          d.vy = 0;
+        })
+        .attr("cx", (d) => d._bloomFromX)
+        .attr("cy", (d) => d._bloomFromY)
+        .attr("r", 0)
+        .style("opacity", 1)
+        .transition()
+        .delay((d) => d._bloomDelay || 120)
+        .duration(1450)
+        .ease(d3.easeCubicOut)
+        .tween("bloom", function (d) {
+          const peak = d.size * 1.22;
+          const fromX = d._bloomFromX;
+          const fromY = d._bloomFromY;
+          const angle = d._bloomAngle;
+          const dist = d._bloomTargetDist || 40;
+          return function (t) {
+            // Ease out for travel; slight overshoot on radius for a living feel
+            const eased = d3.easeCubicOut(t);
+            const r =
+              t < 0.72
+                ? d3.easeCubicOut(t / 0.72) * peak
+                : peak + (d.size - peak) * d3.easeCubicInOut((t - 0.72) / 0.28);
+            d.fx = fromX + Math.cos(angle) * dist * eased;
+            d.fy = fromY + Math.sin(angle) * dist * eased;
+            d.x = d.fx;
+            d.y = d.fy;
+            d3.select(this).attr("cx", d.x).attr("cy", d.y).attr("r", Math.max(0.2, r));
+          };
+        })
+        .on("end", function (d) {
+          if (!d) return;
+          d.fx = null;
+          d.fy = null;
+          d._growing = false;
+          d._isNew = false;
+          d.vx = Math.cos(d._bloomAngle || 0) * 0.55;
+          d.vy = Math.sin(d._bloomAngle || 0) * 0.55;
+          d3.select(this).attr("r", d.size);
+        });
+
+      node
+        .filter((d) => !d._growing && !motherIds.has(String(d.id)))
+        .attr("r", (d) => d.size)
+        .style("opacity", 1);
+
+      node
+        .filter((d) => motherIds.has(String(d.id)))
+        .style("opacity", 1)
+        .transition()
+        .duration(280)
+        .attr("r", (d) => d.size * 1.16)
+        .transition()
+        .duration(420)
+        .ease(d3.easeCubicOut)
+        .attr("r", (d) => d.size);
+    }
+
+    wireNodeInteractions(node);
+    bindGraphTick();
+    syncNodeLabels({ reset });
+
+    // Hard prune: remove any circle/line that should not exist for current layers
+    const keepIds = new Set(nodes.map((n) => String(n.id)));
+    nodeGroup.selectAll("circle").each(function (d) {
+      if (!d) {
+        d3.select(this).interrupt().remove();
+        return;
+      }
+      const id = String(d.id);
+      const allowed = keepIds.has(id) && nodeShouldStay(d);
+      if (allowed) return;
+      d._exiting = true;
+      d3.select(this).interrupt().remove();
+    });
+    if (labelGroup) {
+      labelGroup.selectAll("text").each(function (d) {
+        if (!d || !keepIds.has(String(d.id)) || !nodeShouldStay(d)) {
+          d3.select(this).interrupt().remove();
+        }
+      });
+    }
+    const keepLinks = new Set(links.map((l) => linkKey(l)));
+    linkGroup.selectAll("line").each(function (d) {
+      if (!d || !keepLinks.has(linkKey(d))) {
+        d3.select(this).interrupt().remove();
       }
     });
 
@@ -1114,6 +1788,173 @@
     if (focusBookId) applyFocusMode();
   }
 
+  function syncNodeLabels({ reset = false } = {}) {
+    if (!labelGroup) return;
+    const labeled = nodes.filter((d) => shouldShowLabel(d));
+    const label = labelGroup
+      .selectAll("text")
+      .data(labeled, (d) => String(d.id))
+      .join(
+        (enter) =>
+          enter
+            .append("text")
+            .attr("class", "node-label")
+            .attr("text-anchor", "middle")
+            .attr("dy", "0.35em")
+            .style("pointer-events", "none")
+            .style("opacity", 0)
+            .text((d) => truncateLabel(d.title))
+            .attr("x", (d) => d.x)
+            .attr("y", (d) => d.y + (d.size || 8) + 10)
+            .call((sel) =>
+              sel
+                .transition()
+                .delay(reset ? 80 : 400)
+                .duration(420)
+                .style("opacity", 1)
+            ),
+        (update) =>
+          update
+            .text((d) => truncateLabel(d.title))
+            .style("opacity", 1),
+        (exit) => exit.transition().duration(200).style("opacity", 0).remove()
+      );
+
+    label
+      .classed("is-starting", (d) => !!d.isStarting)
+      .classed("is-movie", (d) => kindOf(d) === "movie")
+      .classed("is-music", (d) => kindOf(d) === "music")
+      .classed("is-cocktail", (d) => kindOf(d) === "cocktail");
+  }
+
+  function tidyGraphLayout() {
+    if (!nodes.length || !svg || !nodeGroup) return;
+
+    const container = d3.select("#graph-container");
+    const width = container.node().clientWidth || window.innerWidth - 360;
+    const height = container.node().clientHeight || window.innerHeight;
+    const cx = width / 2;
+    const cy = height / 2;
+
+    const starters = nodes
+      .filter((n) => n.isStarting && !hiddenNodeIds.has(String(n.id)))
+      .sort((a, b) => String(a.title).localeCompare(String(b.title)));
+    const others = nodes.filter((n) => !n.isStarting);
+
+    const starterR = Math.max(70, Math.min(width, height) * 0.16);
+    starters.forEach((n, i) => {
+      const angle = (i / Math.max(starters.length, 1)) * Math.PI * 2 - Math.PI / 2;
+      n.fx = null;
+      n.fy = null;
+      n.vx = 0;
+      n.vy = 0;
+      n.x = cx + Math.cos(angle) * starterR;
+      n.y = cy + Math.sin(angle) * starterR;
+      n._growing = false;
+      n._exiting = false;
+    });
+
+    const starterById = new Map(starters.map((n) => [String(n.id), n]));
+    const childrenByParent = new Map();
+
+    others.forEach((n) => {
+      let parentId = null;
+      links.forEach((link) => {
+        const s = String(typeof link.source === "object" ? link.source.id : link.source);
+        const t = String(typeof link.target === "object" ? link.target.id : link.target);
+        if (t === String(n.id) && starterById.has(s)) parentId = parentId || s;
+        else if (s === String(n.id) && starterById.has(t)) parentId = parentId || t;
+      });
+      const key = parentId || "__orphan__";
+      if (!childrenByParent.has(key)) childrenByParent.set(key, []);
+      childrenByParent.get(key).push(n);
+    });
+
+    childrenByParent.forEach((kids, parentId) => {
+      kids.sort((a, b) => {
+        const ka = kindOf(a);
+        const kb = kindOf(b);
+        if (ka !== kb) return ka.localeCompare(kb);
+        return String(a.title).localeCompare(String(b.title));
+      });
+      const parent = starterById.get(parentId);
+      const baseX = parent ? parent.x : cx;
+      const baseY = parent ? parent.y : cy;
+      const ring = parent ? 88 : Math.max(130, starterR + 70);
+      kids.forEach((n, i) => {
+        const angle = (i / Math.max(kids.length, 1)) * Math.PI * 2 - Math.PI / 2;
+        // Slight spiral so dense rings stay readable
+        const r = ring + Math.floor(i / 10) * 28;
+        n.fx = null;
+        n.fy = null;
+        n.vx = 0;
+        n.vy = 0;
+        n.x = baseX + Math.cos(angle) * r;
+        n.y = baseY + Math.sin(angle) * r;
+        n._growing = false;
+        n._exiting = false;
+      });
+    });
+
+    nodeGroup
+      .selectAll("circle")
+      .interrupt()
+      .transition()
+      .duration(650)
+      .ease(d3.easeCubicOut)
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y)
+      .attr("r", (d) => d.size)
+      .style("opacity", 1);
+
+    if (labelGroup) {
+      syncNodeLabels();
+      labelGroup
+        .selectAll("text")
+        .interrupt()
+        .transition()
+        .duration(650)
+        .ease(d3.easeCubicOut)
+        .attr("x", (d) => d.x)
+        .attr("y", (d) => d.y + (d.size || 8) + 10);
+    }
+
+    if (linkGroup) {
+      linkGroup
+        .selectAll("line")
+        .interrupt()
+        .transition()
+        .duration(650)
+        .ease(d3.easeCubicOut)
+        .attr("x1", (d) => (typeof d.source === "object" ? d.source.x : 0))
+        .attr("y1", (d) => (typeof d.source === "object" ? d.source.y : 0))
+        .attr("x2", (d) => (typeof d.target === "object" ? d.target.x : 0))
+        .attr("y2", (d) => (typeof d.target === "object" ? d.target.y : 0));
+    }
+
+    if (simulation) {
+      simulation.nodes(nodes);
+      simulation.alpha(0.55).alphaDecay(0.022).alphaTarget(0).restart();
+    }
+
+    if (zoom) {
+      svg.transition().duration(500).ease(d3.easeCubicOut).call(zoom.transform, d3.zoomIdentity);
+    }
+
+    updateNodeVisibility();
+    if (focusBookId) applyFocusMode();
+  }
+
+  function renderGraph(books, references) {
+    if (typeof d3 === "undefined") return;
+    if (!svg || svg.empty()) init2D();
+    if (!svg) return;
+
+    allBooks = books;
+    allReferences = references;
+    syncGraph({ reset: true });
+  }
+
   function updateNodeCounts() {
     const el = $("node-counts");
     if (!el || !nodes.length) {
@@ -1121,8 +1962,11 @@
       return;
     }
     const ownedVisible = nodes.filter((n) => n.isStarting && !hiddenNodeIds.has(n.id)).length;
-    const otherVisible = nodes.filter((n) => !n.isStarting).length;
-    el.innerHTML = `<div class="owned">Library ${ownedVisible}</div><div>Linked ${otherVisible}</div>`;
+    const bookLinked = nodes.filter((n) => !n.isStarting && kindOf(n) === "book").length;
+    const extra = nodes.filter((n) => !n.isStarting && kindOf(n) !== "book").length;
+    el.innerHTML = `<div class="owned">Library ${ownedVisible}</div><div>Books ${bookLinked}</div>${
+      extra ? `<div>Other ${extra}</div>` : ""
+    }`;
   }
 
   function drag(sim) {
@@ -1147,9 +1991,6 @@
       });
   }
 
-  const SELECTED_FILL = "#2f9e6b";
-  const SELECTED_STROKE = "#1d6b48";
-
   function selectNode(node) {
     if (selectedNode && selectedNode.id === node.id) {
       deselectNode();
@@ -1159,12 +2000,14 @@
     selectedNode = node;
     highlightPathToNode(node);
     openDetailPanel(node.id);
+    syncNodeLabels();
     renderLibrary();
   }
 
   function deselectNode() {
     selectedNode = null;
     highlightPathToNode(null);
+    syncNodeLabels();
   }
 
   function highlightPathToNode(targetNode) {
@@ -1179,53 +2022,60 @@
         .selectAll("circle")
         .attr("fill", (d) => d.color)
         .attr("stroke", (d) => d.strokeColor)
-        .attr("stroke-width", (d) => (d.isStarting ? 2.5 : 1.5));
+        .attr("stroke-width", (d) => (d.isStarting ? 2.5 : 1.5))
+        .attr("opacity", 1);
       return;
     }
 
-    let shortestPath = null;
-    startingBooks.forEach((startId) => {
-      const path = findShortestPath(startId, targetNode.id);
-      if (path && (!shortestPath || path.length < shortestPath.length)) {
-        shortestPath = path;
+    const selectedId = String(targetNode.id);
+    const neighborIds = new Set([selectedId]);
+    const connectedEdges = new Set();
+
+    links.forEach((link) => {
+      const s = String(typeof link.source === "object" ? link.source.id : link.source);
+      const t = String(typeof link.target === "object" ? link.target.id : link.target);
+      if (s === selectedId || t === selectedId) {
+        connectedEdges.add(`${s}|${t}`);
+        connectedEdges.add(`${t}|${s}`);
+        neighborIds.add(s);
+        neighborIds.add(t);
       }
     });
-
-    const pathEdges = new Set();
-    if (shortestPath) {
-      for (let i = 0; i < shortestPath.length - 1; i++) {
-        pathEdges.add(`${shortestPath[i]}-${shortestPath[i + 1]}`);
-        pathEdges.add(`${shortestPath[i + 1]}-${shortestPath[i]}`);
-      }
-    }
 
     linkGroup
       .selectAll("line")
       .attr("stroke", (d) => {
-        if (!shortestPath) return "#3d4843";
-        const s = typeof d.source === "object" ? d.source.id : d.source;
-        const t = typeof d.target === "object" ? d.target.id : d.target;
-        return pathEdges.has(`${s}-${t}`) ? "#2a9d8f" : "#3d4843";
+        const s = String(typeof d.source === "object" ? d.source.id : d.source);
+        const t = String(typeof d.target === "object" ? d.target.id : d.target);
+        return connectedEdges.has(`${s}|${t}`) ? "#2a9d8f" : "#3d4843";
       })
       .attr("stroke-opacity", (d) => {
-        if (!shortestPath) return 0.25;
-        const s = typeof d.source === "object" ? d.source.id : d.source;
-        const t = typeof d.target === "object" ? d.target.id : d.target;
-        return pathEdges.has(`${s}-${t}`) ? 0.95 : 0.25;
+        const s = String(typeof d.source === "object" ? d.source.id : d.source);
+        const t = String(typeof d.target === "object" ? d.target.id : d.target);
+        return connectedEdges.has(`${s}|${t}`) ? 0.95 : 0.22;
       })
       .attr("stroke-width", (d) => {
-        if (!shortestPath) return 1.2;
-        const s = typeof d.source === "object" ? d.source.id : d.source;
-        const t = typeof d.target === "object" ? d.target.id : d.target;
-        return pathEdges.has(`${s}-${t}`) ? 3 : 1.2;
+        const s = String(typeof d.source === "object" ? d.source.id : d.source);
+        const t = String(typeof d.target === "object" ? d.target.id : d.target);
+        return connectedEdges.has(`${s}|${t}`) ? 3 : 1.15;
       });
 
-    const selectedId = String(targetNode.id);
     nodeGroup
       .selectAll("circle")
       .attr("fill", (d) => (String(d.id) === selectedId ? SELECTED_FILL : d.color))
-      .attr("stroke", (d) => (String(d.id) === selectedId ? SELECTED_STROKE : d.strokeColor))
-      .attr("stroke-width", (d) => (String(d.id) === selectedId ? 3 : d.isStarting ? 2.5 : 1.5));
+      .attr("stroke", (d) => {
+        const id = String(d.id);
+        if (id === selectedId) return SELECTED_STROKE;
+        if (neighborIds.has(id)) return "#2a9d8f";
+        return d.strokeColor;
+      })
+      .attr("stroke-width", (d) => {
+        const id = String(d.id);
+        if (id === selectedId) return 3;
+        if (neighborIds.has(id)) return 2.4;
+        return d.isStarting ? 2.5 : 1.5;
+      })
+      .attr("opacity", (d) => (neighborIds.has(String(d.id)) ? 1 : 0.35));
   }
 
   function findShortestPath(startId, targetId) {
@@ -1315,8 +2165,15 @@
       });
     });
 
+    const liveIds = new Set((nodes || []).map((n) => String(n.id)));
+
     nodeGroup.selectAll("circle").each(function (d) {
+      if (!d || d._exiting || d._growing) return;
       const nodeId = String(d.id);
+      if (!liveIds.has(nodeId) || !nodeShouldStay(d)) {
+        d3.select(this).interrupt().style("opacity", 0).attr("r", 0).style("pointer-events", "none");
+        return;
+      }
       const shouldHide = d.isStarting ? hiddenNodeIds.has(nodeId) : nodesToHide.has(nodeId);
       d3.select(this)
         .transition()
@@ -1327,14 +2184,20 @@
     });
 
     linkGroup.selectAll("line").style("opacity", (d) => {
+      if (!d) return 0;
       const sourceId = String(typeof d.source === "object" ? d.source.id : d.source);
       const targetId = String(typeof d.target === "object" ? d.target.id : d.target);
+      const sourceNode = nodes.find((n) => String(n.id) === sourceId);
+      const targetNode = nodes.find((n) => String(n.id) === targetId);
+      if (!sourceNode || !targetNode || !nodeShouldStay(sourceNode) || !nodeShouldStay(targetNode)) {
+        return 0;
+      }
       const sourceHidden =
         nodesToHide.has(sourceId) ||
-        (nodes.find((n) => String(n.id) === sourceId)?.isStarting && hiddenNodeIds.has(sourceId));
+        (sourceNode.isStarting && hiddenNodeIds.has(sourceId));
       const targetHidden =
         nodesToHide.has(targetId) ||
-        (nodes.find((n) => String(n.id) === targetId)?.isStarting && hiddenNodeIds.has(targetId));
+        (targetNode.isStarting && hiddenNodeIds.has(targetId));
       return sourceHidden || targetHidden ? 0 : 0.55;
     });
   }
@@ -1393,7 +2256,7 @@
       const res = await fetch("/api/process/status");
       const data = await res.json();
       if (data.status === "running") {
-        showProcessBanner(data.message || "Processing…", 15, "info");
+        showProcessBanner(data.message || "Borges: Still reading…", 15, "info");
         pollProcessStatus();
       } else if (data.status === "error" && data.message && /interrupted|restart/i.test(data.message)) {
         showProcessBanner(data.message, 0, "error", data.errors || []);
@@ -1547,6 +2410,40 @@
     img.src = url;
   }
 
+  function kindLabel(kind) {
+    return (
+      {
+        book: "Referenced book",
+        movie: "Movie",
+        music: "Music",
+        cocktail: "Drink",
+      }[kind] || "Referenced"
+    );
+  }
+
+  function setupLayerToggles() {
+    const root = $("layer-toggles");
+    if (!root) return;
+    root.querySelectorAll("input[data-kind]").forEach((input) => {
+      const kind = input.getAttribute("data-kind");
+      input.checked = enabledKinds.has(kind);
+      input.addEventListener("change", () => {
+        if (input.checked) enabledKinds.add(kind);
+        else enabledKinds.delete(kind);
+        enabledKinds.add("book");
+        saveEnabledKinds();
+        if (allBooks.length) {
+          if (svg && nodes.length) syncGraph({ reset: false });
+          else renderGraph(allBooks, allReferences);
+        }
+        if (selectedNode && !nodeShouldStay(selectedNode)) {
+          closeDetailPanel();
+          deselectNode();
+        }
+      });
+    });
+  }
+
   function setupNetworkIo() {
     $("export-network")?.addEventListener("click", exportNetworkJson);
     $("export-png")?.addEventListener("click", exportGraphPng);
@@ -1593,11 +2490,18 @@
         svg.transition().duration(450).call(zoom.transform, d3.zoomIdentity);
       }
     });
+    $("tidy-layout")?.addEventListener("click", () => {
+      deselectNode();
+      closeDetailPanel();
+      clearFocusMode();
+      tidyGraphLayout();
+    });
 
     setupSearch();
     setupUpload();
     setupKeyboard();
     setupNetworkIo();
+    setupLayerToggles();
 
     if (!isStaticMode) {
       const runBtn = $("run-process");

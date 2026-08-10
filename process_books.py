@@ -23,6 +23,18 @@ except ImportError:
 
 nlp = None
 
+# Duo that powers extraction: Borges reads the text; Lucien verifies & files.
+BORGES = "Borges"
+LUCIEN = "Lucien"
+
+
+def borges_says(text: str) -> str:
+    return f"{BORGES}: {text}"
+
+
+def lucien_says(text: str) -> str:
+    return f"{LUCIEN}: {text}"
+
 
 def get_nlp():
     """Lazy-load spaCy model so importing this module does not require it immediately."""
@@ -51,6 +63,20 @@ MEDIA_TITLE_BLOCKLIST = {
     "battlestar galactica",
     "short circuit",
     "aliens",
+    "alien",
+    "blade runner",
+    "the matrix",
+    "jurassic park",
+    "indiana jones",
+    "back to the future",
+    "the godfather",
+    "pulp fiction",
+    "fight club",
+    "terminator",
+    "the terminator",
+    "predator",
+    "mad max",
+    "ghostbusters",
 }
 NLP_CHUNK_CHARS = 90000
 
@@ -82,6 +108,14 @@ def init_database(quiet: bool = False):
         cursor.execute("ALTER TABLE books ADD COLUMN match_score REAL")
     if "cover_id" not in columns:
         cursor.execute("ALTER TABLE books ADD COLUMN cover_id TEXT")
+    if "cover_url" not in columns:
+        cursor.execute("ALTER TABLE books ADD COLUMN cover_url TEXT")
+    if "kind" not in columns:
+        cursor.execute("ALTER TABLE books ADD COLUMN kind TEXT DEFAULT 'book'")
+        cursor.execute("UPDATE books SET kind = 'book' WHERE kind IS NULL OR kind = ''")
+
+    # Do not auto-retag franchise titles as movies — novels exist (e.g. Star Trek).
+    # Kind is set at extraction time from context + domain lookup.
 
     cursor.execute(
         """
@@ -416,17 +450,14 @@ def is_plausible_title_query(title: str) -> bool:
     # Trailing fragments like "WE ARE A."
     if title.strip().endswith(".") and len(words) <= 3:
         return False
-    if normalized in MEDIA_TITLE_BLOCKLIST:
-        return False
+    # Media franchises are handled as movie-kind mentions, not rejected here
     return True
 
 
 def skip_reason_for_title(title: str) -> Optional[str]:
-    """Return a human reason if the title should be skipped before OL lookup."""
+    """Return a human reason if the title should be skipped before book OL lookup."""
     normalized = normalize_title(title)
     if not is_plausible_title_query(title):
-        if normalized in MEDIA_TITLE_BLOCKLIST:
-            return "Likely media title, not a literary book"
         if len(normalized) < MIN_QUERY_CHARS:
             return "Title too short to verify"
         return "Not a plausible book title"
@@ -546,9 +577,8 @@ def lookup_open_library(title: str) -> Optional[Dict]:
 
     if not best:
         return None
-    # Reject known media novelizations even if OL finds them
-    if normalize_title(best["title"]) in MEDIA_TITLE_BLOCKLIST:
-        return None
+    # Franchise titles (Star Trek, etc.) can be real novels — allow OL matches.
+    # Film/TV routing is handled by classify_kind via context, not by blocking books.
     if best["match_score"] >= MIN_VERIFY_SCORE and best["author"] != "Unknown":
         return best
     if best["match_score"] >= 0.95:
@@ -589,24 +619,159 @@ def _find_local_book(title: str, cursor, verified_only: bool = False) -> Optiona
     return None
 
 
+def _upsert_verified_match(cursor, conn, match: Dict, kind: str = "book") -> Optional[int]:
+    """Insert or update a verified work from a domain lookup match dict."""
+    kind = kind or match.get("kind") or "book"
+    cover_url = match.get("cover_url")
+    cursor.execute(
+        "SELECT id FROM books WHERE open_library_id = ?",
+        (match["open_library_id"],),
+    )
+    existing = cursor.fetchone()
+    if existing:
+        cursor.execute(
+            """
+            UPDATE books
+            SET title = ?, author = ?, verified = 1, match_score = ?,
+                cover_id = COALESCE(?, cover_id),
+                cover_url = COALESCE(?, cover_url),
+                kind = ?
+            WHERE id = ?
+            """,
+            (
+                match["title"],
+                match["author"],
+                match["match_score"],
+                match.get("cover_id"),
+                cover_url,
+                kind,
+                existing[0],
+            ),
+        )
+        conn.commit()
+        return existing[0]
+
+    cursor.execute(
+        "SELECT id FROM books WHERE LOWER(TRIM(title)) = LOWER(TRIM(?)) AND IFNULL(kind, 'book') = ?",
+        (match["title"], kind),
+    )
+    same_title = cursor.fetchone()
+    if same_title:
+        cursor.execute(
+            """
+            UPDATE books
+            SET author = ?, open_library_id = ?, verified = 1, match_score = ?,
+                cover_id = COALESCE(?, cover_id),
+                cover_url = COALESCE(?, cover_url),
+                kind = ?
+            WHERE id = ?
+            """,
+            (
+                match["author"],
+                match["open_library_id"],
+                match["match_score"],
+                match.get("cover_id"),
+                cover_url,
+                kind,
+                same_title[0],
+            ),
+        )
+        conn.commit()
+        return same_title[0]
+
+    try:
+        cursor.execute(
+            """
+            INSERT INTO books (title, author, open_library_id, verified, match_score, cover_id, cover_url, kind)
+            VALUES (?, ?, ?, 1, ?, ?, ?, ?)
+            """,
+            (
+                match["title"],
+                match["author"],
+                match["open_library_id"],
+                match["match_score"],
+                match.get("cover_id"),
+                cover_url,
+                kind,
+            ),
+        )
+        conn.commit()
+        return cursor.lastrowid
+    except sqlite3.IntegrityError:
+        cursor.execute(
+            "SELECT id FROM books WHERE open_library_id = ?",
+            (match["open_library_id"],),
+        )
+        row = cursor.fetchone()
+        return row[0] if row else None
+
+
 def get_or_create_book(
     title: str,
     cursor,
     conn,
     require_verified: bool = False,
+    kind: str = "book",
+    context: Optional[str] = None,
 ) -> Optional[int]:
     """
-    Get or create a book via local cache then Open Library.
+    Get or create a work via local cache then domain lookup.
 
-    If require_verified is True (references found in text), only returns a book
-    when Open Library confirms a strong title match — otherwise None.
-    Owned library books should call with require_verified=False.
+    kind: book (Open Library), movie, music, cocktail.
+    Owned library books should call with require_verified=False, kind='book'.
     """
+    kind = (kind or "book").lower()
+    if kind not in ("book", "movie", "music", "cocktail"):
+        kind = "book"
+
+    # Prefer local match of the same kind
+    cursor.execute(
+        """
+        SELECT id, title, verified, kind FROM books
+        WHERE IFNULL(kind, 'book') = ?
+        """,
+        (kind,),
+    )
+    best_id = None
+    best_score = 0.0
+    for book_id, existing_title, verified, _k in cursor.fetchall():
+        if require_verified and not verified:
+            continue
+        score = title_similarity(title, existing_title)
+        if score > best_score:
+            best_score = score
+            best_id = book_id
+    if best_id is not None and best_score >= MIN_VERIFY_SCORE:
+        return best_id
+
+    if kind != "book":
+        from mention_kinds import lookup_by_kind
+
+        match = lookup_by_kind(kind, title)
+        if match:
+            return _upsert_verified_match(cursor, conn, match, kind=kind)
+        if require_verified:
+            return None
+        manual_id = f"manual_{kind}_{normalize_title(title) or title.strip().lower()}"
+        cursor.execute("SELECT id FROM books WHERE open_library_id = ?", (manual_id,))
+        existing = cursor.fetchone()
+        if existing:
+            return existing[0]
+        cursor.execute(
+            """
+            INSERT INTO books (title, author, open_library_id, verified, match_score, kind)
+            VALUES (?, ?, ?, 0, NULL, ?)
+            """,
+            (title, kind.title(), manual_id, kind),
+        )
+        conn.commit()
+        return cursor.lastrowid
+
+    # —— Books (Open Library path) ——
     local_id = _find_local_book(title, cursor, verified_only=require_verified)
     if local_id is not None:
         return local_id
 
-    # Also accept an existing unverified local match only when verification not required
     if not require_verified:
         local_any = _find_local_book(title, cursor, verified_only=False)
         if local_any is not None:
@@ -614,84 +779,12 @@ def get_or_create_book(
 
     match = lookup_open_library(title)
     if match:
-        # Reuse row if OL id already stored
-        cursor.execute(
-            "SELECT id FROM books WHERE open_library_id = ?",
-            (match["open_library_id"],),
-        )
-        existing = cursor.fetchone()
-        if existing:
-            cursor.execute(
-                """
-                UPDATE books
-                SET title = ?, author = ?, verified = 1, match_score = ?,
-                    cover_id = COALESCE(?, cover_id)
-                WHERE id = ?
-                """,
-                (
-                    match["title"],
-                    match["author"],
-                    match["match_score"],
-                    match.get("cover_id"),
-                    existing[0],
-                ),
-            )
-            conn.commit()
-            return existing[0]
-
-        # Or upgrade an unverified same-title row
-        cursor.execute(
-            "SELECT id FROM books WHERE LOWER(TRIM(title)) = LOWER(TRIM(?))",
-            (match["title"],),
-        )
-        same_title = cursor.fetchone()
-        if same_title:
-            cursor.execute(
-                """
-                UPDATE books
-                SET author = ?, open_library_id = ?, verified = 1, match_score = ?,
-                    cover_id = COALESCE(?, cover_id)
-                WHERE id = ?
-                """,
-                (
-                    match["author"],
-                    match["open_library_id"],
-                    match["match_score"],
-                    match.get("cover_id"),
-                    same_title[0],
-                ),
-            )
-            conn.commit()
-            return same_title[0]
-
-        try:
-            cursor.execute(
-                """
-                INSERT INTO books (title, author, open_library_id, verified, match_score, cover_id)
-                VALUES (?, ?, ?, 1, ?, ?)
-                """,
-                (
-                    match["title"],
-                    match["author"],
-                    match["open_library_id"],
-                    match["match_score"],
-                    match.get("cover_id"),
-                ),
-            )
-            conn.commit()
-            return cursor.lastrowid
-        except sqlite3.IntegrityError:
-            cursor.execute(
-                "SELECT id FROM books WHERE open_library_id = ?",
-                (match["open_library_id"],),
-            )
-            row = cursor.fetchone()
-            return row[0] if row else None
+        match["kind"] = "book"
+        return _upsert_verified_match(cursor, conn, match, kind="book")
 
     if require_verified:
         return None
 
-    # Owned books (or soft creates): allow unverified placeholder
     manual_id = f"manual_{normalize_title(title) or title.strip().lower()}"
     cursor.execute("SELECT id FROM books WHERE open_library_id = ?", (manual_id,))
     existing = cursor.fetchone()
@@ -700,8 +793,8 @@ def get_or_create_book(
 
     cursor.execute(
         """
-        INSERT INTO books (title, author, open_library_id, verified, match_score)
-        VALUES (?, ?, ?, 0, NULL)
+        INSERT INTO books (title, author, open_library_id, verified, match_score, kind)
+        VALUES (?, ?, ?, 0, NULL, 'book')
         """,
         (title, "Unknown", manual_id),
     )
@@ -718,6 +811,8 @@ def _store_references(
     progress_callback=None,
 ):
     """references_found: iterable of str titles OR dicts with title/context."""
+    from mention_kinds import classify_kind
+
     added = 0
     skipped = 0
     cursor.execute("DELETE FROM skipped_mentions WHERE source_book_id = ?", (source_book_id,))
@@ -736,43 +831,68 @@ def _store_references(
         if not referenced_title:
             continue
         try:
+            kind = item.get("kind_hint") or classify_kind(referenced_title, context)
+            if kind not in ("book", "movie", "music", "cocktail"):
+                kind = classify_kind(referenced_title, context)
+            agent_verb = {
+                "book": "Verifying",
+                "movie": "Checking film",
+                "music": "Checking track",
+                "cocktail": "Checking drink",
+            }.get(kind, "Verifying")
+
             if progress_callback and idx % 3 == 0:
                 progress_callback(
                     {
                         "phase": "open_library",
-                        "message": f'Verifying "{referenced_title}" ({idx}/{total})',
+                        "message": lucien_says(
+                            f'{agent_verb} "{referenced_title}" ({idx}/{total})'
+                        ),
+                        "agent": "lucien",
                     }
                 )
 
-            reason = skip_reason_for_title(referenced_title)
-            if reason:
+            if kind == "book":
+                reason = skip_reason_for_title(referenced_title)
+                if reason:
+                    skipped += 1
+                    cursor.execute(
+                        "INSERT INTO skipped_mentions (source_book_id, raw_title, reason) VALUES (?, ?, ?)",
+                        (source_book_id, referenced_title, reason),
+                    )
+                    if not quiet:
+                        print(f"  Skipped ({reason}): {referenced_title}")
+                    continue
+
+            referenced_book_id = get_or_create_book(
+                referenced_title,
+                cursor,
+                conn,
+                require_verified=True,
+                kind=kind,
+                context=context,
+            )
+            if referenced_book_id is None:
                 skipped += 1
+                reason = {
+                    "book": "No strong Open Library / Google Books match",
+                    "movie": "No strong film match",
+                    "music": "No strong music match",
+                    "cocktail": "Not in cocktail lexicon",
+                }.get(kind, "No strong match")
                 cursor.execute(
                     "INSERT INTO skipped_mentions (source_book_id, raw_title, reason) VALUES (?, ?, ?)",
                     (source_book_id, referenced_title, reason),
                 )
                 if not quiet:
-                    print(f"  Skipped ({reason}): {referenced_title}")
-                continue
-
-            referenced_book_id = get_or_create_book(
-                referenced_title, cursor, conn, require_verified=True
-            )
-            if referenced_book_id is None:
-                skipped += 1
-                cursor.execute(
-                    "INSERT INTO skipped_mentions (source_book_id, raw_title, reason) VALUES (?, ?, ?)",
-                    (
-                        source_book_id,
-                        referenced_title,
-                        "No strong Open Library / Google Books match",
-                    ),
-                )
-                if not quiet:
-                    print(f"  Skipped unverified: {referenced_title}")
+                    print(f"  Skipped unverified ({kind}): {referenced_title}")
                 continue
             if source_book_id == referenced_book_id:
                 continue
+            try:
+                ensure_cover_for_book(referenced_book_id, cursor, conn)
+            except Exception:
+                pass
             cursor.execute(
                 "SELECT 1 FROM book_references WHERE source_book_id = ? AND referenced_book_id = ?",
                 (source_book_id, referenced_book_id),
@@ -784,7 +904,7 @@ def _store_references(
                 )
                 added += 1
                 if not quiet:
-                    print(f"  Added verified reference: {referenced_title}")
+                    print(f"  Added verified {kind}: {referenced_title}")
             elif context:
                 cursor.execute(
                     "UPDATE book_references SET context = COALESCE(context, ?) WHERE source_book_id = ? AND referenced_book_id = ?",
@@ -798,6 +918,62 @@ def _store_references(
         print(
             f"  Found {len(items)} candidates; added {added} verified, skipped {skipped} unverified"
         )
+
+
+def extract_cocktail_mentions(text: str) -> List[Dict]:
+    """
+    Find named cocktails via lexicon + drink context (NLP often misses these).
+    """
+    from mention_kinds import (
+        AMBIGUOUS_COCKTAILS,
+        COCKTAIL_CONTEXT_CUES,
+        COCKTAIL_NAMES,
+    )
+
+    if not text:
+        return []
+
+    # Normalize ampersands so "rum & coke" matches "rum and coke"
+    search_text = re.sub(r"\s*&\s*", " and ", text)
+
+    mentions = {}
+    # Longest names first so "gin and tonic" wins over shorter fragments
+    for key in sorted(COCKTAIL_NAMES.keys(), key=len, reverse=True):
+        # Allow simple plurals (mojitos, martinis)
+        pattern = re.compile(
+            rf"(?<![A-Za-z]){re.escape(key)}s?(?![A-Za-z])",
+            re.I,
+        )
+        for match in pattern.finditer(search_text):
+            ctx_start = max(0, match.start() - 90)
+            ctx_end = min(len(search_text), match.end() + 90)
+            context = search_text[ctx_start:ctx_end].replace("\n", " ").strip()
+            if key in AMBIGUOUS_COCKTAILS and not COCKTAIL_CONTEXT_CUES.search(context):
+                continue
+            if key == "manhattan" and re.search(
+                r"\b(street|avenue|nursing|home|park|city|nyc|new york)\b", context, re.I
+            ):
+                if not COCKTAIL_CONTEXT_CUES.search(context):
+                    continue
+            display = COCKTAIL_NAMES[key]
+            k = display.lower()
+            if k not in mentions:
+                mentions[k] = {"title": display, "context": context, "kind_hint": "cocktail"}
+    return list(mentions.values())
+
+
+def merge_mention_lists(*lists) -> List[Dict]:
+    """Dedupe mention dicts by normalized title; keep first context."""
+    merged = {}
+    for items in lists:
+        for item in items or []:
+            title = (item.get("title") or "").strip()
+            if not title:
+                continue
+            key = title.lower()
+            if key not in merged:
+                merged[key] = item
+    return list(merged.values())
 
 
 def extract_work_of_art_mentions(text: str, progress_callback=None):
@@ -820,7 +996,13 @@ def extract_work_of_art_mentions(text: str, progress_callback=None):
     for i, (offset, chunk) in enumerate(chunks, 1):
         if progress_callback:
             progress_callback(
-                {"phase": "nlp", "message": f"Scanning text chunk {i}/{len(chunks)}…"}
+                {
+                    "phase": "nlp",
+                    "message": borges_says(
+                        f"Scanning pages {i}/{len(chunks)}…"
+                    ),
+                    "agent": "borges",
+                }
             )
         doc = nlp_model(chunk)
         for ent in doc.ents:
@@ -852,16 +1034,37 @@ def process_text_file(
         print(f"Processing: {file_path.name}")
     try:
         if progress_callback:
-            progress_callback({"phase": "reading", "message": f"Reading {file_path.name}"})
+            progress_callback(
+                {
+                    "phase": "reading",
+                    "message": borges_says(f"Opening {file_path.name}"),
+                    "agent": "borges",
+                }
+            )
         with open(file_path, "r", encoding="utf-8") as f:
             text = f.read()
         if progress_callback:
-            progress_callback({"phase": "loading_model", "message": "Loading language model…"})
+            progress_callback(
+                {
+                    "phase": "loading_model",
+                    "message": borges_says("Waking up his reading mind…"),
+                    "agent": "borges",
+                }
+            )
         get_nlp()
-        mentions = extract_work_of_art_mentions(text, progress_callback=progress_callback)
+        mentions = merge_mention_lists(
+            extract_work_of_art_mentions(text, progress_callback=progress_callback),
+            extract_cocktail_mentions(text),
+        )
         if progress_callback:
             progress_callback(
-                {"phase": "open_library", "message": f"Verifying {len(mentions)} mention(s)…"}
+                {
+                    "phase": "open_library",
+                    "message": lucien_says(
+                        f"Checking {len(mentions)} title(s) against the shelves…"
+                    ),
+                    "agent": "lucien",
+                }
             )
         _store_references(
             mentions,
@@ -891,7 +1094,13 @@ def process_epub_file(
         print(f"Processing EPUB: {file_path.name}")
     try:
         if progress_callback:
-            progress_callback({"phase": "reading", "message": f"Reading {file_path.name}"})
+            progress_callback(
+                {
+                    "phase": "reading",
+                    "message": borges_says(f"Opening {file_path.name}"),
+                    "agent": "borges",
+                }
+            )
         book = epub.read_epub(str(file_path))
         text = ""
         for item in book.get_items():
@@ -899,12 +1108,27 @@ def process_epub_file(
                 text += item.get_content().decode("utf-8", errors="ignore") + "\n"
         text = re.sub("<[^<]+?>", "", text)
         if progress_callback:
-            progress_callback({"phase": "loading_model", "message": "Loading language model…"})
+            progress_callback(
+                {
+                    "phase": "loading_model",
+                    "message": borges_says("Waking up his reading mind…"),
+                    "agent": "borges",
+                }
+            )
         get_nlp()
-        mentions = extract_work_of_art_mentions(text, progress_callback=progress_callback)
+        mentions = merge_mention_lists(
+            extract_work_of_art_mentions(text, progress_callback=progress_callback),
+            extract_cocktail_mentions(text),
+        )
         if progress_callback:
             progress_callback(
-                {"phase": "open_library", "message": f"Verifying {len(mentions)} mention(s)…"}
+                {
+                    "phase": "open_library",
+                    "message": lucien_says(
+                        f"Checking {len(mentions)} title(s) against the shelves…"
+                    ),
+                    "agent": "lucien",
+                }
             )
         _store_references(
             mentions,
@@ -923,10 +1147,48 @@ def process_epub_file(
 def clean_filename_phrase(text: str) -> str:
     """Turn underscore/slug phrases into a readable title/author string."""
     text = text.replace("_", " ").strip()
+    text = re.sub(r"\([^)]*epub[^)]*\)", "", text, flags=re.I)
+    text = re.sub(r"\((?:pdf|mobi|azw3?|kindle|retail)\)", "", text, flags=re.I)
+    text = re.sub(r"\s*\(\d+\)\s*$", "", text)
     text = re.sub(r"\bbobiverse\b", "", text, flags=re.I)
     text = re.sub(r"\bbook\s*\d+\b", "", text, flags=re.I)
     text = re.sub(r"\s+", " ", text).strip(" -_")
     return text
+
+
+def looks_like_person_name(text: str) -> bool:
+    """Heuristic: 'First Last' style tokens, not a multi-word book title."""
+    cleaned = clean_filename_phrase(text)
+    words = [w for w in re.sub(r"[.]", " ", cleaned).split() if w]
+    if not (2 <= len(words) <= 4):
+        return False
+    stop = {
+        "the",
+        "of",
+        "a",
+        "an",
+        "and",
+        "in",
+        "to",
+        "for",
+        "on",
+        "with",
+        "from",
+        "day",
+        "road",
+        "child",
+        "things",
+        "like",
+        "these",
+        "legion",
+        "boy",
+        "mole",
+        "fox",
+        "horse",
+    }
+    if any(w.lower() in stop for w in words):
+        return False
+    return True
 
 
 def extract_title_and_author(filename: str) -> tuple:
@@ -935,8 +1197,19 @@ def extract_title_and_author(filename: str) -> tuple:
     if " - " in stem:
         parts = stem.split(" - ", 1)
         if len(parts) == 2:
-            part1 = parts[0].strip()
-            part2 = parts[1].strip()
+            part1 = clean_filename_phrase(parts[0])
+            part2 = clean_filename_phrase(parts[1])
+            p1_person = looks_like_person_name(part1)
+            p2_person = looks_like_person_name(part2)
+            # Author - Title (most of this library)
+            if p1_person and not p2_person:
+                return part2, part1
+            # Title - Author
+            if p2_person and not p1_person:
+                return part1, part2
+            if p1_person and p2_person:
+                return part2, part1
+
             part1_words = len(part1.split())
             part2_words = len(part2.split())
             if part1_words <= 2 and part2_words >= 3:
@@ -955,7 +1228,7 @@ def extract_title_and_author(filename: str) -> tuple:
     if "_" in stem:
         return clean_filename_phrase(stem) or stem, "Unknown"
 
-    return stem, "Unknown"
+    return clean_filename_phrase(stem) or stem, "Unknown"
 
 
 def get_file_hash(file_path: Path) -> str:
@@ -1030,7 +1303,12 @@ def process_single_file(
     title, author = extract_title_and_author(file_path.name)
     if progress_callback:
         progress_callback(
-            {"phase": "starting", "message": f"Preparing {file_path.name}", "current_file": file_path.name}
+            {
+                "phase": "starting",
+                "message": borges_says(f"Preparing {file_path.name}"),
+                "current_file": file_path.name,
+                "agent": "borges",
+            }
         )
     source_book_id = get_or_create_book(title, cursor, conn, require_verified=False)
     if source_book_id is None:
@@ -1076,9 +1354,218 @@ def process_single_file(
         raise ValueError(f"Unsupported file type: {suffix}")
 
     if progress_callback:
-        progress_callback({"phase": "saving", "message": f"Saving {file_path.name}", "current_file": file_path.name})
+        progress_callback(
+            {
+                "phase": "saving",
+                "message": lucien_says(f"Filing {file_path.name} on the shelves"),
+                "current_file": file_path.name,
+                "agent": "lucien",
+            }
+        )
     mark_file_processed(file_path.name, file_hash, cursor, conn)
+    # Fill cover art for owned books even when the row already existed
+    ensure_cover_for_book(source_book_id, cursor, conn)
     return title
+
+
+def clean_title_for_lookup(title: str) -> str:
+    """Strip filename junk so cover/title lookups work better."""
+    t = (title or "").strip()
+    t = re.sub(r"\s*\(epub\)\s*", " ", t, flags=re.I)
+    t = re.sub(r"\s*\(\d+\)\s*$", "", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+
+
+def lookup_wikipedia_thumb(title: str) -> Optional[str]:
+    """Wikipedia page thumbnail — useful for films, songs, and famous works."""
+    from urllib.parse import quote
+
+    query = clean_title_for_lookup(title)
+    if not query or len(query) < 2:
+        return None
+    headers = {
+        "User-Agent": "BooksInBooks/1.0 (https://github.com/Lioncour/books-in-books; literary catalog)",
+        "Accept": "application/json",
+    }
+    try:
+        response = requests.get(
+            f"https://en.wikipedia.org/api/rest_v1/page/summary/{quote(query)}",
+            headers=headers,
+            timeout=15,
+        )
+        if not response.ok:
+            return None
+        data = response.json()
+        thumb = (data.get("thumbnail") or {}).get("source")
+        if thumb:
+            return thumb
+        # Some pages only expose originalimage
+        return (data.get("originalimage") or {}).get("source")
+    except Exception:
+        return None
+
+
+def ensure_cover_for_book(book_id: int, cursor, conn) -> bool:
+    """
+    If a work has no cover, try Open Library / domain lookup / Wikipedia.
+    Returns True when a cover was written.
+    """
+    cursor.execute("PRAGMA table_info(books)")
+    cols = {row[1] for row in cursor.fetchall()}
+    has_cover_url = "cover_url" in cols
+
+    select_cols = "id, title, author, cover_id, open_library_id, IFNULL(kind, 'book')"
+    if has_cover_url:
+        select_cols += ", cover_url"
+    cursor.execute(f"SELECT {select_cols} FROM books WHERE id = ?", (book_id,))
+    row = cursor.fetchone()
+    if not row:
+        return False
+
+    if has_cover_url:
+        _id, title, author, cover_id, ol_id, kind, cover_url = row
+    else:
+        _id, title, author, cover_id, ol_id, kind = row
+        cover_url = None
+
+    if cover_id or cover_url:
+        return False
+
+    lookup_title = clean_title_for_lookup(title)
+    new_cover_id = None
+    new_cover_url = None
+    new_ol = None
+    new_author = None
+    new_title = None
+
+    if kind == "book":
+        match = lookup_open_library(lookup_title)
+        if match:
+            new_cover_id = match.get("cover_id")
+            new_ol = match.get("open_library_id")
+            new_author = match.get("author")
+            new_title = match.get("title")
+        if not new_cover_id and ol_id and str(ol_id).startswith("/works/"):
+            try:
+                response = requests.get(f"https://openlibrary.org{ol_id}.json", timeout=20)
+                if response.ok:
+                    covers = response.json().get("covers") or []
+                    if covers:
+                        new_cover_id = str(covers[0])
+            except Exception:
+                pass
+    else:
+        from mention_kinds import lookup_by_kind
+
+        match = lookup_by_kind(kind, lookup_title)
+        if match:
+            new_cover_id = match.get("cover_id")
+            new_cover_url = match.get("cover_url")
+            new_ol = match.get("open_library_id")
+            new_author = match.get("author")
+            new_title = match.get("title")
+        # Franchise films often have an OL work id from older imports — use its cover
+        if not new_cover_id and ol_id and str(ol_id).startswith("/works/"):
+            try:
+                response = requests.get(f"https://openlibrary.org{ol_id}.json", timeout=20)
+                if response.ok:
+                    covers = response.json().get("covers") or []
+                    if covers:
+                        new_cover_id = str(covers[0])
+            except Exception:
+                pass
+
+    if not new_cover_id and not new_cover_url:
+        new_cover_url = lookup_wikipedia_thumb(lookup_title)
+
+    if not new_cover_id and not new_cover_url:
+        return False
+
+    if has_cover_url:
+        cursor.execute(
+            """
+            UPDATE books
+            SET cover_id = COALESCE(?, cover_id),
+                cover_url = COALESCE(?, cover_url),
+                open_library_id = COALESCE(?, open_library_id),
+                title = CASE
+                    WHEN ? IS NOT NULL AND (title IS NULL OR TRIM(title) = '' OR title LIKE '%(EPUB)%')
+                    THEN ? ELSE title END,
+                author = CASE
+                    WHEN ? IS NOT NULL AND (author IS NULL OR author = 'Unknown') THEN ?
+                    ELSE author
+                END,
+                verified = 1
+            WHERE id = ?
+            """,
+            (
+                new_cover_id,
+                new_cover_url,
+                new_ol,
+                new_title,
+                new_title,
+                new_author,
+                new_author,
+                book_id,
+            ),
+        )
+    else:
+        cursor.execute(
+            """
+            UPDATE books
+            SET cover_id = COALESCE(?, cover_id),
+                open_library_id = COALESCE(?, open_library_id),
+                verified = 1
+            WHERE id = ?
+            """,
+            (new_cover_id, new_ol, book_id),
+        )
+    conn.commit()
+    return True
+
+
+def backfill_missing_covers(limit: int = 50, quiet: bool = True) -> Dict:
+    """Look up covers for works that are missing them (any kind)."""
+    init_database(quiet=True)
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(books)")
+    cols = {row[1] for row in cursor.fetchall()}
+    if "cover_url" in cols:
+        where = "(cover_id IS NULL OR cover_id = '') AND (cover_url IS NULL OR cover_url = '')"
+    else:
+        where = "(cover_id IS NULL OR cover_id = '')"
+    cursor.execute(
+        f"""
+        SELECT id, title FROM books
+        WHERE {where}
+        ORDER BY CASE IFNULL(kind,'book')
+            WHEN 'book' THEN 0 WHEN 'movie' THEN 1 WHEN 'music' THEN 2 ELSE 3 END, id
+        LIMIT ?
+        """,
+        (limit,),
+    )
+    rows = cursor.fetchall()
+    updated = []
+    failed = []
+    for book_id, title in rows:
+        try:
+            if ensure_cover_for_book(book_id, cursor, conn):
+                updated.append(title)
+                if not quiet:
+                    print(f"  Cover: {title}")
+            else:
+                failed.append(title)
+        except Exception as e:
+            failed.append(f"{title} ({e})")
+    conn.close()
+    return {
+        "checked": len(rows),
+        "updated": updated,
+        "failed": failed,
+        "message": f"Updated {len(updated)} cover(s).",
+    }
 
 
 ProgressCallback = Callable[[Dict], None]
@@ -1132,7 +1619,14 @@ def process_pending_files(
             progress_callback(dict(result))
 
     if not pending:
-        emit({"status": "done", "phase": "idle", "message": "All books are already processed"})
+        emit(
+            {
+                "status": "done",
+                "phase": "idle",
+                "message": lucien_says("Nothing new — the shelves are already up to date."),
+                "agent": "lucien",
+            }
+        )
         conn.close()
         return result
 
@@ -1140,7 +1634,10 @@ def process_pending_files(
         {
             "status": "running",
             "phase": "starting",
-            "message": f"Processing {len(pending)} book(s). This may take a few minutes.",
+            "message": borges_says(
+                f"Opening {len(pending)} book(s). This may take a few minutes."
+            ),
+            "agent": "borges",
         }
     )
 
@@ -1151,7 +1648,10 @@ def process_pending_files(
                 "phase": "extracting",
                 "current_file": file_path.name,
                 "processed": idx - 1,
-                "message": f"Processing {file_path.name} ({idx}/{len(pending)})",
+                "message": borges_says(
+                    f"Reading {file_path.name} ({idx}/{len(pending)})"
+                ),
+                "agent": "borges",
             }
         )
 
@@ -1173,7 +1673,10 @@ def process_pending_files(
                 {
                     "processed": idx,
                     "phase": "saving",
-                    "message": f"Finished {file_path.name} ({idx}/{len(pending)})",
+                    "message": lucien_says(
+                        f"Shelved {file_path.name} ({idx}/{len(pending)})"
+                    ),
+                    "agent": "lucien",
                 }
             )
         except Exception as e:
@@ -1183,15 +1686,20 @@ def process_pending_files(
 
     conn.close()
     final_status = "error" if result["errors"] and not result["books_processed"] else "done"
-    message = (
-        f"Processed {len(result['books_processed'])} book(s)"
-        if result["books_processed"]
-        else "Processing finished with errors"
-        if result["errors"]
-        else "Nothing new to process"
-    )
-    if result["errors"]:
-        message += f" ({len(result['errors'])} error(s))"
+    if result["books_processed"]:
+        message = lucien_says(
+            f"Done — {len(result['books_processed'])} book(s) mapped"
+            + (f" ({len(result['errors'])} error(s))" if result["errors"] else "")
+        )
+        agent = "lucien"
+    elif result["errors"]:
+        message = borges_says(
+            f"Stopped with errors ({len(result['errors'])} error(s))"
+        )
+        agent = "borges"
+    else:
+        message = lucien_says("Nothing new to process")
+        agent = "lucien"
 
     emit(
         {
@@ -1200,6 +1708,7 @@ def process_pending_files(
             "current_file": None,
             "processed": len(pending),
             "message": message,
+            "agent": agent,
         }
     )
     return result
