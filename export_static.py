@@ -25,7 +25,8 @@ def export_network():
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT id, title, author, verified, match_score, cover_id, open_library_id
+        SELECT id, title, author, verified, match_score, cover_id, cover_url,
+               open_library_id, kind
         FROM books ORDER BY title
         """
     )
@@ -86,7 +87,7 @@ def create_static_index(docs_dir: Path):
     # Keep a cache-bust on main.js for Pages deploy
     html_content = html_content.replace(
         'src="static/main.js"',
-        'src="static/main.js?v=13"',
+        'src="static/main.js?v=30"',
     )
 
     # Verify requires Flask — soft-disable the link in static mode

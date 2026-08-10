@@ -553,6 +553,68 @@ button.quiet-link.as-button:hover,
     pointer-events: all;
 }
 
+.toolbar-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.55rem;
+    pointer-events: all;
+}
+
+.layer-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.35rem 0.55rem;
+    align-items: center;
+    max-width: 22rem;
+    padding: 0.35rem 0.5rem;
+    background: rgba(26, 34, 32, 0.72);
+    border: 1px solid rgba(184, 194, 188, 0.25);
+    color: #c5d0cb;
+    font-size: 0.78rem;
+}
+
+.layer-label {
+    color: #8a9690;
+    margin-right: 0.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.68rem;
+}
+
+.layer-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.layer-chip input {
+    accent-color: #0f5c5c;
+}
+
+.kind-swatch {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.kind-swatch.kind-movie {
+    background: #d4a84b;
+}
+
+.kind-swatch.kind-music {
+    background: #4f7ec8;
+}
+
+.kind-swatch.kind-cocktail {
+    background: #c45f6a;
+}
+
 .node-counts {
     font-size: 0.8rem;
     color: #c5d0cb;
@@ -600,6 +662,21 @@ button.quiet-link.as-button:hover,
     color: var(--ink-soft);
     margin-bottom: 0.55rem;
     flex: 1;
+}
+
+.process-banner .agent-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+}
+
+.process-banner.is-borges .agent-name {
+    color: #0f5c5c;
+}
+
+.process-banner.is-lucien .agent-name {
+    color: #3d5a6c;
 }
 
 .process-banner.is-error p {
@@ -948,6 +1025,31 @@ body[data-static="true"] #first-run-add {
     font-weight: 600;
 }
 
+.inline-kind {
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #8a6f35;
+    font-weight: 600;
+}
+
+.kind-badge {
+    display: inline-block;
+    margin-top: 0.45rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8a6f35;
+}
+
+.kind-badge.kind-music {
+    color: #3f5a73;
+}
+
+.kind-badge.kind-cocktail {
+    color: #8a5246;
+}
+
 .detail-section {
     margin-top: 1.35rem;
 }
@@ -1065,15 +1167,39 @@ body[data-static="true"] #first-run-add {
 .upload-queue {
     list-style: none;
     margin-top: 0.75rem;
-    max-height: 120px;
+    max-height: 160px;
     overflow: auto;
     font-size: 0.85rem;
     color: var(--ink-soft);
 }
 
 .upload-queue li {
-    padding: 0.25rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
     border-bottom: 1px solid var(--line);
+}
+
+.upload-queue li span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.queue-remove {
+    border: 0;
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0 0.25rem;
+}
+
+.queue-remove:hover {
+    color: var(--danger);
 }
 
 .upload-status {
@@ -1176,4 +1302,32 @@ body[data-static="true"] #first-run-add {
         border-top: 1px solid var(--line);
         max-height: 50vh;
     }
+}
+
+.node-label {
+    font-family: "Source Sans 3", "Segoe UI", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    fill: #d5e0dc;
+    stroke: none;
+    opacity: 0.95;
+}
+
+.node-label.is-starting {
+    font-size: 11px;
+    font-weight: 600;
+    fill: #e8f5f2;
+    opacity: 1;
+}
+
+.node-label.is-movie {
+    fill: #f0d9a0;
+}
+
+.node-label.is-music {
+    fill: #b8d0f0;
+}
+
+.node-label.is-cocktail {
+    fill: #f0b8be;
 }
