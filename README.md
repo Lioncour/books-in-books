@@ -47,24 +47,27 @@ Keyboard: `/` focuses search, `Esc` closes panels.
 
 Long-term: a curated **mention graph** so users can add a book by title and get “books mentioned inside it” without uploading an EPUB.
 
-**Catalog admin (local):** open [http://localhost:5000/admin](http://localhost:5000/admin)
+**Catalog admin (local):** [http://localhost:5000/admin](http://localhost:5000/admin)  
+**Library manage (local):** [http://localhost:5000/manage](http://localhost:5000/manage)
 
 - Login token defaults to `books-admin` (set `ADMIN_TOKEN` to change)
-- Add works (optional Open Library lookup)
-- Link “this book mentions…” edges
+- `/manage` — add/remove library books, extract references, export for Pages
+- `/admin` — curated catalog works + mention edges
 - **Import from my library** copies your existing verified EPUB extractions into the catalog as a starting point
 
 Public read APIs (for a future shelf UI): `GET /api/catalog/search?q=…`, `GET /api/catalog/works/<id>/mentions`
 
 ## Share a view-only site (GitHub Pages)
 
-Process locally, then export static files:
+Public Pages = explore only. Editing stays on `/manage`.
 
 ```powershell
-.\.venv\Scripts\python export_static.py
+.\.venv\Scripts\python app.py
+# Open http://localhost:5000/manage → Export docs/ for Pages
+# or: .\.venv\Scripts\python export_static.py
 ```
 
-This writes `docs/` with the literary UI, `books.json`, and `references.json`. Commit `docs/`, then enable Pages from the `/docs` folder. Guests can explore the graph without Python or spaCy; uploading stays on your machine.
+Commit `docs/`, enable Pages (GitHub Actions workflow or branch folder `/docs`). See [DEPLOY.md](DEPLOY.md).
 
 ## Project structure
 
@@ -75,9 +78,9 @@ books in books/
 ├── export_static.py       # Build docs/ for GitHub Pages
 ├── requirements.txt
 ├── books/                 # Your EPUB/TXT files
-├── templates/             # index.html, verify.html
+├── templates/             # index, manage, admin, verify
 ├── static/                # CSS, JS, brand mark, favicon
-└── docs/                  # Static export (optional)
+└── docs/                  # Static export (GitHub Pages)
 ```
 
 ## API (local server)

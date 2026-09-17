@@ -359,8 +359,14 @@ def run_processing_job(only_filenames=None, force=False):
 
 @app.route("/")
 def index():
-    """Serve the main HTML page."""
+    """Serve the main HTML page (explore). Manage library at /manage."""
     return render_template("index.html")
+
+
+@app.route("/manage")
+def manage_page():
+    """Local-only library management: add/remove books and publish to Pages."""
+    return render_template("manage.html", default_hint="books-admin")
 
 
 @app.route("/api/books")
@@ -1226,6 +1232,101 @@ def require_admin(fn):
         return fn(*args, **kwargs)
 
     return wrapper
+
+
+@app.route("/api/library/books/<int:book_id>", methods=["DELETE"])
+@require_admin
+def api_library_delete_book(book_id):
+    """
+    Remove an owned library book: delete source file, clear extraction edges,
+    and drop the book row if nothing else still cites it.
+    """
+    try:
+        from process_books import clear_processed_file
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, title, author, verified, match_score, cover_id, cover_url,
+                   open_library_id, kind
+            FROM books WHERE id = ?
+            """,
+            (book_id,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            conn.close()
+            return jsonify({"error": "Book not found"}), 404
+
+        annotated = match_starting_books([row])
+        if not annotated or not annotated[0].get("is_starting"):
+            conn.close()
+            return jsonify({"error": "Only owned library books can be removed"}), 400
+
+        filename = annotated[0].get("source_filename")
+        deleted_file = False
+        if filename:
+            path = BOOKS_DIR / filename
+            if path.exists():
+                path.unlink()
+                deleted_file = True
+            clear_processed_file(filename)
+
+        cursor.execute(
+            "DELETE FROM book_references WHERE source_book_id = ?", (book_id,)
+        )
+        cursor.execute(
+            "DELETE FROM skipped_mentions WHERE source_book_id = ?", (book_id,)
+        )
+        cursor.execute(
+            "SELECT COUNT(*) AS c FROM book_references WHERE referenced_book_id = ?",
+            (book_id,),
+        )
+        incoming = cursor.fetchone()["c"]
+        removed_row = False
+        if incoming == 0:
+            cursor.execute("DELETE FROM books WHERE id = ?", (book_id,))
+            removed_row = True
+        conn.commit()
+        conn.close()
+        return jsonify(
+            {
+                "ok": True,
+                "deleted_file": deleted_file,
+                "filename": filename,
+                "removed_book_row": removed_row,
+                "kept_as_citation": not removed_row,
+                "message": (
+                    f'Removed "{annotated[0]["title"]}" from your library.'
+                    + (
+                        " It stays on the graph as a cited work."
+                        if not removed_row
+                        else ""
+                    )
+                ),
+            }
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/admin/export-static", methods=["POST"])
+@require_admin
+def api_admin_export_static():
+    """Rebuild docs/ for GitHub Pages from the current database."""
+    try:
+        from export_static import main as export_main
+
+        export_main()
+        return jsonify(
+            {
+                "ok": True,
+                "message": "Exported docs/ for GitHub Pages. Commit and push docs/ to publish.",
+            }
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/admin")

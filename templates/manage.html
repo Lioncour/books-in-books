@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage library — Books in Books</title>
+    <meta name="theme-color" content="#0f5c5c">
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body class="admin-body">
+    <div class="admin-shell">
+        <header class="admin-top">
+            <div>
+                <a class="admin-back" href="/">← Explore graph</a>
+                <h1 class="admin-title">Manage library</h1>
+                <p class="admin-lede">
+                    Add and remove books here (local only). When the shelves look right,
+                    publish a view-only copy to GitHub Pages for everyone else.
+                </p>
+            </div>
+            <div class="admin-stats" id="manage-stats" hidden>
+                <div><strong id="stat-owned">0</strong> owned</div>
+                <div><strong id="stat-refs">0</strong> links</div>
+            </div>
+        </header>
+
+        <section id="login-panel" class="admin-card">
+            <h2>Unlock manage</h2>
+            <p class="admin-hint">Same token as catalog admin. Default is <code>{{ default_hint }}</code> (set <code>ADMIN_TOKEN</code> to change).</p>
+            <form id="login-form" class="admin-form-row">
+                <label class="sr-only" for="admin-token">Token</label>
+                <input type="password" id="admin-token" placeholder="Admin token" autocomplete="current-password" required>
+                <button type="submit" class="btn btn-primary">Unlock</button>
+            </form>
+            <p id="login-error" class="admin-error" hidden></p>
+        </section>
+
+        <div id="manage-app" hidden>
+            <div class="admin-toolbar">
+                <a class="btn btn-ghost" href="/">Open public graph</a>
+                <a class="btn btn-ghost" href="/admin">Catalog admin</a>
+                <button type="button" class="btn btn-ghost" id="logout-btn">Log out</button>
+            </div>
+
+            <section class="admin-card">
+                <h2>Add books</h2>
+                <p class="admin-hint">Drop <strong>.epub</strong> or <strong>.txt</strong> files named like <em>Author - Title</em>.</p>
+                <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Choose book files">
+                    <input type="file" id="file-input" accept=".epub,.txt,application/epub+zip,text/plain" multiple hidden>
+                    <p>Drop files here, or <button type="button" class="linkish" id="pick-files">browse</button>.</p>
+                </div>
+                <ul id="upload-queue" class="upload-queue"></ul>
+                <p id="upload-status" class="upload-status" hidden></p>
+                <div class="admin-form-row" style="margin-top:1rem">
+                    <button type="button" class="btn btn-ghost" id="upload-clear" hidden>Clear list</button>
+                    <button type="button" class="btn btn-primary" id="upload-submit" disabled>Upload &amp; extract</button>
+                </div>
+                <div id="process-banner" class="process-banner manage-process" hidden role="status" aria-live="polite">
+                    <div class="process-banner-top">
+                        <p id="process-message">Processing…</p>
+                    </div>
+                    <div class="progress-track" aria-hidden="true">
+                        <div id="process-bar" class="progress-bar"></div>
+                    </div>
+                    <ul id="process-errors" class="process-errors" hidden></ul>
+                </div>
+            </section>
+
+            <section class="admin-card">
+                <div class="admin-card-head">
+                    <h2>Your library</h2>
+                    <span id="library-count" class="admin-muted"></span>
+                </div>
+                <p id="library-empty" class="admin-hint" hidden>No owned books yet. Upload an EPUB above.</p>
+                <ul id="library-list" class="admin-list"></ul>
+            </section>
+
+            <section class="admin-card">
+                <h2>Publish to GitHub Pages</h2>
+                <p class="admin-hint">
+                    Rebuilds the public <code>docs/</code> folder (explore-only). Guests can browse the graph;
+                    they cannot add or remove books.
+                </p>
+                <div class="admin-form-row">
+                    <button type="button" class="btn btn-primary" id="export-pages">Export docs/ for Pages</button>
+                </div>
+                <p id="export-status" class="admin-muted" style="margin-top:0.75rem"></p>
+                <ol class="first-run-steps" style="margin-top:1rem">
+                    <li>Click <strong>Export docs/ for Pages</strong>.</li>
+                    <li>Commit and push the <code>docs/</code> folder.</li>
+                    <li>In GitHub: Settings → Pages → Deploy from branch → <code>/docs</code>.</li>
+                </ol>
+            </section>
+        </div>
+    </div>
+
+    <div id="toast-region" class="toast-region" aria-live="polite" aria-relevant="additions"></div>
+    <script src="{{ url_for('static', filename='manage.js') }}"></script>
+</body>
+</html>

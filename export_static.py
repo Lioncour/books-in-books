@@ -87,18 +87,34 @@ def create_static_index(docs_dir: Path):
     # Keep a cache-bust on main.js for Pages deploy
     html_content = html_content.replace(
         'src="static/main.js"',
-        'src="static/main.js?v=30"',
+        'src="static/main.js?v=31"',
     )
 
-    # Verify requires Flask — soft-disable the link in static mode
+    # Explore-only: no local manage routes on Pages
+    html_content = re.sub(
+        r'href="/manage"',
+        'href="#"',
+        html_content,
+    )
+    html_content = re.sub(
+        r'href="/admin"',
+        'href="#"',
+        html_content,
+    )
     html_content = html_content.replace(
         'href="/verify"',
-        'href="#" onclick="alert(\'Verification requires the local Flask server (python app.py).\'); return false;"',
+        'href="#"',
     )
 
-    # Mark body for optional CSS hooks
-    if 'class="app"' in html_content and "data-static" not in html_content:
+    # Mark body for explore-only chrome (CSS + JS)
+    if "data-static" not in html_content:
         html_content = html_content.replace("<body>", '<body data-static="true">', 1)
+
+    # Public-facing copy
+    html_content = html_content.replace(
+        "Explore the literary web of books that mention other books.",
+        "A public map of books that mention other books. Browse freely — editing happens offline.",
+    )
 
     index_file = docs_dir / "index.html"
     index_file.write_text(html_content, encoding="utf-8")

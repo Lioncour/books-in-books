@@ -24,11 +24,12 @@
                     <p class="brand">Books in Books</p>
                 </div>
                 <h1 class="headline">See how your shelves talk to each other</h1>
-                <p class="lede">Add the books you own. Borges finds the titles they mention; Lucien files them on the shelf — then we draw the web.</p>
+                <p class="lede" id="site-lede">A public map of books that mention other books. Browse freely — editing happens offline.</p>
             </header>
 
-            <div class="sidebar-actions">
-                <button type="button" class="btn btn-primary" id="open-upload">Add books</button>
+            <div class="sidebar-actions" id="manage-actions">
+                <a class="btn btn-primary" id="manage-link" href="#">Manage library</a>
+                <button type="button" class="btn btn-ghost" id="open-upload" hidden>Quick add</button>
                 <button type="button" class="btn btn-ghost" id="run-process" hidden>Ask Borges &amp; Lucien</button>
             </div>
 
@@ -55,8 +56,9 @@
                     <button type="button" class="quiet-link as-button" id="import-network">Import network</button>
                     <input type="file" id="import-file" accept="application/json,.json" hidden>
                 </div>
-                <a href="/admin" class="quiet-link">Catalog admin</a>
-                <a href="#" onclick="alert('Verification requires the local Flask server (python app.py).'); return false;" class="quiet-link">Verify references</a>
+                <a href="#" class="quiet-link local-only" id="footer-manage">Manage library</a>
+                <a href="#" class="quiet-link local-only">Catalog admin</a>
+                <a href="#" class="quiet-link local-only">Verify references</a>
             </footer>
         </aside>
 
@@ -83,11 +85,11 @@
                     <img class="first-run-mark" src="static/mark.svg" alt="" width="48" height="48">
                     <h2>Start your literary web</h2>
                     <ol class="first-run-steps">
-                        <li><strong>Add books</strong> — upload EPUB or TXT files named like <em>Author - Title</em>.</li>
+                        <li><strong>Manage library</strong> — upload EPUB or TXT files named like <em>Author - Title</em>.</li>
                         <li><strong>Borges reads</strong> — he finds titles mentioned in the text.</li>
-                        <li><strong>Lucien verifies</strong> — he checks Open Library and shelves what is real.</li>
+                        <li><strong>Publish</strong> — export to GitHub Pages so everyone can explore.</li>
                     </ol>
-                    <button type="button" class="btn btn-primary" id="first-run-add">Add your first book</button>
+                    <a class="btn btn-primary" id="first-run-add" href="#">Open manage page</a>
                 </div>
             </div>
 
@@ -133,6 +135,6 @@
 
     <div id="node-tooltip" class="node-tooltip" hidden></div>
 
-    <script src="static/main.js?v=30"></script>
+    <script src="static/main.js?v=31"></script>
 </body>
 </html>

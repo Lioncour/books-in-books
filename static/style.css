@@ -927,8 +927,56 @@ button.quiet-link.as-button:hover,
 body[data-static="true"] #open-upload,
 body[data-static="true"] #run-process,
 body[data-static="true"] #import-network,
-body[data-static="true"] #first-run-add {
+body[data-static="true"] #export-network,
+body[data-static="true"] #first-run-add,
+body[data-static="true"] #manage-actions,
+body[data-static="true"] #network-actions,
+body[data-static="true"] .local-only,
+body[data-static="true"] #first-run {
     display: none !important;
+}
+
+.manage-process {
+    position: relative;
+    margin-top: 1rem;
+    inset: auto;
+}
+
+.manage-book-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.manage-book-row .library-cover {
+    width: 40px;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+.manage-book-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.manage-book-meta strong {
+    font-family: var(--font-display);
+    font-weight: 600;
+}
+
+.btn.danger,
+.danger {
+    color: var(--danger, #a33);
+}
+
+.drop-zone.is-drag {
+    border-color: var(--accent);
+    background: rgba(15, 92, 92, 0.06);
 }
 
 .upload-status {

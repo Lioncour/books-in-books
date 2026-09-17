@@ -2455,14 +2455,37 @@
       importNetworkFromFile(file);
       e.target.value = "";
     });
-    $("first-run-add")?.addEventListener("click", () => {
-      $("open-upload")?.click();
+    $("first-run-add")?.addEventListener("click", (e) => {
+      if (isStaticMode) {
+        e.preventDefault();
+        return;
+      }
+      // Anchor already goes to /manage; keep as navigation.
     });
+  }
+
+  function applyPublicChrome() {
+    if (!isStaticMode) return;
+    document.body?.setAttribute("data-static", "true");
+    const lede = $("site-lede");
+    if (lede) {
+      lede.textContent =
+        "A public map of books that mention other books. Browse the graph — adding titles happens elsewhere.";
+    }
+    // Hide every local-only control
+    document.querySelectorAll(".local-only, #manage-actions, #network-actions, #first-run").forEach((el) => {
+      el.hidden = true;
+    });
+    const manageLink = $("manage-link");
+    if (manageLink) manageLink.hidden = true;
   }
 
   // —— Boot ——
   document.addEventListener("DOMContentLoaded", () => {
     isStaticMode = detectStaticMode();
+    if (document.body?.getAttribute("data-static") === "true") {
+      isStaticMode = true;
+    }
 
     if (typeof d3 === "undefined") {
       showGraphMessage(
@@ -2502,15 +2525,17 @@
     setupKeyboard();
     setupNetworkIo();
     setupLayerToggles();
+    applyPublicChrome();
 
     if (!isStaticMode) {
       const runBtn = $("run-process");
       if (runBtn) runBtn.hidden = false;
+      const quickAdd = $("open-upload");
+      if (quickAdd) quickAdd.hidden = false;
     } else {
-      document.body?.setAttribute("data-static", "true");
       notify(
-        "View-only mode",
-        "Uploading and extraction need the local Flask server.",
+        "Explore-only site",
+        "This GitHub Pages copy is view-only. Library changes are made locally on /manage.",
         "info",
         5000
       );

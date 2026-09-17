@@ -1,95 +1,64 @@
 # Deploying to GitHub Pages
 
-This project can be deployed to GitHub Pages as a static site. The Flask server and verification features require a Python backend, but the main visualization works perfectly as a static site.
+Public site = **explore-only**. Adding and removing books happens on your machine at `/manage`.
 
-## Quick Deploy
+## Architecture
 
-1. **Export static files:**
-   ```bash
+| Surface | URL | What it does |
+|---------|-----|----------------|
+| GitHub Pages | `https://USER.github.io/REPO/` | Everyone explores the graph |
+| Local manage | `http://localhost:5000/manage` | You add / remove / extract / export |
+| Local explore | `http://localhost:5000/` | Same graph UI as Pages |
+
+GitHub Pages cannot run Python, so uploads never happen on the public site.
+
+## First-time Pages setup
+
+1. Run the app locally and manage your library:
+   ```powershell
+   python app.py
+   ```
+   Open [http://localhost:5000/manage](http://localhost:5000/manage) (token default: `books-admin`).
+
+2. Export the public site:
+   - Click **Export docs/ for Pages** on the manage page, **or**
+   ```powershell
    python export_static.py
    ```
 
-2. **Commit the `docs/` folder:**
-   ```bash
+3. Commit and push `docs/`:
+   ```powershell
    git add docs/
-   git commit -m "Deploy to GitHub Pages"
+   git commit -m "Publish explore-only site to GitHub Pages"
    git push
    ```
 
-3. **Enable GitHub Pages:**
-   - Go to your repository Settings > Pages
-   - Under "Source", select "Deploy from a branch"
-   - Select branch: `main` (or `master`)
-   - Select folder: `/docs`
-   - Click Save
+4. Enable Pages in the repo:
+   - Settings → Pages
+   - Source: **GitHub Actions** (preferred, uses `.github/workflows/deploy-pages.yml`), **or**
+   - Deploy from branch → `main` → folder `/docs`
 
-4. **Your site will be available at:**
+5. Site URL:
    ```
    https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/
    ```
 
-## Automatic Deployment
+## Updating the public site
 
-The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically:
-- Exports the database to JSON files
-- Deploys to GitHub Pages on every push to `main`/`master`
+After you add or remove books locally:
 
-To use automatic deployment:
-1. Make sure the workflow file exists: `.github/workflows/deploy.yml`
-2. Push to the `main` branch
-3. The workflow will run automatically
-4. Check the "Actions" tab in your GitHub repository to see deployment status
+1. Open `/manage` → **Export docs/ for Pages**
+2. Commit `docs/` and push
+3. Actions deploys automatically (or wait a minute for branch `/docs` deploy)
 
-## Manual Deployment
+## What the public site includes
 
-If you prefer manual deployment:
+- Interactive graph, search, covers, detail quotes
+- `books.json` + `references.json` (no EPUB files)
 
-1. **Run the export script:**
-   ```bash
-   python export_static.py
-   ```
+## What stays private / local
 
-2. **The script creates:**
-   - `docs/books.json` - All books data
-   - `docs/references.json` - All reference links
-   - `docs/index.html` - Static HTML page
-   - `docs/static/` - CSS and JavaScript files
-
-3. **Commit and push:**
-   ```bash
-   git add docs/
-   git commit -m "Update static site"
-   git push
-   ```
-
-## Updating the Site
-
-Whenever you:
-- Add new books
-- Process new references
-- Update the database
-
-Simply run:
-```bash
-python export_static.py
-git add docs/
-git commit -m "Update static site with new data"
-git push
-```
-
-## Limitations
-
-The static version on GitHub Pages:
-- ✅ Shows the interactive graph visualization
-- ✅ Allows clicking books to show/hide nodes
-- ✅ All visualization features work
-- ❌ Verification page requires Flask server (run locally)
-- ❌ Cannot process new books (requires Python backend)
-
-For full functionality, run the Flask server locally:
-```bash
-python app.py
-```
-
-Then visit `http://localhost:5000`
-
+- `/manage` — add, remove, extract
+- `/admin` — shared catalog curation
+- `/verify` — reference verification
+- Your `books/` folder and `database.db`
