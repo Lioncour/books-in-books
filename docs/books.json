@@ -378,6 +378,20 @@
     "incoming_count": 1
   },
   {
+    "id": 123,
+    "title": "Careless People",
+    "author": "Sarah Wynn-Williams",
+    "is_starting": true,
+    "verified": false,
+    "match_score": null,
+    "open_library_id": "manual_wynn williams sarah",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 20,
+    "incoming_count": 0
+  },
+  {
     "id": 166,
     "title": "Casablanca",
     "author": "1942 film directed by Michael Curtiz",
@@ -1052,7 +1066,7 @@
   {
     "id": 143,
     "title": "Montaigne",
-    "author": "Montaigne, Michel de",
+    "author": "Stefan Zweig",
     "is_starting": true,
     "verified": true,
     "match_score": 1.0,
@@ -2462,20 +2476,6 @@
     "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
-  },
-  {
-    "id": 123,
-    "title": "Wynn-Williams, Sarah",
-    "author": "Careless People",
-    "is_starting": true,
-    "verified": false,
-    "match_score": null,
-    "open_library_id": "manual_wynn williams sarah",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 20,
-    "incoming_count": 0
   },
   {
     "id": 138,

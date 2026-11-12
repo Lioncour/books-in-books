@@ -56,3 +56,6 @@ process_status.json
 .env.local
 
 
+
+# Local Claude Code settings
+.claude/

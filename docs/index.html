@@ -33,6 +33,8 @@
                 <button type="button" class="btn btn-ghost" id="run-process" hidden>Ask Borges &amp; Lucien</button>
             </div>
 
+            <p class="judge-hint local-only" id="judge-hint" hidden></p>
+
             <div class="search-wrap">
                 <label class="sr-only" for="search-input">Search books</label>
                 <input type="search" id="search-input" class="search-input" placeholder="Search title or author" autocomplete="off">
@@ -58,7 +60,7 @@
                 </div>
                 <a href="#" class="quiet-link local-only" id="footer-manage">Manage library</a>
                 <a href="#" class="quiet-link local-only">Catalog admin</a>
-                <a href="#" class="quiet-link local-only">Verify references</a>
+                <a href="#" class="quiet-link local-only">Review references</a>
             </footer>
         </aside>
 
@@ -69,11 +71,13 @@
                         <button type="button" id="reset-view" class="btn btn-small">Reset view</button>
                         <button type="button" id="tidy-layout" class="btn btn-small">Tidy layout</button>
                         <button type="button" id="export-png" class="btn btn-small">Save image</button>
+                        <button type="button" id="open-insights" class="btn btn-small">Connections</button>
                         <button type="button" id="focus-mode" class="btn btn-small" hidden>Clear focus</button>
                     </div>
                     <div class="toolbar-right">
                         <div class="layer-toggles" id="layer-toggles">
                             <span class="layer-label">Also show</span>
+                            <label class="layer-chip" title="Dotted lines between different works by the same author"><input type="checkbox" id="layer-author"> <span class="kind-swatch kind-author" aria-hidden="true"></span> Same author</label>
                             <label class="layer-chip"><input type="checkbox" data-kind="movie" id="layer-movie"> <span class="kind-swatch kind-movie" aria-hidden="true"></span> Movies</label>
                             <label class="layer-chip"><input type="checkbox" data-kind="music" id="layer-music"> <span class="kind-swatch kind-music" aria-hidden="true"></span> Music</label>
                             <label class="layer-chip"><input type="checkbox" data-kind="cocktail" id="layer-cocktail"> <span class="kind-swatch kind-cocktail" aria-hidden="true"></span> Drinks</label>
@@ -135,6 +139,6 @@
 
     <div id="node-tooltip" class="node-tooltip" hidden></div>
 
-    <script src="static/main.js?v=31"></script>
+    <script src="static/main.js?v=34"></script>
 </body>
 </html>

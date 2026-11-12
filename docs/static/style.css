@@ -615,6 +615,42 @@ button.quiet-link.as-button:hover,
     background: #c45f6a;
 }
 
+/* Dotted tie between works by the same author */
+.kind-swatch.kind-author {
+    width: 0.9rem;
+    height: 0;
+    border-radius: 0;
+    border-top: 2px dotted #c9a227;
+    box-shadow: none;
+}
+
+.judge-hint {
+    margin: -0.5rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    color: var(--muted);
+}
+
+.judge-hint.is-off {
+    color: var(--danger);
+}
+
+.insight-hint {
+    margin: 0.15rem 0 0.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.reading-list {
+    list-style: decimal;
+    padding-left: 1.4rem;
+}
+
+.reading-list li::marker {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
 .node-counts {
     font-size: 0.8rem;
     color: #c5d0cb;
