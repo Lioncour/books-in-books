@@ -366,6 +366,111 @@ def _remap_book_id(cursor, old_id: int, new_id: int):
     cursor.execute("DELETE FROM books WHERE id = ?", (old_id,))
 
 
+# Creator labels that stand in for "not known" and so cannot tell two works apart
+_PLACEHOLDER_CREATORS = {"", "traditional", "anonymous", "unknown", "music", "film / tv", "cocktail"}
+
+
+def version_key(title: str) -> str:
+    """
+    What a title is a version of: "Star Wars: Episode V – The Empire Strikes
+    Back", "Star Trek (film series)" and "The Star Wars" come down to
+    "star wars" and "star trek". Brackets, a subtitle and a leading article go.
+    """
+    text = re.sub(r"\s*[\(\[].*?[\)\]]", "", (title or "").lower())
+    text = re.split(r"\s*[:–—]\s+|\s+-\s+", text.strip())[0]
+    text = re.sub(r"[^\w\s]", " ", text)
+    text = re.sub(r"^(the|a|an)\s+", "", " ".join(text.split()))
+    return text
+
+
+def _same_work(a: Dict, b: Dict) -> bool:
+    """Whether two records with the same version key are versions of one work."""
+    kinds = {a["kind"], b["kind"]}
+    if kinds == {"movie"} or kinds == {"book", "movie"}:
+        # the film, its sequels and series, and the book or comic it came from
+        return True
+    if len(kinds) > 1:
+        return False  # a song is not the novel that shares its title
+    known = [
+        r["author"]
+        for r in (a, b)
+        if (r["author"] or "").strip().lower() not in _PLACEHOLDER_CREATORS
+    ]
+    return (
+        len(known) < 2
+        or author_matches(known[0], [known[1]])
+        or author_matches(known[1], [known[0]])
+    )
+
+
+def merge_versions(cursor, conn, quiet: bool = True) -> int:
+    """
+    Make versions of one work one node: the film and its sequels, the film and
+    the book it was made from, two catalogue records of the same title. The
+    record more books point at survives and takes the others' links. Books in
+    the library are never merged away.
+    """
+    cursor.execute(
+        """
+        SELECT b.id, b.title, b.author, IFNULL(b.kind, 'book'),
+               (SELECT COUNT(*) FROM book_references r WHERE r.referenced_book_id = b.id)
+        FROM books b
+        WHERE b.id NOT IN (SELECT book_id FROM processed_files WHERE book_id IS NOT NULL)
+          AND b.id NOT IN (SELECT source_book_id FROM book_references)
+        """
+    )
+    groups: Dict[str, List[Dict]] = {}
+    for book_id, title, author, kind, links in cursor.fetchall():
+        key = version_key(title)
+        if key:
+            groups.setdefault(key, []).append(
+                {"id": book_id, "title": title, "author": author, "kind": kind, "links": links}
+            )
+
+    # Fold a longer title into the shorter one it belongs to: "harry potter and
+    # the sorcerer s stone" into "harry potter", "wonderful wizard of oz" into
+    # "wizard of oz". The shorter title must be specific enough to stand alone.
+    for key in sorted(groups, key=len, reverse=True):
+        words = key.split()
+        for parent in groups:
+            if parent == key or parent not in groups or key not in groups:
+                continue
+            parent_words = parent.split()
+            series = len(parent_words) >= 2 and key.startswith(parent + " and the ")
+            one_word_more = len(parent_words) >= 3 and words[1:] == parent_words
+            if series or one_word_more:
+                groups[parent].extend(groups.pop(key))
+                break
+
+    merged = 0
+    for records in groups.values():
+        if len(records) < 2:
+            continue
+        # Most-linked first; a bare title before one with a subtitle; then the oldest
+        records.sort(key=lambda r: (-r["links"], len(r["title"]), r["id"]))
+        keeper = records[0]
+        for other in records[1:]:
+            if not _same_work(keeper, other):
+                continue
+            # A book that mentions both keeps one link, not two
+            cursor.execute(
+                """
+                DELETE FROM book_references
+                WHERE referenced_book_id = ?
+                  AND source_book_id IN (
+                      SELECT source_book_id FROM book_references WHERE referenced_book_id = ?
+                  )
+                """,
+                (other["id"], keeper["id"]),
+            )
+            _remap_book_id(cursor, other["id"], keeper["id"])
+            merged += 1
+            if not quiet:
+                print(f"  Merged '{other['title']}' into '{keeper['title']}'")
+    conn.commit()
+    return merged
+
+
 def deduplicate_books(cursor, conn, quiet: bool = True) -> int:
     """
     Merge duplicate book rows: same open_library_id, or same normalized title
@@ -2987,6 +3092,10 @@ def process_pending_files(
             result["errors"].append(error_msg)
             emit({"processed": idx, "phase": "error", "message": error_msg})
 
+    if result["books_processed"]:
+        versions = merge_versions(cursor, conn, quiet=quiet)
+        if versions and not quiet:
+            print(f"Merged {versions} version(s) of works already in the graph")
     conn.close()
     final_status = "error" if result["errors"] and not result["books_processed"] else "done"
     if result["books_processed"]:
@@ -3056,6 +3165,12 @@ def main():
             print(f"It did not answer: {type(e).__name__}: {e}")
             return
         print("It answered:", json.dumps(answer, ensure_ascii=False)[:400])
+        return
+    if "--merge-versions" in sys.argv[1:]:
+        init_database(quiet=True)
+        conn = sqlite3.connect("database.db")
+        print(f"Merged {merge_versions(conn.cursor(), conn, quiet=False)} version(s)")
+        conn.close()
         return
     if "--rescue" in sys.argv[1:]:
         init_database(quiet=True)

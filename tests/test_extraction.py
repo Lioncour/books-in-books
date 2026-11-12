@@ -895,6 +895,88 @@ class AuditorTests(TempProject):
         self.assertEqual(self.audits(), [("Lean In", "Sheryl Sandberg", None)])
 
 
+class VersionTests(TempProject):
+    def add(self, title, author, kind="book", sources=()):
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified, kind) VALUES (?, ?, ?, 1, ?)",
+            (title, author, f"t_{title}_{author}_{kind}", kind),
+        )
+        work = self.cur.lastrowid
+        for source in sources:
+            self.cur.execute(
+                "INSERT INTO book_references (source_book_id, referenced_book_id) VALUES (?, ?)",
+                (source, work),
+            )
+        return work
+
+    def second_source(self):
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified) "
+            "VALUES ('Another Owned Book', 'B', 'own2', 1)"
+        )
+        return self.cur.lastrowid
+
+    def test_version_key(self):
+        self.assertEqual(pb.version_key("Star Wars: Episode V – The Empire Strikes Back"), "star wars")
+        self.assertEqual(pb.version_key("Star Trek (film series)"), "star trek")
+        self.assertEqual(pb.version_key("The Wizard of Oz"), "wizard of oz")
+        self.assertEqual(pb.version_key("Spider-Man"), "spider man")
+
+    def test_sequels_and_the_book_behind_a_film_become_one_node(self):
+        other = self.second_source()
+        keeper = self.add("Star Wars", "George Lucas", "movie", [self.source_id, other])
+        self.add("Star Wars: Episode VI – Return of the Jedi", "Richard Marquand", "movie", [self.source_id])
+        self.add("Iron Man", "Film / TV", "movie", [self.source_id])
+        self.add("Iron Man", "Stan Lee", "book", [other])
+        self.conn.commit()
+        self.assertEqual(pb.merge_versions(self.cur, self.conn), 2)
+        self.cur.execute(
+            "SELECT b.title, COUNT(*) FROM book_references r JOIN books b ON b.id = r.referenced_book_id "
+            "GROUP BY b.id ORDER BY b.title"
+        )
+        # Star Wars keeps one link per book; Iron Man now joins the two books
+        self.assertEqual(self.cur.fetchall(), [("Iron Man", 2), ("Star Wars", 2)])
+        self.cur.execute("SELECT COUNT(*) FROM book_references WHERE referenced_book_id = ?", (keeper,))
+        self.assertEqual(self.cur.fetchone()[0], 2)
+
+    def test_a_volume_joins_its_series_and_a_longer_title_its_short_form(self):
+        other = self.second_source()
+        self.add("Harry Potter", "J. K. Rowling", "book", [other])
+        self.add("Harry Potter and the Sorcerer's Stone", "Chris Columbus", "movie", [self.source_id])
+        self.add("Harry Potter and the Philosopher's Stone", "Chris Columbus", "movie", [self.source_id])
+        self.add("The Wizard of Oz", "Victor Fleming", "movie", [self.source_id])
+        self.add("The Wonderful Wizard of Oz", "L. Frank Baum", "book", [other])
+        self.add("Romeo and Juliet", "William Shakespeare", "book", [self.source_id])
+        self.add("Romeo", "Someone", "book", [other])  # one word: too vague to gather a series
+        self.conn.commit()
+        self.assertEqual(pb.merge_versions(self.cur, self.conn), 3)
+        self.cur.execute(
+            "SELECT b.title, COUNT(*) FROM book_references r JOIN books b ON b.id = r.referenced_book_id "
+            "GROUP BY b.id HAVING COUNT(*) > 1 ORDER BY b.title"
+        )
+        self.assertEqual(len(self.cur.fetchall()), 2)  # Harry Potter and Oz each join the two books
+
+    def test_different_works_with_one_title_stay_apart(self):
+        other = self.second_source()
+        self.add("Essays", "Michel de Montaigne", "book", [self.source_id])
+        self.add("Essays", "Leigh Hunt", "book", [other])
+        self.add("Jubilee", "Traditional", "music", [self.source_id])
+        self.add("Jubilee", "Margaret Walker", "book", [other])
+        self.conn.commit()
+        self.assertEqual(pb.merge_versions(self.cur, self.conn), 0)
+
+    def test_a_library_book_is_never_merged_away(self):
+        self.cur.execute("SELECT title FROM books WHERE id = ?", (self.source_id,))
+        own = self.cur.fetchone()[0]
+        other = self.second_source()
+        self.add(own, "Film / TV", "movie", [other])
+        self.add("Emma", "Jane Austen", "book", [self.source_id])
+        self.conn.commit()
+        self.assertEqual(pb.merge_versions(self.cur, self.conn), 0)
+        self.cur.execute("SELECT COUNT(*) FROM books WHERE id = ?", (self.source_id,))
+        self.assertEqual(self.cur.fetchone()[0], 1)
+
+
 class RescueTests(TempProject):
     def test_works_dropped_for_lack_of_a_catalogue_record_are_linked(self):
         pb._record_skip(self.cur, self.source_id, "the Proclamation",

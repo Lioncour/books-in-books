@@ -245,6 +245,7 @@ This compares the links in the database with hand-checked gold sets in `eval/gol
 | `python process_books.py` | Read any new or changed books |
 | `python process_books.py --force` | Re-judge every book. Candidates are cached per file, so this skips the slow spaCy pass |
 | `python process_books.py --check` | Ask Claude one small question, to see that the chosen provider answers |
+| `python process_books.py --merge-versions` | Make versions of one work one node (runs by itself after each read) |
 | `python process_books.py --audit` | Let the Auditor check links it has not seen yet |
 | `python process_books.py --rescue` | Link works that were dropped only for lack of a catalogue record (after a rule change) |
 | `python process_books.py --fix-library` | Re-file library books under their real title and author (fixes wrong covers) |

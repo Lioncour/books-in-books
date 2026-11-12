@@ -948,7 +948,7 @@
     "kind": "book",
     "cover_id": "10543524",
     "cover_url": "https://covers.openlibrary.org/b/id/10543524-M.jpg",
-    "outgoing_count": 49,
+    "outgoing_count": 47,
     "incoming_count": 0
   },
   {
@@ -1691,35 +1691,7 @@
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Harry_Potter_logo.svg/330px-Harry_Potter_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 558,
-    "title": "Harry Potter and the Philosopher's Stone",
-    "author": "Chris Columbus",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "wikidata_Q102438",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": "https://upload.wikimedia.org/wikipedia/en/6/6b/Harry_Potter_and_the_Philosopher%27s_Stone_Book_Cover.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 364,
-    "title": "Harry Potter and the Sorcerer's Stone",
-    "author": "Chris Columbus",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_movie_harry potter sorcerer s stone_chris_columbus",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": "https://upload.wikimedia.org/wikipedia/en/6/6b/Harry_Potter_and_the_Philosopher%27s_Stone_Book_Cover.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
-    "outgoing_count": 0,
-    "incoming_count": 1
+    "incoming_count": 2
   },
   {
     "id": 215,
@@ -1929,21 +1901,7 @@
     "cover_id": null,
     "cover_url": "https://upload.wikimedia.org/wikipedia/en/4/47/Iron_Man_%28circa_2018%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 570,
-    "title": "Iron Man",
-    "author": "Stan Lee",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "/works/OL3759468W",
-    "kind": "book",
-    "cover_id": "7903643",
-    "cover_url": "https://covers.openlibrary.org/b/id/7903643-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
+    "incoming_count": 2
   },
   {
     "id": 236,
@@ -2013,21 +1971,7 @@
     "cover_id": "7164197",
     "cover_url": "https://covers.openlibrary.org/b/id/7164197-M.jpg",
     "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 514,
-    "title": "James Bond",
-    "author": "Ian Fleming",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_movie_james bond_fleming_ian",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": "https://upload.wikimedia.org/wikipedia/en/c/c5/Fleming007impression.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
-    "outgoing_count": 0,
-    "incoming_count": 1
+    "incoming_count": 2
   },
   {
     "id": 251,
@@ -3202,7 +3146,7 @@
     "kind": "book",
     "cover_id": "9344864",
     "cover_url": "https://covers.openlibrary.org/b/id/9344864-M.jpg",
-    "outgoing_count": 29,
+    "outgoing_count": 28,
     "incoming_count": 1
   },
   {
@@ -3248,20 +3192,6 @@
     "incoming_count": 3
   },
   {
-    "id": 544,
-    "title": "Star Trek (film series)",
-    "author": "Film / TV",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_movie_star trek film series",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 445,
     "title": "Star Trek II: The Wrath of Khan",
     "author": "Nicholas Meyer",
@@ -3290,34 +3220,6 @@
     "incoming_count": 4
   },
   {
-    "id": 390,
-    "title": "Star Wars: Episode V – The Empire Strikes Back",
-    "author": "1980 American epic space opera film directed by Irvin Kershner",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "wikidata_Q181795",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": "https://upload.wikimedia.org/wikipedia/en/3/3f/The_Empire_Strikes_Back_%281980_film%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 546,
-    "title": "Star Wars: Episode VI – Return of the Jedi",
-    "author": "Richard Marquand",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "wikidata_Q181803",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": "https://upload.wikimedia.org/wikipedia/en/b/b2/ReturnOfTheJediPoster1983.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 517,
     "title": "Stargate",
     "author": "Roland Emmerich",
@@ -3339,20 +3241,6 @@
     "verified": true,
     "match_score": null,
     "open_library_id": "judge_movie_stargate sg 1",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 571,
-    "title": "Stargate SG-1",
-    "author": "Brad Wright and Jonathan Glassner",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_movie_stargate sg 1_brad_glassner_jonathan_wright",
     "kind": "movie",
     "cover_id": null,
     "cover_url": null,
@@ -4141,21 +4029,7 @@
     "cover_id": null,
     "cover_url": null,
     "outgoing_count": 0,
-    "incoming_count": 2
-  },
-  {
-    "id": 507,
-    "title": "The Wonderful Wizard of Oz",
-    "author": "L. Frank Baum",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL18417W",
-    "kind": "book",
-    "cover_id": "552443",
-    "cover_url": "https://covers.openlibrary.org/b/id/552443-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 2
+    "incoming_count": 3
   },
   {
     "id": 144,
@@ -4644,7 +4518,7 @@
     "kind": "book",
     "cover_id": "8421582",
     "cover_url": "https://covers.openlibrary.org/b/id/8421582-M.jpg",
-    "outgoing_count": 53,
+    "outgoing_count": 50,
     "incoming_count": 0
   },
   {

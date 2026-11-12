@@ -703,20 +703,8 @@
   },
   {
     "source": 13,
-    "target": 544,
-    "context": "I couldn’t help thinking of the Utopia Planitia scenes in the Star Trek movies when a starship was being constructed.",
-    "manner": "compared"
-  },
-  {
-    "source": 13,
     "target": 545,
     "context": "“Okay, General Bullmoose. Just remember the little people, okay?”",
-    "manner": "compared"
-  },
-  {
-    "source": 13,
-    "target": 546,
-    "context": "Admiral Ackbar stared back at me, blank fishy expression revealing nothing.",
     "manner": "compared"
   },
   {
@@ -754,12 +742,6 @@
     "target": 567,
     "context": "I felt a pang of disappointment as visions of meeting Vulcans or Asgardians evaporated.",
     "manner": "compared"
-  },
-  {
-    "source": 13,
-    "target": 571,
-    "context": "When I’d been a kid, watching Star Trek and Star Wars and Stargate and all the other science fiction shows",
-    "manner": "passing"
   },
   {
     "source": 48,
@@ -907,12 +889,6 @@
   },
   {
     "source": 48,
-    "target": 364,
-    "context": "The idea for Ascendant came to me after watching the first Harry Potter movie",
-    "manner": "discussed"
-  },
-  {
-    "source": 48,
     "target": 384,
     "context": "Barney, the big purple cartoon dinosaur with the perpetual stupid grin.",
     "manner": "passing"
@@ -979,8 +955,8 @@
   },
   {
     "source": 48,
-    "target": 507,
-    "context": "Listen, oh great and powerful Oz, I’m really sorry that I ever called you Skippy.",
+    "target": 503,
+    "context": "I found myself wondering what James Bond would do in this situation.",
     "manner": "compared"
   },
   {
@@ -999,12 +975,6 @@
     "source": 48,
     "target": 513,
     "context": "We’ve already had incidents of people trying crazy Rambo shit to get noticed.",
-    "manner": "compared"
-  },
-  {
-    "source": 48,
-    "target": 514,
-    "context": "I found myself wondering what James Bond would do in this situation.",
     "manner": "compared"
   },
   {
@@ -1045,7 +1015,7 @@
   },
   {
     "source": 48,
-    "target": 558,
+    "target": 537,
     "context": "The idea for Ascendant came to me after watching the first Harry Potter movie",
     "manner": "discussed"
   },
@@ -1189,12 +1159,6 @@
   },
   {
     "source": 74,
-    "target": 390,
-    "context": "You know, the ice planet where the rebels had their base in 'The Empire Strikes Back'. Star Wars.",
-    "manner": "discussed"
-  },
-  {
-    "source": 74,
     "target": 392,
     "context": "The wheels on the bus go round and round-",
     "manner": "quoted"
@@ -1285,6 +1249,12 @@
   },
   {
     "source": 74,
+    "target": 518,
+    "context": "Why don't you show me as Ironman or-",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
     "target": 523,
     "context": "I'd forgotten about the Smurfs.",
     "manner": "compared"
@@ -1306,12 +1276,6 @@
     "target": 561,
     "context": "“Joe, Doctor Venkman is on her way to see you, the science team asked her to talk to you about-”",
     "manner": "passing"
-  },
-  {
-    "source": 74,
-    "target": 570,
-    "context": "Why don't you show me as Ironman or-",
-    "manner": "compared"
   },
   {
     "source": 80,
@@ -1843,6 +1807,12 @@
   },
   {
     "source": 123,
+    "target": 462,
+    "context": "the name of the meeting room, Wicked Witch of the West, is displayed, without explanation, under Chris’s talking head for the entire meeting",
+    "manner": "passing"
+  },
+  {
+    "source": 123,
     "target": 475,
     "context": "(“Project Buffy”—named semi-ironically for Buffy the Vampire Slayer and “social layer”)",
     "manner": "passing"
@@ -1876,12 +1846,6 @@
     "target": 506,
     "context": "Women’s Day is part evangelical church event, part multilevel marketing summit, part Tony Robbins seminar, part yoga retreat, part Oprah episode.",
     "manner": "compared"
-  },
-  {
-    "source": 123,
-    "target": 507,
-    "context": "the name of the meeting room, Wicked Witch of the West, is displayed, without explanation, under Chris’s talking head for the entire meeting",
-    "manner": "passing"
   },
   {
     "source": 123,
