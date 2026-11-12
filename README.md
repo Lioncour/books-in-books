@@ -80,6 +80,7 @@ books in books/
 ├── process_books.py       # NLP extraction + Open Library matching
 ├── judge.py               # Claude judges each candidate mention in context
 ├── reader.py              # Optional: Claude reads the book and lists the works it mentions
+├── auditor.py             # Claude checks the finished links and fixes or removes wrong ones
 ├── start.ps1              # First-run setup and start (Windows)
 ├── tests/                 # Offline tests
 ├── eval_extraction.py     # Precision / recall against eval/gold/
@@ -164,6 +165,9 @@ Settings can live in the terminal or in a `.env` file in the project folder (git
 | `BOOKS_JUDGE` | on | `off` disables the Judge |
 | `BOOKS_READER` | off | `on` lets Claude read the whole book (see below) |
 | `BOOKS_READER_MODEL` | `claude-opus-5-5` | Model used by the Reader |
+| `BOOKS_READER_PARALLEL` | `4` | Parts of a book the Reader reads at once |
+| `BOOKS_AUDITOR` | on | `off` stops Claude checking the finished links |
+| `BOOKS_AUDITOR_MODEL` | the Judge's | Model used by the Auditor |
 | `BOOKS_SPACY_MODEL` | `en_core_web_trf` | spaCy model; `en_core_web_sm` is 12 MB and is used automatically if the configured one is missing |
 | `HOST` / `PORT` | `127.0.0.1` / `5000` | Where the server listens |
 | `ADMIN_TOKEN` | unset | Required for changes from another machine |
@@ -183,9 +187,21 @@ Borges, italics and quotation marks only find titles that look like titles. A wo
 
 It is off by default because it sends the whole book to the API, which costs more than judging a few hundred short candidates. On *84, Charing Cross Road* it took the links from 42 to 66, nearly all of them real. A short book takes a few minutes and a long novel a quarter of an hour. `BOOKS_READER_MODEL=claude-haiku-5-5` is much cheaper. Results are cached per file and model.
 
+### The Auditor
+
+Once a book's links are filed, Claude looks at each one the way a reviewer would: the passage, the wording found, and the record it was filed under. It marks the link checked, re-files it under the right work, removes it when the passage is not a reference at all, or flags it when it cannot tell. This catches what the Judge cannot see, because the Judge rules before the catalogue is searched: a study about a work filed as the work, a folk tale credited to one reteller, a film matched to a remake.
+
+The Auditor runs by itself after every judged read. Its fixes and removals are remembered, so a re-read does not undo them, and your own decisions on `/review` always outrank it. On this library it passed 264 links, re-filed 27 and removed 2, leaving 3 it was unsure about.
+
+```powershell
+.\.venv\Scripts\python process_books.py --audit   # check any links not yet audited
+```
+
+Set `BOOKS_AUDITOR=off` to turn it off.
+
 ## Reviewing and correcting
 
-Open [http://localhost:5000/review](http://localhost:5000/review). **Links to check** lists every link with its quote: `A` confirms, `R` rejects, `U` undoes, `J`/`K` move. **Dropped mentions** lists what was left out and why: `L` links one to a work, `D` dismisses it. Confirmed links survive a re-read, and rejected ones stay out.
+Open [http://localhost:5000/review](http://localhost:5000/review). With the Auditor on you rarely need to: **Links to check** lists only what it was unsure about (tick **Show every link** for the rest). Each link comes with its quote: `A` confirms, `R` rejects, `U` undoes, `J`/`K` move. **Dropped mentions** lists what was left out and why: `L` links one to a work, `D` dismisses it. Confirmed links survive a re-read, and rejected ones stay out.
 
 ## Connections
 
@@ -215,6 +231,7 @@ This compares the links in the database with hand-checked gold sets in `eval/gol
 |---------|--------------|
 | `python process_books.py` | Read any new or changed books |
 | `python process_books.py --force` | Re-judge every book. Candidates are cached per file, so this skips the slow spaCy pass |
+| `python process_books.py --audit` | Let the Auditor check links it has not seen yet |
 | `python process_books.py --fix-library` | Re-file library books under their real title and author (fixes wrong covers) |
 | `python eval_extraction.py` | Precision and recall against the gold sets |
 

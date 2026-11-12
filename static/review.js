@@ -94,6 +94,7 @@
                         }${escapeHtml(item.author || "Unknown")}
                     </div>
                     <div class="review-meta">mentioned in <strong>${escapeHtml(item.source_title)}</strong>${found}</div>
+                    ${auditNote(item)}
                     ${item.context ? `<blockquote class="review-quote">${quoteHtml(item.context, item.raw_title || item.title)}</blockquote>` : ""}
                 </div>
                 <div class="review-actions">
@@ -101,6 +102,15 @@
                     <button type="button" class="review-btn is-danger" data-act="reject">Reject</button>
                 </div>
             </li>`;
+    }
+
+    /* What the Auditor made of this link, when it has looked at it. */
+    function auditNote(item) {
+        const reason = item.audit_reason ? `: ${escapeHtml(item.audit_reason)}` : "";
+        if (item.audit === "unsure") return `<div class="review-meta review-audit is-unsure">Auditor unsure${reason}</div>`;
+        if (item.audit === "fixed") return `<div class="review-meta review-audit">Re-filed by the Auditor${reason}</div>`;
+        if (item.audit === "ok") return `<div class="review-meta review-audit">Checked by the Auditor${reason}</div>`;
+        return "";
     }
 
     function droppedRow(item, index) {
@@ -146,7 +156,7 @@
         empty.hidden = list.length > 0;
         empty.textContent =
             state.tab === "links"
-                ? "Nothing left to check. Every link has been confirmed."
+                ? "Nothing needs you. Every link has been checked."
                 : "No dropped mentions for this selection.";
 
         const current = document.querySelector(".review-row.is-current");
@@ -157,8 +167,19 @@
 
     async function load() {
         const source = $("source-filter").value;
+        const params = new URLSearchParams();
+        if (source) params.set("source", source);
+        if ($("show-all").checked) params.set("show", "all");
+        const query = params.toString();
         try {
-            const data = await api("/api/review/queue" + (source ? `?source=${source}` : ""));
+            const data = await api("/api/review/queue" + (query ? `?${query}` : ""));
+            const audit = data.audit || {};
+            const passed = (audit.ok || 0) + (audit.fixed || 0);
+            $("audit-summary").textContent = passed
+                ? `The Auditor has checked the links: ${audit.ok || 0} right, ${audit.fixed || 0} re-filed, ` +
+                  `${audit.unsure || 0} it was unsure about, ${audit.unchecked || 0} not yet checked. ` +
+                  `Only the ones that need you are listed.`
+                : "";
             state.links = data.links || [];
             state.dropped = data.dropped || [];
             const select = $("source-filter");
@@ -326,6 +347,10 @@
     });
 
     $("source-filter").addEventListener("change", () => {
+        state.current = 0;
+        load();
+    });
+    $("show-all").addEventListener("change", () => {
         state.current = 0;
         load();
     });

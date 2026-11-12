@@ -85,6 +85,27 @@
     max-width: 16rem;
 }
 
+.review-audit {
+    font-style: italic;
+}
+
+.review-audit.is-unsure {
+    color: var(--danger);
+}
+
+.review-audit-summary {
+    max-width: 70ch;
+    font-size: 0.85rem;
+}
+
+.review-showall {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
 .review-keys {
     margin-top: 1rem;
     font-size: 0.8rem;

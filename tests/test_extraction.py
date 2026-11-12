@@ -624,6 +624,169 @@ class SpacyModelTests(unittest.TestCase):
             self.assertEqual(pb.spacy_model_name(), pb.SMALL_SPACY_MODEL)
 
 
+class AuditorTests(TempProject):
+    """The Auditor checks finished links and acts on what it finds."""
+
+    def add_link(self, title, author, olid, raw_title=None, kind="book", confirmed=0):
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified, kind) VALUES (?, ?, ?, 1, ?)",
+            (title, author, olid, kind),
+        )
+        target = self.cur.lastrowid
+        self.cur.execute(
+            """
+            INSERT INTO book_references (source_book_id, referenced_book_id, context, raw_title, confirmed, manner)
+            VALUES (?, ?, 'a passage', ?, ?, 'read')
+            """,
+            (self.source_id, target, raw_title or title, confirmed),
+        )
+        self.conn.commit()
+        return target
+
+    def audit(self, verdicts_by_title):
+        def fake(source_title, source_author, links, progress_callback=None):
+            out = {}
+            for i, link in enumerate(links):
+                v = verdicts_by_title.get(link["title"])
+                if v:
+                    out[i] = {"index": i, "correct_title": "", "correct_author": "",
+                              "correct_kind": "book", "reason": "test", **v}
+            return out
+
+        return pb.audit_book(self.source_id, self.cur, self.conn, auditor=fake)
+
+    def audits(self):
+        self.cur.execute(
+            """
+            SELECT b.title, b.author, r.audit FROM book_references r
+            JOIN books b ON b.id = r.referenced_book_id WHERE r.source_book_id = ? ORDER BY b.title
+            """,
+            (self.source_id,),
+        )
+        return self.cur.fetchall()
+
+    def test_right_links_are_marked_checked(self):
+        self.add_link("Lean In", "Sheryl Sandberg", "/works/lean")
+        summary = self.audit({"Lean In": {"verdict": "right"}})
+        self.assertEqual(self.audits(), [("Lean In", "Sheryl Sandberg", "ok")])
+        self.assertEqual(summary["ok"], 1)
+
+    def test_wrong_work_is_refiled_and_the_fix_is_remembered(self):
+        wrong = self.add_link("Atlas Shrugged", "Anne Williams", "/works/wrong", raw_title="Atlas Shrugged")
+        summary = self.audit({"Atlas Shrugged": {"verdict": "wrong_work",
+                                                  "correct_title": "Atlas Shrugged",
+                                                  "correct_author": "Ayn Rand"}})
+        self.assertEqual(self.audits(), [("Atlas Shrugged", "Ayn Rand", "fixed")])
+        self.assertEqual(summary["fixed"], 1)
+        # the manner of the mention moves with the link
+        self.cur.execute("SELECT manner FROM book_references")
+        self.assertEqual(self.cur.fetchone()[0], "read")
+        # a re-read replays the fix without asking the Judge or the Auditor again
+        self.cur.execute("DELETE FROM book_references")
+        boom = mock.Mock(side_effect=AssertionError("judge should not be called"))
+        self.store([{"title": "Atlas Shrugged", "context": "quoting Atlas Shrugged"}], boom)
+        self.assertEqual(self.audits(), [("Atlas Shrugged", "Ayn Rand", "fixed")])
+        self.cur.execute("SELECT confirmed FROM book_references")
+        self.assertEqual(self.cur.fetchone()[0], 0)  # not passed off as a person's confirmation
+        self.cur.execute("SELECT 1 FROM books WHERE id = ?", (wrong,))
+        self.assertIsNone(self.cur.fetchone())  # the wrong record is pruned
+
+    def test_non_reference_is_removed_and_stays_out(self):
+        self.add_link("Bon voyage!", "Conrad J. Schmitt", "/works/bv", raw_title="Bon Voyage")
+        summary = self.audit({"Bon voyage!": {"verdict": "not_a_reference", "reason": "a farewell"}})
+        self.assertEqual(self.audits(), [])
+        self.assertEqual(summary["removed"], 1)
+        self.assertEqual(self.skipped()["Bon Voyage"], "Rejected by the Auditor: a farewell")
+        self.store([{"title": "Bon Voyage", "context": "to scrawl you a Bon Voyage"}],
+                   fake_judge({"Bon Voyage": book("Bon voyage!", "Conrad J. Schmitt")}))
+        self.assertEqual(self.audits(), [])
+        self.assertEqual(self.skipped()["Bon Voyage"], "Rejected by the Auditor")
+
+    def test_unsure_links_are_flagged_not_changed(self):
+        self.add_link("The Vulgate", "George Henslow", "/works/v")
+        self.audit({"The Vulgate": {"verdict": "unsure", "reason": "study or the text?"}})
+        self.assertEqual(self.audits(), [("The Vulgate", "George Henslow", "unsure")])
+
+    def test_wrong_work_without_a_usable_correction_is_removed(self):
+        self.add_link("Jubilee", "Ruby Braff", "mb_1", kind="music")
+        self.audit({"Jubilee": {"verdict": "wrong_work", "correct_title": ""}})
+        self.assertEqual(self.audits(), [])
+
+    def test_when_the_catalogue_only_has_the_wrong_record_the_auditor_files_its_own(self):
+        # A folk tale filed under one reteller: the lookup can only return that row again
+        self.add_link("The Gingerbread Boy", "Paul Galdone", "/works/galdone")
+        summary = self.audit({"The Gingerbread Boy": {"verdict": "wrong_work",
+                                                       "correct_title": "The Gingerbread Boy",
+                                                       "correct_author": ""}})
+        self.assertEqual(self.audits(), [("The Gingerbread Boy", "Anonymous", "fixed")])
+        self.assertEqual(summary["fixed"], 1)
+
+    def test_judged_films_are_not_matched_to_remakes_or_games(self):
+        with mock.patch("mention_kinds.lookup_by_kind", side_effect=AssertionError("film search")):
+            self.store(
+                [{"title": "The Wizard of Oz", "context": "like Dorothy in The Wizard of Oz"}],
+                fake_judge({"The Wizard of Oz": {"is_reference": True, "kind": "movie",
+                                                 "canonical_title": "The Wizard of Oz",
+                                                 "author": "Victor Fleming"}}),
+            )
+        self.assertEqual(self.links(), [("The Wizard of Oz", "Victor Fleming", "movie", 0)])
+
+    def test_links_a_person_confirmed_are_never_audited(self):
+        self.add_link("Lean In", "Sheryl Sandberg", "/works/lean", confirmed=1)
+        seen = []
+
+        def fake(source_title, source_author, links, progress_callback=None):
+            seen.extend(links)
+            return {}
+
+        pb.audit_book(self.source_id, self.cur, self.conn, auditor=fake)
+        self.assertEqual(seen, [])
+
+    def test_a_persons_decision_outranks_the_auditor(self):
+        pb._save_override(self.cur, self.source_id, "lean in", "link", 7, made_by="you")
+        pb._save_override(self.cur, self.source_id, "lean in", "reject", made_by="auditor")
+        self.cur.execute("SELECT action, made_by FROM reference_overrides")
+        self.assertEqual(self.cur.fetchall(), [("link", "you")])
+
+    def test_no_credentials_means_no_audit(self):
+        self.add_link("Lean In", "Sheryl Sandberg", "/works/lean")
+        with mock.patch.object(judge, "_get_client", return_value=None):
+            summary = pb.audit_book(self.source_id, self.cur, self.conn)
+        self.assertFalse(summary["ran"])
+        self.assertEqual(self.audits(), [("Lean In", "Sheryl Sandberg", None)])
+
+
+class AuditorClientTests(unittest.TestCase):
+    def test_request_shows_the_passage_the_wording_and_the_record(self):
+        import auditor
+
+        calls = []
+
+        def create(**kwargs):
+            calls.append(kwargs)
+            return SimpleNamespace(
+                stop_reason="end_turn",
+                content=[SimpleNamespace(type="text", text=json.dumps({"verdicts": [
+                    {"index": 0, "verdict": "right", "correct_title": "", "correct_author": "",
+                     "correct_kind": "book", "reason": "ok"},
+                    {"index": 99, "verdict": "right", "correct_title": "", "correct_author": "",
+                     "correct_kind": "book", "reason": "stray"},
+                ]}))],
+            )
+
+        client = SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(create=create)))
+        links = [{"title": "The Vulgate", "author": "George Henslow", "kind": "book",
+                  "raw_title": "Vulgate", "context": "will try to find a Vulgate for you",
+                  "judge_filed": True}]
+        result = auditor.audit_links("84, Charing Cross Road", "Helene Hanff", links, client=client)
+        self.assertEqual(list(result), [0])
+        prompt = calls[0]["messages"][0]["content"]
+        for expected in ("will try to find a Vulgate for you", 'wording found: "Vulgate"',
+                         '"The Vulgate" by George Henslow', "filed on the Judge's word",
+                         "84, Charing Cross Road by Helene Hanff"):
+            self.assertIn(expected, prompt)
+
+
 class JudgeClientTests(unittest.TestCase):
     """judge.judge_mentions against a fake Anthropic client."""
 

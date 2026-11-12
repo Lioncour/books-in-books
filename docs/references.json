@@ -61,12 +61,6 @@
   },
   {
     "source": 1,
-    "target": 410,
-    "context": "One day we were so busily playing Chapter XXV, Book II of One Man’s Family, we did not see Atticus standing on the sidewalk looking at us",
-    "manner": "passing"
-  },
-  {
-    "source": 1,
     "target": 411,
     "context": "tried to keep them there when all about him men were losing their heads",
     "manner": "quoted"
@@ -150,16 +144,10 @@
     "manner": "quoted"
   },
   {
-    "source": 3,
-    "target": 18,
-    "context": "I was reminded, as I did this, of a scene from a Star Trek program where a member of the starship crew was trying to teach the fine art of eating to a woman who had spent most of her life as a sort of living machine.",
-    "manner": "compared"
-  },
-  {
-    "source": 3,
-    "target": 23,
-    "context": "We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after Billy.",
-    "manner": "compared"
+    "source": 1,
+    "target": 472,
+    "context": "One day we were so busily playing Chapter XXV, Book II of One Man’s Family, we did not see Atticus standing on the sidewalk looking at us",
+    "manner": "passing"
   },
   {
     "source": 3,
@@ -199,12 +187,6 @@
   },
   {
     "source": 3,
-    "target": 45,
-    "context": "Donna, the girl whose story I told in The Saddest Girl in the World, had left us in November",
-    "manner": "passing"
-  },
-  {
-    "source": 3,
     "target": 215,
     "context": "Stimulated by a cartoon called The Masters of the Universe, these toys may not have actually ruled the universe, but for several years they’d come darned close in my classroom.",
     "manner": "passing"
@@ -213,12 +195,6 @@
     "source": 3,
     "target": 216,
     "context": "“If You’re Happy and You Know It” was an old favorite.",
-    "manner": "quoted"
-  },
-  {
-    "source": 3,
-    "target": 217,
-    "context": "ast,” appearing whenever I could squeeze it in. We started with singing. Anytime I could manage it. “If You’re Happy and You Know It” was an old favorite. And “B-I-N-G-O,” which the boys loved because of its shouting. But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows",
     "manner": "quoted"
   },
   {
@@ -295,12 +271,6 @@
   },
   {
     "source": 3,
-    "target": 323,
-    "context": "“Pride goeth before a fall.”",
-    "manner": "quoted"
-  },
-  {
-    "source": 3,
     "target": 324,
     "context": "With their manic behavior, identical Howdy Doody faces, and weird, out-of-date clothes",
     "manner": "compared"
@@ -331,30 +301,6 @@
   },
   {
     "source": 3,
-    "target": 329,
-    "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
-    "manner": "quoted"
-  },
-  {
-    "source": 3,
-    "target": 330,
-    "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
-    "manner": "quoted"
-  },
-  {
-    "source": 3,
-    "target": 331,
-    "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
-    "manner": "quoted"
-  },
-  {
-    "source": 3,
-    "target": 332,
-    "context": "“Little arrows in your clothing, Little arrows in your hair. When you’re in love you’ll find those little arrows everywhere,”",
-    "manner": "quoted"
-  },
-  {
-    "source": 3,
     "target": 333,
     "context": "But it’s like being with a Stepford wife.",
     "manner": "compared"
@@ -370,6 +316,48 @@
     "target": 335,
     "context": "h the boys loved because of its shouting. But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,” because they were funny, could be mimed, and stood up well to being sung with gusto. But mainly because I could remember the words! And, of course, as it was",
     "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 447,
+    "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 448,
+    "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 449,
+    "context": "“Little arrows in your clothing, Little arrows in your hair. When you’re in love you’ll find those little arrows everywhere,”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 450,
+    "context": "I was reminded, as I did this, of a scene from a Star Trek program where a member of the starship crew was trying to teach the fine art of eating to a woman who had spent most of her life as a sort of living machine.",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 451,
+    "context": "“Pride goeth before a fall.”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 452,
+    "context": "Donna, the girl whose story I told in The Saddest Girl in the World, had left us in November",
+    "manner": "passing"
+  },
+  {
+    "source": 3,
+    "target": 458,
+    "context": "We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after Billy.",
+    "manner": "compared"
   },
   {
     "source": 13,
@@ -457,21 +445,9 @@
   },
   {
     "source": 13,
-    "target": 354,
-    "context": "“Auntie Em! Auntie Em!” Homer’s VR came online, smiling.",
-    "manner": "quoted"
-  },
-  {
-    "source": 13,
     "target": 425,
     "context": "I love to sail forbidden seas, and land on barbarous coasts.",
     "manner": "quoted"
-  },
-  {
-    "source": 13,
-    "target": 426,
-    "context": "You couldn’t truly say you’d been to a science fiction con until you’d been run over by Farscape cosplayers",
-    "manner": "passing"
   },
   {
     "source": 13,
@@ -588,6 +564,18 @@
     "manner": "quoted"
   },
   {
+    "source": 13,
+    "target": 462,
+    "context": "“Auntie Em! Auntie Em!” Homer’s VR came online, smiling.",
+    "manner": "quoted"
+  },
+  {
+    "source": 13,
+    "target": 473,
+    "context": "You couldn’t truly say you’d been to a science fiction con until you’d been run over by Farscape cosplayers",
+    "manner": "passing"
+  },
+  {
     "source": 48,
     "target": 17,
     "context": "I had pictured wormholes as a sort a Stargate thing, a big ring hanging in space, with a glowing center.",
@@ -604,12 +592,6 @@
     "target": 61,
     "context": "I didn’t have to imagine that scenario, since I’d already seen that in the movie Red Dawn.",
     "manner": "compared"
-  },
-  {
-    "source": 48,
-    "target": 65,
-    "context": "They did that in Avatar, right, you saw that movie?",
-    "manner": "discussed"
   },
   {
     "source": 48,
@@ -637,21 +619,9 @@
   },
   {
     "source": 48,
-    "target": 77,
-    "context": "Book 3: Paradise",
-    "manner": "passing"
-  },
-  {
-    "source": 48,
     "target": 170,
     "context": "It was a bad idea for me to order a rum and Coke.",
     "manner": "read"
-  },
-  {
-    "source": 48,
-    "target": 248,
-    "context": "‘Turkey in the Straw’ blared out of the rooftop speakers",
-    "manner": "passing"
   },
   {
     "source": 48,
@@ -676,12 +646,6 @@
     "target": 252,
     "context": "For a second, I pictured a Death Star. Only filled with lizards instead of storm troopers.",
     "manner": "compared"
-  },
-  {
-    "source": 48,
-    "target": 253,
-    "context": "Besides, I’m watching Wheel Of Fortune.",
-    "manner": "passing"
   },
   {
     "source": 48,
@@ -727,12 +691,6 @@
   },
   {
     "source": 48,
-    "target": 354,
-    "context": "“Yeah, man, what you need is a brain, and you better talk to the Wizard of Oz about that.”",
-    "manner": "compared"
-  },
-  {
-    "source": 48,
     "target": 355,
     "context": "bringing it with me didn’t mean I was going to get all cuddly and sing Kumbaya with the damned Ruhar",
     "manner": "compared"
@@ -741,12 +699,6 @@
     "source": 48,
     "target": 356,
     "context": "It’s just a flesh wound.",
-    "manner": "quoted"
-  },
-  {
-    "source": 48,
-    "target": 357,
-    "context": "You got some ‘splanin’ to do, Lucy.",
     "manner": "quoted"
   },
   {
@@ -775,21 +727,57 @@
   },
   {
     "source": 48,
-    "target": 362,
+    "target": 364,
+    "context": "The idea for Ascendant came to me after watching the first Harry Potter movie",
+    "manner": "discussed"
+  },
+  {
+    "source": 48,
+    "target": 454,
     "context": "but that Humpty Dumpty can’t be put together again.",
     "manner": "compared"
   },
   {
     "source": 48,
-    "target": 363,
+    "target": 459,
+    "context": "They did that in Avatar, right, you saw that movie?",
+    "manner": "discussed"
+  },
+  {
+    "source": 48,
+    "target": 460,
+    "context": "You got some ‘splanin’ to do, Lucy.",
+    "manner": "quoted"
+  },
+  {
+    "source": 48,
+    "target": 461,
     "context": "A magic beanstalk that led home.",
     "manner": "compared"
   },
   {
     "source": 48,
-    "target": 364,
-    "context": "The idea for Ascendant came to me after watching the first Harry Potter movie",
-    "manner": "discussed"
+    "target": 462,
+    "context": "“Yeah, man, what you need is a brain, and you better talk to the Wizard of Oz about that.”",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 463,
+    "context": "Book 3: Paradise",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 464,
+    "context": "‘Turkey in the Straw’ blared out of the rooftop speakers",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 465,
+    "context": "Besides, I’m watching Wheel Of Fortune.",
+    "manner": "passing"
   },
   {
     "source": 49,
@@ -808,12 +796,6 @@
     "target": 54,
     "context": "if Santa would pleese bring Enid Blyton’s Five Go Down to the Sea or Five Run Away Together or both",
     "manner": "passing"
-  },
-  {
-    "source": 49,
-    "target": 59,
-    "context": "closed his eyes and sang ‘The Croppy Boy’",
-    "manner": "quoted"
   },
   {
     "source": 49,
@@ -858,6 +840,12 @@
     "manner": "passing"
   },
   {
+    "source": 49,
+    "target": 467,
+    "context": "closed his eyes and sang ‘The Croppy Boy’",
+    "manner": "quoted"
+  },
+  {
     "source": 74,
     "target": 18,
     "context": "In the background was the battle stations alarm from Star Trek, which I had forgotten Sergeant Adams had programmed into the ship’s systems.",
@@ -883,21 +871,9 @@
   },
   {
     "source": 74,
-    "target": 357,
-    "context": "You got some 'splainin' to do, Lucy.",
-    "manner": "quoted"
-  },
-  {
-    "source": 74,
     "target": 368,
     "context": "Here's another good quote for you to remember: brevity is the soul of wit.",
     "manner": "quoted"
-  },
-  {
-    "source": 74,
-    "target": 382,
-    "context": "Good Ship Lollipop for all he cared, it wouldn't change",
-    "manner": "passing"
   },
   {
     "source": 74,
@@ -919,39 +895,15 @@
   },
   {
     "source": 74,
-    "target": 386,
-    "context": "I think you mean 'to infinity and beyond', Skippy.",
-    "manner": "quoted"
-  },
-  {
-    "source": 74,
-    "target": 387,
-    "context": "Although, when you think about it, Goldilocks was a bit of a dimwitted bee-atch. Who falls asleep in a house owned by bears?",
-    "manner": "discussed"
-  },
-  {
-    "source": 74,
     "target": 388,
     "context": "Oh, that was Don't Stop Believin' by Journey.",
     "manner": "passing"
   },
   {
     "source": 74,
-    "target": 389,
-    "context": "'Rocky' also does not mean it can beat up other planets in a fight.",
-    "manner": "compared"
-  },
-  {
-    "source": 74,
     "target": 390,
     "context": "Hoth. You know, the ice planet where the rebels had their base in 'The Empire Strikes Back'. Star Wars.",
     "manner": "discussed"
-  },
-  {
-    "source": 74,
-    "target": 391,
-    "context": "For the moment, I will refrain from making the humorous Godfather references that you know I am dying to say, so make it quick.",
-    "manner": "compared"
   },
   {
     "source": 74,
@@ -973,12 +925,6 @@
   },
   {
     "source": 74,
-    "target": 395,
-    "context": "a Hollywood film where a car turns into a flying robot, isn't it?",
-    "manner": "compared"
-  },
-  {
-    "source": 74,
     "target": 396,
     "context": "No one aboard is singing the Kristang version of 'Ninety Nine Bottles of Beer on the Wall', Joe, these lizards are not a crew of happy campers.",
     "manner": "compared"
@@ -991,26 +937,50 @@
   },
   {
     "source": 74,
-    "target": 398,
-    "context": "Sure, I'll pencil you in for the twelfth of Never",
+    "target": 399,
+    "context": "Oklahoma, where the wind comes sweeping down the plain-",
+    "manner": "quoted"
+  },
+  {
+    "source": 74,
+    "target": 455,
+    "context": "Good Ship Lollipop for all he cared, it wouldn't change",
+    "manner": "passing"
+  },
+  {
+    "source": 74,
+    "target": 460,
+    "context": "You got some 'splainin' to do, Lucy.",
+    "manner": "quoted"
+  },
+  {
+    "source": 74,
+    "target": 468,
+    "context": "Although, when you think about it, Goldilocks was a bit of a dimwitted bee-atch. Who falls asleep in a house owned by bears?",
+    "manner": "discussed"
+  },
+  {
+    "source": 74,
+    "target": 469,
+    "context": "For the moment, I will refrain from making the humorous Godfather references that you know I am dying to say, so make it quick.",
     "manner": "compared"
   },
   {
     "source": 74,
-    "target": 399,
-    "context": "Oklahoma, where the wind comes sweeping down the plain-",
+    "target": 470,
+    "context": "a Hollywood film where a car turns into a flying robot, isn't it?",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 471,
+    "context": "I think you mean 'to infinity and beyond', Skippy.",
     "manner": "quoted"
   },
   {
     "source": 80,
     "target": 82,
     "context": "U.S.A. Dear Miss Hanff, Your four dollars arrived safely and we have credited the 12 cents to your account. We happen to have in stock Volume II of the Works & Life of Walter Savage Landor which contains the Greek dialogues including the one mentioned in your letter, as well as the Roman dialogues. It is an old edition published in 1876, not very",
-    "manner": "read"
-  },
-  {
-    "source": 80,
-    "target": 83,
-    "context": "I’ve been using my Latin teacher’s Vulgate, what I imagine I’ll do is just not give it back till you find me one of my own.",
     "manner": "read"
   },
   {
@@ -1095,12 +1065,6 @@
     "source": 80,
     "target": 182,
     "context": "The three Hazlitt essays you want are contained in the Nonesuch Press edition of his Selected Essays",
-    "manner": "read"
-  },
-  {
-    "source": 80,
-    "target": 183,
-    "context": "we have a Latin New Testament, also a Greek New Testament, ordinary modern editions in cloth binding",
     "manner": "read"
   },
   {
@@ -1297,12 +1261,6 @@
   },
   {
     "source": 80,
-    "target": 307,
-    "context": "Or didn’t I ever tell you I write arty murders for Ellery Queen on television?",
-    "manner": "discussed"
-  },
-  {
-    "source": 80,
     "target": 308,
     "context": "Have you got De Tocqueville’s Journey to America?",
     "manner": "read"
@@ -1333,12 +1291,6 @@
   },
   {
     "source": 80,
-    "target": 313,
-    "context": "She also filled me in on Beowulf and his illegitimate son Sidwith—or is it Widsith?",
-    "manner": "passing"
-  },
-  {
-    "source": 80,
     "target": 314,
     "context": "all this and the dodgers disintegrating before my very eyes, nobody-knows-the-trouble-i-see.",
     "manner": "quoted"
@@ -1353,12 +1305,6 @@
     "source": 80,
     "target": 316,
     "context": "I have managed to obtain a copy of the Bernard Shaw-Ellen Terry correspondence.",
-    "manner": "read"
-  },
-  {
-    "source": 80,
-    "target": 317,
-    "context": "M. De Tocqueville’s compliments and he begs to announce his safe arrival in America.",
     "manner": "read"
   },
   {
@@ -1383,6 +1329,24 @@
     "source": 80,
     "target": 322,
     "context": "ion Helene at the typewriter Helene circa 1990s Helene—sample letter 30 Sept 1974; text below: “Open House” will—with lotsa luck—be in the hands of the printers around Christmas (or Gene, my editor, and I, will both commit suicide) & will be out next September. M",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 446,
+    "context": "I’ve been using my Latin teacher’s Vulgate, what I imagine I’ll do is just not give it back till you find me one of my own.",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 456,
+    "context": "we have a Latin New Testament, also a Greek New Testament, ordinary modern editions in cloth binding",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 457,
+    "context": "She also filled me in on Beowulf and his illegitimate son Sidwith—or is it Widsith?",
     "manner": "passing"
   },
   {
@@ -1443,12 +1407,6 @@
     "source": 123,
     "target": 242,
     "context": "“A Whole New World” from Aladdin",
-    "manner": "quoted"
-  },
-  {
-    "source": 123,
-    "target": 243,
-    "context": "quietly sing \"Happy Birthday\" to Sasha before she goes to sleep",
     "manner": "quoted"
   },
   {
@@ -1545,6 +1503,12 @@
     "source": 123,
     "target": 350,
     "context": "“You’re catching on,” he said. “So you see, one of these things is not like the other.”",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 453,
+    "context": "quietly sing \"Happy Birthday\" to Sasha before she goes to sleep",
     "manner": "quoted"
   },
   {
@@ -1711,12 +1675,6 @@
   },
   {
     "source": 143,
-    "target": 367,
-    "context": "one of his most successful books being an account of the exploits of Joseph Fouché",
-    "manner": "discussed"
-  },
-  {
-    "source": 143,
     "target": 368,
     "context": "the noble sorrow that his follower Shakespeare knew how to articulate in such an unforgettable manner, through characters so dear to him: Hamlet, Brutus, Prospero.",
     "manner": "passing"
@@ -1797,6 +1755,12 @@
     "source": 143,
     "target": 381,
     "context": "e to me, a young man of the new twentieth century, were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’ or his ‘Considérations sur Cicéron’? This Frenchman, already yellowed by time and lost in the riddles of his Latin quotations, seemed so scholarly and anachronistic. And even his wisdom, so gent",
+    "manner": "discussed"
+  },
+  {
+    "source": 143,
+    "target": 466,
+    "context": "one of his most successful books being an account of the exploits of Joseph Fouché",
     "manner": "discussed"
   }
 ]

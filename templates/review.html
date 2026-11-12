@@ -18,9 +18,10 @@
         <a href="/" class="review-back">← Back to the graph</a>
         <h1 class="review-title">Review references</h1>
         <p class="review-lede">
-            Confirm the links that are right and reject the ones that are not.
-            Your decisions are remembered and replayed whenever a book is read again.
+            The Auditor checks every link for you. What is listed here is what it was unsure about.
+            Your own decisions always win, and they are replayed whenever a book is read again.
         </p>
+        <p class="review-lede review-audit-summary" id="audit-summary"></p>
 
         <div class="review-bar">
             <div class="review-tabs" role="tablist">
@@ -31,6 +32,7 @@
                     Dropped mentions <span id="count-dropped" class="review-count">0</span>
                 </button>
             </div>
+            <label class="review-showall"><input type="checkbox" id="show-all"> Show every link</label>
             <label class="review-filter">
                 <span class="sr-only">Library book</span>
                 <select id="source-filter">

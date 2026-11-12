@@ -171,6 +171,10 @@ def init_database(quiet: bool = False):
     if "manner" not in ref_cols:
         # How the passage uses the work: read, quoted, recommended, ...
         cursor.execute("ALTER TABLE book_references ADD COLUMN manner TEXT")
+    for col in ("audit", "audit_reason"):
+        # The Auditor's finding on the finished link: ok, fixed, unsure
+        if col not in ref_cols:
+            cursor.execute(f"ALTER TABLE book_references ADD COLUMN {col} TEXT")
     if "confirmed" not in ref_cols:
         # 1 = a person confirmed this link in the review queue; survives re-extraction
         cursor.execute("ALTER TABLE book_references ADD COLUMN confirmed INTEGER DEFAULT 0")
@@ -220,6 +224,11 @@ def init_database(quiet: bool = False):
         )
         """
     )
+
+    cursor.execute("PRAGMA table_info(reference_overrides)")
+    if "made_by" not in {row[1] for row in cursor.fetchall()}:
+        # 'you' for decisions on /review, 'auditor' for the Auditor's
+        cursor.execute("ALTER TABLE reference_overrides ADD COLUMN made_by TEXT DEFAULT 'you'")
 
     cursor.execute(
         """
@@ -933,7 +942,9 @@ def _file_from_judge(cursor, conn, title: str, author: str, kind: str) -> int:
     existing = cursor.fetchone()
     if existing:
         return existing[0]
-    label = author or {"movie": "Film / TV", "music": "Traditional"}.get(kind, "Unknown")
+    label = author or {"movie": "Film / TV", "music": "Traditional", "book": "Anonymous"}.get(
+        kind, "Unknown"
+    )
     cursor.execute(
         """
         INSERT INTO books (title, author, open_library_id, verified, match_score, kind)
@@ -1100,10 +1111,11 @@ def get_or_create_book(
         from mention_kinds import lookup_by_kind
 
         # A recording search answers "Messiah" with whoever recorded something
-        # called that. For judged music keep the Judge's answer: the composer
-        # when it named one, otherwise no creator at all (a traditional tune
-        # does not belong to the first band that recorded it).
-        if judged and kind == "music":
+        # called that, and a film search answers "The Wizard of Oz" with a 1993
+        # video game. For judged music and films keep the Judge's answer: the
+        # composer or director when it named one, otherwise no creator at all
+        # (a traditional tune does not belong to the first band that recorded it).
+        if judged and kind in ("music", "movie"):
             return _file_from_judge(cursor, conn, title, author_hint, kind)
         match = lookup_by_kind(kind, title)
         if match:
@@ -1186,6 +1198,45 @@ def _load_overrides(cursor, source_book_id: int) -> Dict[str, tuple]:
         (source_book_id,),
     )
     return {row[0]: (row[1], row[2]) for row in cursor.fetchall()}
+
+
+def _override_makers(cursor, source_book_id: int) -> Dict[str, str]:
+    """Who made each correction for this book: 'you' or 'auditor'."""
+    cursor.execute(
+        "SELECT raw_key, IFNULL(made_by, 'you') FROM reference_overrides WHERE source_book_id = ?",
+        (source_book_id,),
+    )
+    return dict(cursor.fetchall())
+
+
+def _save_override(
+    cursor, source_book_id: int, raw_key: str, action: str, target_id=None, made_by: str = "you"
+):
+    """Remember a correction. A person's decision is never replaced by the Auditor's."""
+    if not raw_key:
+        return
+    if made_by != "you":
+        cursor.execute(
+            "SELECT IFNULL(made_by, 'you') FROM reference_overrides WHERE source_book_id = ? AND raw_key = ?",
+            (source_book_id, raw_key),
+        )
+        existing = cursor.fetchone()
+        if existing and existing[0] == "you":
+            return
+    cursor.execute(
+        """
+        INSERT INTO reference_overrides (source_book_id, raw_key, action, target_book_id, made_by)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(source_book_id, raw_key)
+        DO UPDATE SET action = excluded.action, target_book_id = excluded.target_book_id,
+                      made_by = excluded.made_by
+        """,
+        (source_book_id, raw_key, action, target_id, made_by),
+    )
+
+
+def _rejected_reason(maker: Optional[str]) -> str:
+    return "Rejected by the Auditor" if maker == "auditor" else "Rejected by you"
 
 
 def _record_skip(
@@ -1303,6 +1354,7 @@ def _store_references(
     items = [i for i in items if (i.get("title") or "").strip()]
 
     overrides = _load_overrides(cursor, source_book_id)
+    makers = _override_makers(cursor, source_book_id)
 
     # —— The Judge reads every candidate in its passage (cocktails come from a
     # curated lexicon and people's corrections are already decided) ——
@@ -1368,15 +1420,27 @@ def _store_references(
             action, target_id = overrides.get(key, (None, None))
             if action == "reject":
                 skipped += 1
-                _record_skip(cursor, source_book_id, raw_title, "Rejected by you", context)
+                _record_skip(
+                    cursor, source_book_id, raw_title, _rejected_reason(makers.get(key)), context
+                )
                 continue
             if action == "link" and target_id:
                 cursor.execute("SELECT 1 FROM books WHERE id = ?", (target_id,))
                 if cursor.fetchone() and target_id != source_book_id:
+                    by_person = makers.get(key, "you") == "you"
                     if _link_reference(
-                        cursor, source_book_id, target_id, context, raw_title, confirmed=True
+                        cursor, source_book_id, target_id, context, raw_title, confirmed=by_person
                     ):
                         added += 1
+                    if not by_person:
+                        # the Auditor re-filed this one before; no need to ask again
+                        cursor.execute(
+                            """
+                            UPDATE book_references SET audit = 'fixed'
+                            WHERE source_book_id = ? AND referenced_book_id = ? AND audit IS NULL
+                            """,
+                            (source_book_id, target_id),
+                        )
                     continue
 
             verdict = verdicts.get(idx - 1)
@@ -1471,7 +1535,13 @@ def _store_references(
                 continue
             if overrides.get(f"#{referenced_book_id}", (None, None))[0] == "reject":
                 skipped += 1
-                _record_skip(cursor, source_book_id, raw_title, "Rejected by you", context)
+                _record_skip(
+                    cursor,
+                    source_book_id,
+                    raw_title,
+                    _rejected_reason(makers.get(f"#{referenced_book_id}")),
+                    context,
+                )
                 continue
             try:
                 ensure_cover_for_book(referenced_book_id, cursor, conn)
@@ -1498,6 +1568,179 @@ def _store_references(
             f"  Found {len(items)} candidates ({how}); added {added} verified, skipped {skipped}"
         )
     return {"added": added, "skipped": skipped, "judged": judged}
+
+
+def audit_book(
+    source_book_id: int,
+    cursor,
+    conn,
+    progress_callback=None,
+    auditor=None,
+    quiet: bool = True,
+) -> Dict:
+    """
+    Let the Auditor check this book's finished links, and act on what it finds:
+    mark the right ones, re-file the wrong ones, remove what is not a reference.
+    Links a person confirmed, and links already audited, are left alone.
+
+    auditor: callable(source_title, source_author, links, progress_callback)
+             returning auditor.audit_links' result; defaults to the real one.
+    """
+    summary = {"ran": False, "ok": 0, "fixed": 0, "removed": 0, "unsure": 0}
+    if auditor is None:
+        import auditor as auditor_module
+
+        if not auditor_module.auditor_enabled():
+            return summary
+        auditor = auditor_module.audit_links
+
+    cursor.execute(
+        """
+        SELECT r.referenced_book_id, b.title, b.author, IFNULL(b.kind, 'book'),
+               b.open_library_id, r.raw_title, r.context, r.manner
+        FROM book_references r JOIN books b ON b.id = r.referenced_book_id
+        WHERE r.source_book_id = ? AND IFNULL(r.confirmed, 0) = 0 AND r.audit IS NULL
+        ORDER BY b.title
+        """,
+        (source_book_id,),
+    )
+    rows = cursor.fetchall()
+    if not rows:
+        return summary
+    cursor.execute("SELECT title, author FROM books WHERE id = ?", (source_book_id,))
+    source = cursor.fetchone() or ("", "")
+    links = [
+        {
+            "title": title,
+            "author": author,
+            "kind": kind,
+            "raw_title": raw_title,
+            "context": context,
+            "judge_filed": str(ol_id or "").startswith("judge_"),
+        }
+        for _target, title, author, kind, ol_id, raw_title, context, _manner in rows
+    ]
+    verdicts = auditor(source[0] or "", source[1] or "", links, progress_callback=progress_callback)
+    if verdicts is None:
+        return summary
+    summary["ran"] = True
+
+    def set_audit(target_id, state, reason):
+        cursor.execute(
+            """
+            UPDATE book_references SET audit = ?, audit_reason = ?
+            WHERE source_book_id = ? AND referenced_book_id = ?
+            """,
+            (state, (reason or "").strip() or None, source_book_id, target_id),
+        )
+
+    def remove(target_id, raw_title, context, reason):
+        cursor.execute(
+            "DELETE FROM book_references WHERE source_book_id = ? AND referenced_book_id = ?",
+            (source_book_id, target_id),
+        )
+        _save_override(cursor, source_book_id, override_key(raw_title), "reject", made_by="auditor")
+        _save_override(cursor, source_book_id, f"#{target_id}", "reject", made_by="auditor")
+        _record_skip(
+            cursor, source_book_id, raw_title or "", f"Rejected by the Auditor: {reason}", context
+        )
+        summary["removed"] += 1
+
+    for pos, (target_id, title, _author, _kind, _ol, raw_title, context, manner) in enumerate(rows):
+        verdict = verdicts.get(pos)
+        if not verdict:
+            continue
+        reason = (verdict.get("reason") or "").strip()
+        outcome = verdict.get("verdict")
+        if outcome == "right":
+            set_audit(target_id, "ok", reason)
+            summary["ok"] += 1
+        elif outcome == "unsure":
+            set_audit(target_id, "unsure", reason)
+            summary["unsure"] += 1
+        elif outcome == "not_a_reference":
+            remove(target_id, raw_title or title, context, reason or "not a reference to a work")
+        elif outcome == "wrong_work":
+            new_id = None
+            correct_title = (verdict.get("correct_title") or "").strip()
+            if correct_title:
+                try:
+                    new_id = get_or_create_book(
+                        correct_title,
+                        cursor,
+                        conn,
+                        require_verified=True,
+                        kind=verdict.get("correct_kind") or "book",
+                        context=context,
+                        author=(verdict.get("correct_author") or "").strip() or None,
+                        judged=True,
+                    )
+                except Exception:
+                    new_id = None
+            if new_id == target_id and correct_title:
+                # The catalogue only has the wrong record to offer (a retelling of
+                # a folk tale, a remake of a show). File the work the Auditor named.
+                new_id = _file_from_judge(
+                    cursor,
+                    conn,
+                    correct_title,
+                    (verdict.get("correct_author") or "").strip(),
+                    verdict.get("correct_kind") or "book",
+                )
+            if new_id == target_id:
+                set_audit(target_id, "unsure", reason)
+                summary["unsure"] += 1
+            elif new_id and new_id != source_book_id:
+                cursor.execute(
+                    "DELETE FROM book_references WHERE source_book_id = ? AND referenced_book_id = ?",
+                    (source_book_id, target_id),
+                )
+                _link_reference(cursor, source_book_id, new_id, context, raw_title, manner=manner)
+                set_audit(new_id, "fixed", reason)
+                _save_override(
+                    cursor, source_book_id, override_key(raw_title), "link", new_id, made_by="auditor"
+                )
+                _save_override(cursor, source_book_id, f"#{target_id}", "reject", made_by="auditor")
+                try:
+                    ensure_cover_for_book(new_id, cursor, conn)
+                except Exception:
+                    pass
+                summary["fixed"] += 1
+                if not quiet:
+                    print(f"  Auditor re-filed: {title} -> {correct_title}")
+            else:
+                remove(target_id, raw_title or title, context, reason or "wrong work")
+    prune_orphan_works(cursor)
+    conn.commit()
+    if not quiet:
+        print(
+            f"  Auditor: {summary['ok']} right, {summary['fixed']} re-filed, "
+            f"{summary['removed']} removed, {summary['unsure']} unsure"
+        )
+    return summary
+
+
+def audit_library(quiet: bool = False) -> Dict:
+    """Audit every library book's unchecked links, without re-reading anything."""
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT DISTINCT b.id, b.title FROM books b
+        JOIN book_references r ON r.source_book_id = b.id
+        WHERE IFNULL(r.confirmed, 0) = 0 AND r.audit IS NULL
+        ORDER BY b.title
+        """
+    )
+    totals = {"ok": 0, "fixed": 0, "removed": 0, "unsure": 0}
+    for book_id, title in cursor.fetchall():
+        if not quiet:
+            print(f"Auditing: {title}")
+        result = audit_book(book_id, cursor, conn, quiet=quiet)
+        for key in totals:
+            totals[key] += result.get(key, 0)
+    conn.close()
+    return totals
 
 
 def extract_cocktail_mentions(text: str) -> List[Dict]:
@@ -1854,7 +2097,7 @@ def process_book_file(
                     "agent": "lucien",
                 }
             )
-        return _store_references(
+        result = _store_references(
             mentions,
             source_book_id,
             cursor,
@@ -1862,6 +2105,12 @@ def process_book_file(
             quiet=quiet,
             progress_callback=progress_callback,
         )
+        if result.get("judged"):
+            # Claude judged the mentions, so Claude can also check the finished links
+            result["audit"] = audit_book(
+                source_book_id, cursor, conn, progress_callback=progress_callback, quiet=quiet
+            )
+        return result
     except Exception as e:
         if not quiet:
             print(f"Error processing file {file_path}: {e}")
@@ -2670,6 +2919,8 @@ def main():
             "open_library",
             "reading",
             "judging",
+            "auditing",
+            "reading_closely",
         ):
             print(status.get("message", ""))
 
@@ -2677,6 +2928,14 @@ def main():
     # --fix-library re-files library books under their real title and author
     import sys
 
+    if "--audit" in sys.argv[1:]:
+        init_database(quiet=True)
+        totals = audit_library()
+        print(
+            f"Auditor: {totals['ok']} right, {totals['fixed']} re-filed, "
+            f"{totals['removed']} removed, {totals['unsure']} unsure"
+        )
+        return
     if "--fix-library" in sys.argv[1:]:
         init_database(quiet=True)
         print(f"Re-filed {refresh_library_records()} library book(s)")

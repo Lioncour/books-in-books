@@ -914,6 +914,9 @@ def api_health():
             "enabled": reader_enabled(),
             "model": reader_model() if reader_enabled() else None,
         }
+        from auditor import auditor_enabled
+
+        info["auditor"] = {"enabled": auditor_enabled() and info["judge"]["available"]}
     except Exception as e:
         info["judge"]["reason"] = str(e)
     try:
@@ -1163,17 +1166,10 @@ def review_page():
 
 
 def _set_override(cursor, source_id, raw_key, action, target_id=None):
-    if not raw_key:
-        return
-    cursor.execute(
-        """
-        INSERT INTO reference_overrides (source_book_id, raw_key, action, target_book_id)
-        VALUES (?, ?, ?, ?)
-        ON CONFLICT(source_book_id, raw_key)
-        DO UPDATE SET action = excluded.action, target_book_id = excluded.target_book_id
-        """,
-        (source_id, raw_key, action, target_id),
-    )
+    """A decision made by a person on /review. It outranks the Auditor's."""
+    from process_books import _save_override
+
+    _save_override(cursor, source_id, raw_key, action, target_id, made_by="you")
 
 
 @app.route("/api/review/queue")
@@ -1189,10 +1185,13 @@ def api_review_queue():
         where.append("br.source_book_id = ?")
         params.append(source_filter)
     if not show_all:
+        # What still needs a person: not confirmed, and not passed by the Auditor
         where.append("IFNULL(br.confirmed, 0) = 0")
+        where.append("IFNULL(br.audit, '') NOT IN ('ok', 'fixed')")
     cursor.execute(
         f"""
-        SELECT br.source_book_id, s.title AS source_title, s.author AS source_author,
+        SELECT br.audit, br.audit_reason,
+               br.source_book_id, s.title AS source_title, s.author AS source_author,
                t.id AS target_id, t.title, t.author, t.kind, t.match_score,
                t.cover_id, t.cover_url, t.open_library_id,
                br.context, br.raw_title, br.manner, IFNULL(br.confirmed, 0) AS confirmed
@@ -1220,6 +1219,8 @@ def api_review_queue():
             "context": r["context"],
             "raw_title": r["raw_title"],
             "manner": r["manner"],
+            "audit": r["audit"],
+            "audit_reason": r["audit_reason"],
             "confirmed": bool(r["confirmed"]),
         }
         for r in cursor.fetchall()
@@ -1266,8 +1267,15 @@ def api_review_queue():
         """
     )
     sources = [{"id": r["id"], "title": r["title"]} for r in cursor.fetchall()]
+    cursor.execute(
+        """
+        SELECT IFNULL(audit, 'unchecked') AS state, COUNT(*) AS n
+        FROM book_references GROUP BY 1
+        """
+    )
+    audit = {r["state"]: r["n"] for r in cursor.fetchall()}
     conn.close()
-    return jsonify({"links": links, "dropped": dropped, "sources": sources})
+    return jsonify({"links": links, "dropped": dropped, "sources": sources, "audit": audit})
 
 
 @app.route("/api/review/link", methods=["POST"])

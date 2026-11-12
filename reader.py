@@ -95,6 +95,14 @@ def reader_model() -> str:
     return resolve_model(os.environ.get("BOOKS_READER_MODEL"), DEFAULT_MODEL)
 
 
+def reader_parallel() -> int:
+    """How many parts of a book are read at the same time."""
+    try:
+        return max(1, int(os.environ.get("BOOKS_READER_PARALLEL", "4")))
+    except ValueError:
+        return 4
+
+
 def split_into_chunks(text: str, size: int = CHUNK_CHARS) -> List[str]:
     """Cut at paragraph breaks where possible, never in the middle of a word."""
     chunks = []
@@ -179,24 +187,46 @@ def read_for_mentions(
     if client is None or not text:
         return None
 
+    from concurrent.futures import ThreadPoolExecutor
+
     chunks = split_into_chunks(text)
+
+    def read_part(n: int):
+        try:
+            return _call(client, source_title, source_author, chunks[n - 1], n, len(chunks))
+        except Exception as e:
+            return e
+
+    # A long novel is dozens of parts; reading a few at once turns a quarter
+    # of an hour into a few minutes. Results are merged in book order.
+    workers = max(1, min(reader_parallel(), len(chunks)))
+    results = {}
+    done = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for n, result in zip(range(1, len(chunks) + 1), pool.map(read_part, range(1, len(chunks) + 1))):
+            results[n] = result
+            done += 1
+            if progress_callback:
+                progress_callback(
+                    {
+                        "phase": "reading_closely",
+                        "message": f"The Reader: reading closely, part {done}/{len(chunks)}…",
+                        "agent": "reader",
+                    }
+                )
+
+    failures = [n for n, result in results.items() if isinstance(result, Exception)]
+    if len(failures) == len(chunks):
+        first = results[failures[0]]
+        print(f"The Reader is unavailable for this book: {type(first).__name__}: {first}")
+        return None
+    for n in failures:
+        print(f"The Reader skipped part {n}: {type(results[n]).__name__}: {results[n]}")
+
     mentions: Dict[str, Dict] = {}
     for n, chunk in enumerate(chunks, 1):
-        if progress_callback:
-            progress_callback(
-                {
-                    "phase": "reading_closely",
-                    "message": f"The Reader: reading closely, part {n}/{len(chunks)}…",
-                    "agent": "reader",
-                }
-            )
-        try:
-            result = _call(client, source_title, source_author, chunk, n, len(chunks))
-        except Exception as e:
-            if n == 1:
-                print(f"The Reader is unavailable for this book: {type(e).__name__}: {e}")
-                return None
-            print(f"The Reader skipped part {n}: {type(e).__name__}: {e}")
+        result = results[n]
+        if isinstance(result, Exception):
             continue
 
         squashed = _squash(chunk)
