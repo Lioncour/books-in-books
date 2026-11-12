@@ -161,7 +161,7 @@ BOOKS_PROVIDER=claude-code
 
 Log in once by running `claude` in a terminal and typing `/login`. The app then runs `claude -p` in the background for each batch of mentions and each part of a book, with no tools, so it can only answer.
 
-Who pays: nothing is billed per token. The work counts against **your Claude subscription's usage limits**, and reading a whole library with the Reader on uses a good share of them. It is also slower than the API, since every request starts the program afresh. This route has been tested without a network only; measure it with `eval_extraction.py` before trusting its numbers.
+Who pays: nothing is billed per token. The work counts against **your Claude subscription's usage limits**, and reading a whole library with the Reader on uses a good share of them. It is also slower than the API, since every request starts the program afresh. Check that it answers with `python process_books.py --check`, run from your own terminal: started from inside a Claude Code session the program cannot reach its login. This route has been tested without a network only; measure it with `eval_extraction.py` before trusting its numbers.
 
 ### Settings
 
@@ -244,6 +244,7 @@ This compares the links in the database with hand-checked gold sets in `eval/gol
 |---------|--------------|
 | `python process_books.py` | Read any new or changed books |
 | `python process_books.py --force` | Re-judge every book. Candidates are cached per file, so this skips the slow spaCy pass |
+| `python process_books.py --check` | Ask Claude one small question, to see that the chosen provider answers |
 | `python process_books.py --audit` | Let the Auditor check links it has not seen yet |
 | `python process_books.py --rescue` | Link works that were dropped only for lack of a catalogue record (after a rule change) |
 | `python process_books.py --fix-library` | Re-file library books under their real title and author (fixes wrong covers) |

@@ -3038,6 +3038,25 @@ def main():
     # --fix-library re-files library books under their real title and author
     import sys
 
+    if "--check" in sys.argv[1:]:
+        # One small question to Claude, to see that the chosen provider answers
+        import judge
+
+        status = judge.judge_status()
+        print(f"Provider: {status['provider']}   model: {status['model'] or '-'}")
+        if not status["available"]:
+            print(f"The Judge is off: {status['reason']}")
+            return
+        sample = [
+            {"index": 0, "title": "Middlemarch", "context": "She was reading Middlemarch again."}
+        ]
+        try:
+            answer = judge._call(judge._get_client(), "A Test Book", "", sample)
+        except Exception as e:
+            print(f"It did not answer: {type(e).__name__}: {e}")
+            return
+        print("It answered:", json.dumps(answer, ensure_ascii=False)[:400])
+        return
     if "--rescue" in sys.argv[1:]:
         init_database(quiet=True)
         print(f"Rescued {rescue_dropped_works()} dropped work(s); run --audit to check them")
