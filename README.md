@@ -115,7 +115,7 @@ books in books/
 
 ## How extraction works
 
-**Borges** (spaCy) reads the EPUB/TXT and flags candidate titles. He also collects everything the publisher set in italics and short Title Case phrases in quotation marks, which catches titles spaCy misses in running prose. He is fast and noisy.  
+**Borges** (spaCy) reads the EPUB/TXT and flags candidate titles. He also collects everything the publisher set in italics (whether with `<i>` tags or through a stylesheet class) and short Title Case phrases in quotation marks, which catches titles spaCy misses in running prose. He is fast and noisy.  
 **The Judge** (Claude) reads each candidate in its passage and decides whether it really refers to a work, what kind it is, its catalogue title and who wrote it.  
 **Lucien** looks that title up *with the author* (Open Library / film / music / cocktail lexicon) and files what is real.
 
@@ -185,7 +185,7 @@ The graph **defaults to books only**. Use **Also show → Movies / Music / Drink
 
 Borges, italics and quotation marks only find titles that look like titles. A work named in plain prose is invisible to them. With `BOOKS_READER=on`, Claude reads the book itself, part by part, and lists every work it refers to with the sentence it found it in. An entry whose sentence is not really in the text is discarded, and the rest go straight to the catalogue lookup.
 
-It is off by default because it sends the whole book to the API, which costs more than judging a few hundred short candidates. On *84, Charing Cross Road* it took the links from 42 to 66, nearly all of them real. A short book takes a few minutes and a long novel a quarter of an hour. `BOOKS_READER_MODEL=claude-haiku-5-5` is much cheaper. Results are cached per file and model.
+It is off by default because it sends the whole book to the API, which costs more than judging a few hundred short candidates. On *84, Charing Cross Road* it took the links from 42 to 66, nearly all of them real. A short book takes a few minutes and a long novel a quarter of an hour. `BOOKS_READER_MODEL=claude-haiku-5-5` is much cheaper, but on that book it found fewer of the real mentions (80% against 95% for Opus 5.5). Results are cached per file and model.
 
 ### The Auditor
 
@@ -205,7 +205,7 @@ Open [http://localhost:5000/review](http://localhost:5000/review). With the Audi
 
 ## Connections
 
-The **Connections** button on the graph lists works mentioned by more than one of your books, authors who recur, your books that cite each other, and a reading list of books you do not own. **Same author** draws dotted ties between different works by one author. **Connections only** hides works that just one of your books mentions. Works shared by several books are drawn in gold, and zooming in labels every node. The layout is remembered between visits. With the Judge on, each mention also carries a small tag for how the work is used: read, quoted, discussed, recommended, criticised or comparison.
+The **Connections** button on the graph lists works mentioned by more than one of your books, authors who recur, your books that cite each other, and a reading list of books you do not own. **Same author** draws dotted ties between different works by one author. **Connections only** hides works that just one of your books mentions. Works shared by several books are drawn in gold, and zooming in labels every node. The layout is remembered between visits; **Reset layout** starts it over. With the Judge on, each mention also carries a small tag for how the work is used: read, quoted, discussed, recommended, criticised or comparison.
 
 ## Tests
 

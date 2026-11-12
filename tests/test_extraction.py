@@ -344,6 +344,23 @@ class CandidateTests(unittest.TestCase):
         self.assertEqual(mention["source"], "markup")
         self.assertIn("She was reading Middlemarch again", mention["context"])
 
+    def test_italics_set_by_a_stylesheet_class_are_found(self):
+        css = (
+            ".class_s2US { font-style: italic; }\n"
+            "p.note, span.em-x { margin: 0; font-style:oblique }\n"
+            ".plain { font-weight: bold; }\n"
+            ".chapter .inner { font-style: italic; }"
+        )
+        self.assertEqual(pb.italic_classes_from_css(css), ["class_s2US", "note", "em-x", "inner"])
+        markup = (
+            '<p>We watched <span class="class_s2US">Finding Nemo</span> twice, '
+            'then <span class="plain">Not Italic Here</span> and '
+            '<span class="x class_s2US y">The Lion King</span>.</p>'
+        )
+        text = pb._strip_tags(markup)
+        titles = [m["title"] for m in pb.extract_markup_mentions(markup, text, ["class_s2US"])]
+        self.assertEqual(titles, ["Finding Nemo", "The Lion King"])
+
     def test_quoted_titles_but_not_dialogue(self):
         text = (
             'He sang “I Want It That Way” badly. “Come here,” she said. '
@@ -730,6 +747,15 @@ class AuditorTests(TempProject):
                                                  "author": "Victor Fleming"}}),
             )
         self.assertEqual(self.links(), [("The Wizard of Oz", "Victor Fleming", "movie", 0)])
+
+    def test_anonymous_work_is_not_refiled_under_a_commentary_on_it(self):
+        self.add_link("The Proverbs", "Derek Kidner", "/works/kidner", raw_title="Proverbs")
+        commentary = {"title": "The Book of Proverbs", "author": "Bruce K. Waltke",
+                      "open_library_id": "/works/waltke", "match_score": 1.0, "cover_id": None}
+        with mock.patch.object(pb, "lookup_open_library", return_value=commentary):
+            self.audit({"The Proverbs": {"verdict": "wrong_work",
+                                         "correct_title": "Book of Proverbs", "correct_author": ""}})
+        self.assertEqual(self.audits(), [("Book of Proverbs", "Anonymous", "fixed")])
 
     def test_links_a_person_confirmed_are_never_audited(self):
         self.add_link("Lean In", "Sheryl Sandberg", "/works/lean", confirmed=1)

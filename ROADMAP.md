@@ -10,7 +10,7 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 79 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 81 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
@@ -27,21 +27,22 @@ Items are ordered by how much they improve the result for the effort.
 - **Tuning from that run.** Works the Judge names with an author but no catalogue finds are filed on its word; judged music keeps the composer or is marked traditional; without an author only an identical title is accepted; later editions' afterwords may list later books.
 - **The Auditor.** Claude checks every finished link against its passage and its catalogue record, re-files wrong works and removes non-references, so nobody has to walk the review queue. On this library: 264 passed, 27 re-filed, 2 removed, 3 left as unsure. Precision on the gold set reached 100%. Judged films and music are filed on Claude's word, because the film and recording searches kept returning remakes, games and random performers.
 - **Faster Reader.** It reads four parts of a book at once.
+- **Auditor spot-checked.** All 27 re-filings and both removals were read by a second AI pass: 27 of 29 were right. One was wrong (Proverbs went to a commentary on Proverbs; fixed, and anonymous works are now filed on the Auditor's word instead of a title-only search), and one is debatable (a pun on *Rocky* was removed as a description of a planet).
+- **Reader model compared.** On *84, Charing Cross Road*, Haiku 5.5 as the Reader reached 98% precision and 80% recall against 100% and 95% for Opus 5.5. The gold set leans towards Opus, since it was widened with Opus finds, but the gap is large enough to keep Opus.
+- **Italics from stylesheets.** EPUBs that put italics in a CSS class instead of `<i>` tags are now covered (*Careless People* went from 0 to 37 italic candidates).
+- **Reset layout** button for the remembered graph positions.
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
 ## Next: do these first
 
-### 1. Spot-check the Auditor
-The Auditor replaced the manual review, but nothing checks the Auditor except one gold set. Sample twenty of its 27 re-filings and both removals by eye once, to see whether it can be trusted unattended. `/review` with **Show every link** lists them with its reasons.
+### 1. An independent gold set
+Every accuracy number so far comes from one book, and that gold set was partly built from the tools' own output. Label one novel (*Columbus Day*) and one non-fiction book (*Careless People*) from the text itself, by someone or something that has not seen the links. Until then the 100% and 95% are upper bounds, not measurements.
 
-### 2. More gold sets, then compare models
-One gold set is not enough to trust a number, and this one was partly built from the tool's own output. Add one for a novel (*Columbus Day*) and one for non-fiction (*Careless People*), labelled by hand from the book. Then compare models: the run above used Opus 5.5 for both steps, and `claude-haiku-5-5` for the Reader would cut the cost by an order of magnitude if the numbers hold.
+### 2. Cut the Reader's price
+Haiku 5.5 as the Reader was tried and found fewer mentions, so the saving has to come from elsewhere: the Message Batches API halves the price of the same model, and Sonnet 5.5 is untested and sits between the two. Results are cached per file and model, so this only matters for new books.
 
-### 3. Make the Reader cheaper
-The Reader now reads four parts at once, which fixes the wait. The price is unchanged: sending the parts through the Message Batches API would halve it, and a smaller model may do as well (see item 2). Results are cached per file and model, so this only matters for new books.
-
-### 4. Make the graph connect
+### 3. Make the graph connect
 Ten books now share nine works (Star Trek, The Simpsons, Hamlet, Winnie-the-Pooh and others), up from two. Three things would create more real links:
 - **More books.** The network effect needs a larger library; batch upload already works.
 - **Second-hop links from the catalogue.** For a mentioned book you do not own, pull its own mentions from the shared catalogue, so two of your books connect through a third.
@@ -49,19 +50,18 @@ Ten books now share nine works (Star Trek, The Simpsons, Hamlet, Winnie-the-Pooh
 
 ## Then: product
 
-### 5. Add a book by title, no file needed
+### 4. Add a book by title, no file needed
 The stated long-term direction. The catalogue tables and admin page exist. What is missing is a public shelf view: search a title, see what it mentions, add it to "my shelf". Needs the catalogue to be populated, which the Judge now makes trustworthy enough to do in bulk from public-domain texts (Project Gutenberg).
 
-### 6. Graph usability
-- Filter the graph to one author, one decade, or one manner of mention ("books this author recommends").
+### 5. Graph usability
+- Filter the graph to one author or one decade.
 - A list view for phones, where a force graph is hard to use.
-- Positions are remembered per browser; a "Reset layout" control would make that visible.
 
 ## Later: engineering
 
-### 7. Split the big files
+### 6. Split the big files
 `app.py` (about 1,900 lines), `process_books.py` (about 2,200) and `static/main.js` (about 2,800) each do several jobs. Split along the seams that now exist: text reading, candidate finding, judging, catalogue lookup, storage; and on the front end graph, panels, upload and processing. Do it with the tests green before and after.
 
-### 8. Housekeeping
-- `process_books.py` still holds matching, storage, file reading and the command line in one file (see item 7).
-- EPUBs that mark italics with their own CSS class names yield no italic candidates (*Careless People*); read the stylesheet to find which classes are italic.
+### 7. Housekeeping
+- `process_books.py` still holds matching, storage, file reading and the command line in one file (see item 6).
+- The candidate finder changed, so the first re-read of each book repeats the slow spaCy pass once.

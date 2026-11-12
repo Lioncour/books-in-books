@@ -1663,7 +1663,15 @@ def audit_book(
         elif outcome == "wrong_work":
             new_id = None
             correct_title = (verdict.get("correct_title") or "").strip()
-            if correct_title:
+            correct_author = (verdict.get("correct_author") or "").strip()
+            if correct_title and not correct_author:
+                # An anonymous or traditional work. A title-only catalogue search
+                # is how these went wrong in the first place (Proverbs became a
+                # commentary on Proverbs), so file the work the Auditor named.
+                new_id = _file_from_judge(
+                    cursor, conn, correct_title, "", verdict.get("correct_kind") or "book"
+                )
+            elif correct_title:
                 try:
                     new_id = get_or_create_book(
                         correct_title,
@@ -1848,7 +1856,7 @@ def extract_work_of_art_mentions(text: str, progress_callback=None):
 
 
 # Bump when candidate finding changes, so cached candidates are rebuilt
-EXTRACTOR_VERSION = 2
+EXTRACTOR_VERSION = 3
 
 _EMPHASIS_RE = re.compile(r"<(i|em|cite)\b[^>]*>(.*?)</\1\s*>", re.I | re.S)
 _ITALIC_SPAN_RE = re.compile(
@@ -1895,14 +1903,45 @@ def _context_for(text: str, needle: str) -> str:
     return re.sub(r"\s+", " ", text[ctx_start:ctx_end]).strip()
 
 
-def extract_markup_mentions(markup: str, text: str) -> List[Dict]:
+_ITALIC_RULE_RE = re.compile(
+    r"([^{}]+)\{[^{}]*font-style\s*:\s*(?:italic|oblique)[^{}]*\}", re.I
+)
+_CLASS_IN_SELECTOR_RE = re.compile(r"\.([A-Za-z_][\w-]*)")
+
+
+def italic_classes_from_css(css: str) -> List[str]:
+    """
+    Class names a stylesheet sets in italics. Many EPUBs do not use <i> at all:
+    the publisher's tool writes <span class="class_s2US"> and puts the italics
+    in the CSS, so the class names have to be read from there.
+    """
+    names = []
+    for rule in _ITALIC_RULE_RE.finditer(css or ""):
+        for selector in rule.group(1).split(","):
+            # Only the last compound selector styles the element itself
+            last = selector.strip().split()[-1] if selector.strip() else ""
+            for name in _CLASS_IN_SELECTOR_RE.findall(last):
+                if name not in names:
+                    names.append(name)
+    return names
+
+
+def extract_markup_mentions(markup: str, text: str, italic_classes=()) -> List[Dict]:
     """
     Titles the publisher set in italics. spaCy misses many of these in running
     prose ("she was reading <i>Middlemarch</i> again"); the markup does not.
+    italic_classes: class names the book's stylesheet sets in italics.
     """
     mentions = {}
     spans = [m.group(2) for m in _EMPHASIS_RE.finditer(markup)]
     spans += [m.group(1) for m in _ITALIC_SPAN_RE.finditer(markup)]
+    if italic_classes:
+        by_class = re.compile(
+            r"<(\w+)\b[^>]*class=[\"'][^\"']*\b(?:%s)\b[^\"']*[\"'][^>]*>(.*?)</\1\s*>"
+            % "|".join(re.escape(name) for name in italic_classes),
+            re.I | re.S,
+        )
+        spans += [m.group(2) for m in by_class.finditer(markup)]
     for raw in spans:
         title = _strip_tags(raw).strip(" .,;:")
         if not looks_like_a_title(title):
@@ -1937,7 +1976,7 @@ def extract_quoted_mentions(text: str) -> List[Dict]:
 
 
 def read_book_file(file_path: Path) -> tuple:
-    """Return (plain text, raw markup or '') for an EPUB or TXT file."""
+    """Return (plain text, raw markup or '', italic class names) for an EPUB or TXT file."""
     if file_path.suffix.lower() == ".epub":
         if epub is None or ebooklib is None:
             raise RuntimeError("ebooklib is not installed. Run: pip install ebooklib")
@@ -1947,12 +1986,17 @@ def read_book_file(file_path: Path) -> tuple:
             warnings.simplefilter("ignore")
             book = epub.read_epub(str(file_path))
         markup = ""
+        css = ""
         for item in book.get_items():
             if item.get_type() == ebooklib.ITEM_DOCUMENT:
                 markup += item.get_content().decode("utf-8", errors="ignore") + "\n"
-        return clean_text(re.sub("<[^<]+?>", "", markup)), markup
+            elif item.get_type() == ebooklib.ITEM_STYLE:
+                css += item.get_content().decode("utf-8", errors="ignore") + "\n"
+        # <style> blocks inside the pages count too
+        css += "\n".join(re.findall(r"<style[^>]*>(.*?)</style>", markup, flags=re.I | re.S))
+        return clean_text(re.sub("<[^<]+?>", "", markup)), markup, italic_classes_from_css(css)
     with open(file_path, "r", encoding="utf-8") as f:
-        return clean_text(f.read()), ""
+        return clean_text(f.read()), "", []
 
 
 def find_candidates(file_path: Path, progress_callback=None) -> List[Dict]:
@@ -1965,7 +2009,7 @@ def find_candidates(file_path: Path, progress_callback=None) -> List[Dict]:
                 "agent": "borges",
             }
         )
-    text, markup = read_book_file(file_path)
+    text, markup, italic_classes = read_book_file(file_path)
     if progress_callback:
         progress_callback(
             {
@@ -1978,7 +2022,7 @@ def find_candidates(file_path: Path, progress_callback=None) -> List[Dict]:
     # spaCy's finds come first so they keep their wording when two sources agree
     return merge_mention_lists(
         extract_work_of_art_mentions(text, progress_callback=progress_callback),
-        extract_markup_mentions(markup, text) if markup else [],
+        extract_markup_mentions(markup, text, italic_classes) if markup else [],
         extract_quoted_mentions(text),
         extract_cocktail_mentions(text),
     )
@@ -2039,7 +2083,7 @@ def add_reader_mentions(
     if found is None:
         cursor.execute("SELECT title, author FROM books WHERE id = ?", (source_book_id,))
         row = cursor.fetchone() or ("", "")
-        text, _markup = read_book_file(file_path)
+        text, _markup, _italic = read_book_file(file_path)
         found = reader.read_for_mentions(
             row[0] or "", row[1] or "", text, progress_callback=progress_callback
         )

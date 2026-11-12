@@ -2956,6 +2956,20 @@ ${mannerTag(r.manner)}
       clearFocusMode();
       tidyGraphLayout();
     });
+    // Forget the remembered positions and let the graph lay itself out afresh
+    $("reset-layout")?.addEventListener("click", () => {
+      savedPositions = { nodes: {} };
+      try {
+        localStorage.removeItem("bib.positions");
+      } catch (e) {
+        /* private mode */
+      }
+      deselectNode();
+      closeDetailPanel();
+      clearFocusMode();
+      syncGraph({ reset: true });
+      notify("Layout reset", "The graph is laying itself out from scratch.", "info", 2500);
+    });
 
     setupSearch();
     setupUpload();
