@@ -504,7 +504,9 @@
           : ""
       }
       ${
-        book.verified
+        String(book.open_library_id || "").startsWith("judge_")
+          ? `<p class="verify-badge unverified">Identified by the Judge · not found in a catalogue</p>`
+          : book.verified
           ? `<p class="verify-badge">Verified via Open Library${
               book.match_score != null ? ` · ${Math.round(book.match_score * 100)}% match` : ""
             }</p>`

@@ -81,6 +81,7 @@ def get_nlp():
 
 TITLE_STOPWORDS = {"the", "a", "an", "of", "and", "or", "in", "on", "to", "for"}
 MIN_VERIFY_SCORE = 0.72
+STRICT_TITLE_SCORE = 0.95
 MIN_QUERY_CHARS = 4
 MEDIA_TITLE_BLOCKLIST = {
     "star trek",
@@ -814,7 +815,10 @@ def _lookup_open_library_by_author(
 
 
 def lookup_open_library(
-    title: str, author: Optional[str] = None, max_year: Optional[int] = None
+    title: str,
+    author: Optional[str] = None,
+    max_year: Optional[int] = None,
+    strict_title: bool = False,
 ) -> Optional[Dict]:
     """
     Search Open Library and return the best verified match, or None.
@@ -870,6 +874,9 @@ def lookup_open_library(
 
     if not best:
         return None
+    if strict_title:
+        # No author to corroborate the match, so the title has to be the same
+        return best if best["match_score"] >= STRICT_TITLE_SCORE else None
     # Franchise titles (Star Trek, etc.) can be real novels — allow OL matches.
     # Film/TV routing is handled by classify_kind via context, not by blocking books.
     if best["match_score"] >= MIN_VERIFY_SCORE and best["author"] != "Unknown":
@@ -884,7 +891,9 @@ def lookup_open_library(
     return None
 
 
-def _find_local_book(title: str, cursor, verified_only: bool = False) -> Optional[int]:
+def _find_local_book(
+    title: str, cursor, verified_only: bool = False, min_score: float = MIN_VERIFY_SCORE
+) -> Optional[int]:
     """Find an existing book by exact or strong fuzzy title match."""
     cursor.execute(
         "SELECT id, verified FROM books WHERE LOWER(TRIM(title)) = LOWER(TRIM(?))",
@@ -907,9 +916,33 @@ def _find_local_book(title: str, cursor, verified_only: bool = False) -> Optiona
         if score > best_score:
             best_score = score
             best_id = book_id
-    if best_id is not None and best_score >= MIN_VERIFY_SCORE:
+    if best_id is not None and best_score >= min_score:
         return best_id
     return None
+
+
+def _file_from_judge(cursor, conn, title: str, author: str, kind: str) -> int:
+    """
+    File a work on the Judge's word when no catalogue has it (or, for music,
+    when the catalogue would name a random performer instead of the composer).
+    The id marks where it came from, so the page can say so.
+    """
+    who = "_".join(sorted(author_tokens(author)))
+    judge_id = f"judge_{kind}_{normalize_title(title) or title.strip().lower()}_{who}".rstrip("_")
+    cursor.execute("SELECT id FROM books WHERE open_library_id = ?", (judge_id,))
+    existing = cursor.fetchone()
+    if existing:
+        return existing[0]
+    label = author or {"movie": "Film / TV", "music": "Music"}.get(kind, "Unknown")
+    cursor.execute(
+        """
+        INSERT INTO books (title, author, open_library_id, verified, match_score, kind)
+        VALUES (?, ?, ?, 1, NULL, ?)
+        """,
+        (title, label, judge_id, kind),
+    )
+    conn.commit()
+    return cursor.lastrowid
 
 
 def _upsert_verified_match(
@@ -1014,9 +1047,15 @@ def get_or_create_book(
     context: Optional[str] = None,
     author: Optional[str] = None,
     max_year: Optional[int] = None,
+    judged: bool = False,
 ) -> Optional[int]:
     """
     Get or create a work via local cache then domain lookup.
+
+    judged: the Judge read the passage and vouches that this is a real work.
+            - With an author, a work no catalogue finds is filed on its word.
+            - Without one there is nothing to corroborate a loose title match,
+              so only an identical title is accepted.
 
     author / max_year: hints from the Judge. With an author, local rows and Open
     Library hits must be by that author; max_year rejects works newer than the
@@ -1033,7 +1072,8 @@ def get_or_create_book(
     author_hint = (author or "").strip()
     if author_hint.lower() in ("unknown", "anonymous", "traditional"):
         author_hint = ""
-    use_author = bool(author_hint) and kind == "book"
+    use_author = bool(author_hint) and (kind == "book" or judged)
+    min_score = STRICT_TITLE_SCORE if judged and not author_hint else MIN_VERIFY_SCORE
 
     cursor.execute(
         """
@@ -1053,15 +1093,21 @@ def get_or_create_book(
         if score > best_score:
             best_score = score
             best_id = book_id
-    if best_id is not None and best_score >= MIN_VERIFY_SCORE:
+    if best_id is not None and best_score >= min_score:
         return best_id
 
     if kind != "book":
         from mention_kinds import lookup_by_kind
 
+        # A recording search answers "Messiah" with whoever recorded something
+        # called that. When the Judge names the composer, keep the Judge's answer.
+        if judged and kind == "music" and author_hint:
+            return _file_from_judge(cursor, conn, title, author_hint, kind)
         match = lookup_by_kind(kind, title)
         if match:
             return _upsert_verified_match(cursor, conn, match, kind=kind)
+        if judged:
+            return _file_from_judge(cursor, conn, title, author_hint, kind)
         if require_verified:
             return None
         manual_id = f"manual_{kind}_{normalize_title(title) or title.strip().lower()}"
@@ -1081,23 +1127,31 @@ def get_or_create_book(
 
     # —— Books (Open Library path) ——
     if not use_author:
-        local_id = _find_local_book(title, cursor, verified_only=require_verified)
+        local_id = _find_local_book(
+            title, cursor, verified_only=require_verified, min_score=min_score
+        )
         if local_id is not None:
             return local_id
 
         if not require_verified:
-            local_any = _find_local_book(title, cursor, verified_only=False)
+            local_any = _find_local_book(title, cursor, verified_only=False, min_score=min_score)
             if local_any is not None:
                 return local_any
 
     match = lookup_open_library(
-        title, author=author_hint if use_author else None, max_year=max_year
+        title,
+        author=author_hint if use_author else None,
+        max_year=max_year,
+        strict_title=judged and not use_author,
     )
     if match:
         match["kind"] = "book"
         return _upsert_verified_match(
             cursor, conn, match, kind="book", strict_author=use_author
         )
+    if judged and use_author:
+        # Real, by the Judge's reading, but absent from the catalogue
+        return _file_from_judge(cursor, conn, title, author_hint, "book")
 
     if require_verified:
         return None
@@ -1381,7 +1435,11 @@ def _store_references(
                 kind=kind,
                 context=context,
                 author=author_hint,
-                max_year=source_year if kind == "book" else None,
+                # With an author the match is already pinned down, and later
+                # editions legitimately mention later works; the date check
+                # only guards title-only matches.
+                max_year=source_year if kind == "book" and not author_hint else None,
+                judged=verdict is not None,
             )
             if referenced_book_id is None:
                 skipped += 1

@@ -535,7 +535,7 @@ def api_book_references(book_id):
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, title, author, verified, match_score, cover_id, cover_url, kind FROM books WHERE id = ?",
+            "SELECT id, title, author, verified, match_score, cover_id, cover_url, kind, open_library_id FROM books WHERE id = ?",
             (book_id,),
         )
         source_book = cursor.fetchone()
@@ -626,6 +626,7 @@ def api_book_references(book_id):
                     "cover_id": source_book["cover_id"]
                     if "cover_id" in source_book.keys()
                     else None,
+                    "open_library_id": source_book["open_library_id"],
                     "cover_url": book_cover_url(source_book, size="M"),
                 },
                 "references": outgoing,

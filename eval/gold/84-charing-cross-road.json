@@ -45,7 +45,9 @@
     { "title": "The Diary of Samuel Pepys", "aliases": ["Pepys' Diary", "Pepys's Diary"], "authors": ["Samuel Pepys"], "kind": "book" },
     { "title": "The Wind in the Willows", "authors": ["Kenneth Grahame"], "kind": "book" },
     { "title": "The Compleat Angler", "aliases": ["Walton's Angler"], "authors": ["Izaak Walton"], "kind": "book" },
-    { "title": "Journey to America", "authors": ["Alexis de Tocqueville"], "kind": "book" }
+    { "title": "Journey to America", "authors": ["Alexis de Tocqueville"], "kind": "book" },
+    { "title": "Hallmark Hall of Fame", "authors": [], "kind": "movie" },
+    { "title": "The Works of John Donne", "aliases": ["Donne's Complete Works"], "authors": ["John Donne"], "kind": "book" }
   ],
   "not_works": [
     "Bon voyage",

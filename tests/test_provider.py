@@ -11,6 +11,8 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+os.environ["BOOKS_NO_ENV_FILE"] = "1"  # never let a local .env steer the tests
+
 import judge  # noqa: E402
 import reader  # noqa: E402
 

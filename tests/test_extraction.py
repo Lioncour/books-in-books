@@ -22,6 +22,8 @@ from unittest import mock
 PROJECT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT))
 
+os.environ["BOOKS_NO_ENV_FILE"] = "1"  # never let a local .env steer the tests
+
 import judge  # noqa: E402
 import process_books as pb  # noqa: E402
 
@@ -37,10 +39,10 @@ CATALOGUE = [
 ]
 
 
-def fake_lookup(title, author=None, max_year=None):
+def fake_lookup(title, author=None, max_year=None, strict_title=False):
     """Mimics lookup_open_library's contract against CATALOGUE."""
     for cat_title, cat_author, year in CATALOGUE:
-        if pb.title_similarity(title, cat_title) < 0.72:
+        if pb.title_similarity(title, cat_title) < (0.95 if strict_title and not author else 0.72):
             continue
         if author and not pb.author_matches(author, cat_author):
             continue
@@ -198,14 +200,54 @@ class JudgedExtractionTests(TempProject):
         self.cur.execute("SELECT author FROM books WHERE open_library_id = '/works/wrong'")
         self.assertEqual(self.cur.fetchone()[0], "Anne Williams")
 
-    def test_work_newer_than_the_source_is_rejected(self):
-        # To Kill a Mockingbird (1960) cannot mention Beautiful Child (2002)
+    def test_title_only_match_newer_than_the_source_is_rejected(self):
+        # To Kill a Mockingbird (1960) cannot mention Beautiful Child (2002).
+        # With no author to pin the work down, the date check is the guard.
         self.store(
             [{"title": "Beautiful Child", "context": "a beautiful child she was"}],
-            fake_judge({"Beautiful Child": book("Beautiful Child", "Torey Hayden")}, source_year=1960),
+            fake_judge({"Beautiful Child": book("Beautiful Child", "")}, source_year=1960),
         )
         self.assertEqual(self.links(), [])
         self.assertIn("no catalogue match", self.skipped()["Beautiful Child"])
+
+    def test_later_work_named_with_its_author_is_kept(self):
+        # An afterword in a later edition lists the author's later books
+        self.store(
+            [{"title": "Lean In", "context": "Her other books include Lean In (2013)"}],
+            fake_judge({"Lean In": book("Lean In", "Sheryl Sandberg")}, source_year=1970),
+        )
+        self.assertEqual([l[0] for l in self.links()], ["Lean In"])
+
+    def test_work_missing_from_the_catalogue_is_filed_on_the_judges_word(self):
+        self.store(
+            [{"title": "Aesop and Rhodope", "context": "the dialogue Aesop and Rhodope"}],
+            fake_judge({"Aesop and Rhodope": book("Aesop and Rhodope", "Walter Savage Landor")}),
+        )
+        self.assertEqual(self.links(), [("Aesop and Rhodope", "Walter Savage Landor", "book", 0)])
+        self.cur.execute("SELECT open_library_id FROM books WHERE title = 'Aesop and Rhodope'")
+        self.assertTrue(self.cur.fetchone()[0].startswith("judge_book_"))
+
+    def test_without_an_author_only_an_identical_title_is_accepted(self):
+        # "The Complete Poetry & Selected Prose" must not become Vallejo's "The Complete Poetry"
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified) VALUES (?, ?, ?, 1)",
+            ("The Complete Poetry", "César Vallejo", "/works/vallejo"),
+        )
+        self.conn.commit()
+        self.store(
+            [{"title": "The Complete Poetry & Selected Prose", "context": "The Complete Poetry & Selected Prose of"}],
+            fake_judge({"The Complete Poetry & Selected Prose": book("The Complete Poetry and Selected Prose", "")}),
+        )
+        self.assertEqual(self.links(), [])
+
+    def test_music_keeps_the_composer_the_judge_named(self):
+        with mock.patch("mention_kinds.lookup_by_kind", side_effect=AssertionError("performer lookup")):
+            self.store(
+                [{"title": "Messiah", "context": "unable to get the Messiah in stiff covers"}],
+                fake_judge({"Messiah": {"is_reference": True, "kind": "music",
+                                        "canonical_title": "Messiah", "author": "George Frideric Handel"}}),
+            )
+        self.assertEqual(self.links(), [("Messiah", "George Frideric Handel", "music", 0)])
 
     def test_tune_is_not_filed_as_a_novel(self):
         music = {

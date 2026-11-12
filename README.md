@@ -118,7 +118,12 @@ books in books/
 **The Judge** (Claude) reads each candidate in its passage and decides whether it really refers to a work, what kind it is, its catalogue title and who wrote it.  
 **Lucien** looks that title up *with the author* (Open Library / film / music / cocktail lexicon) and files what is real.
 
-Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused, and a work published after the book that mentions it is refused too.
+Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused. Measured on *84, Charing Cross Road*, precision went from 58% to 95% and recall from 52% to 80%.
+
+How a judged mention is filed:
+- **With an author:** the catalogue is searched by title and author. If no catalogue has it, the work is filed on the Judge's word and marked "Identified by the Judge".
+- **Without an author:** only an identical title is accepted, and a work newer than the book mentioning it is refused.
+- **Music:** the composer the Judge names is kept, instead of whoever recorded something with that title.
 
 ### Turning the Judge on
 
@@ -143,7 +148,7 @@ Install the extras once (`pip install "anthropic[bedrock]"`), log in (`aws sso l
 
 Who pays: Bedrock usage is billed per token to **the AWS account behind that profile**. It has nothing to do with a Claude subscription or its weekly limits. If the profile belongs to an employer, the employer is billed, so check that a private project is allowed on it.
 
-Accounts that reach models through inference profiles on the older InvokeModel endpoint set two more lines: `BOOKS_BEDROCK_API=runtime` and `BOOKS_JUDGE_MODEL=<your inference profile id>`, for example `eu.anthropic.claude-opus-4-6-v1`. On Bedrock a refused request is not retried on a fallback model; that book simply falls back to title-only matching.
+If the app reports that your role is "not authorized to perform: bedrock-mantle:CreateInference", your account only allows the older InvokeModel endpoint. List what you can use with `aws bedrock list-inference-profiles`, then set two more lines: `BOOKS_BEDROCK_API=runtime` and `BOOKS_JUDGE_MODEL=<your inference profile id>`, for example `eu.anthropic.claude-opus-5-5`. On Bedrock a refused request is not retried on a fallback model; that book simply falls back to title-only matching.
 
 ### Settings
 

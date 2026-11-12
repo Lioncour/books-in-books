@@ -45,7 +45,9 @@ def load_env_file(path: str = ".env") -> None:
         pass
 
 
-load_env_file()
+# Tests set BOOKS_NO_ENV_FILE so a developer's own .env cannot change their outcome
+if not os.environ.get("BOOKS_NO_ENV_FILE"):
+    load_env_file()
 
 
 def provider() -> str:
@@ -125,9 +127,13 @@ wording when it is abbreviated or informal (e.g. "Clarendon's Rebellion" -> \
 "The History of the Rebellion"). Keep the candidate's wording when unsure.
 - author: the creator the passage most plausibly means: the author for books, \
 the composer or best-known performer for music, the director for films. Use the \
-passage and the source book's period to choose between works that share a title, \
-and never name a work published after the source book. Empty string when the \
-work is anonymous or traditional, or when you are not confident.
+passage and the source book's period to choose between works that share a title: \
+a passage in the body of the book cannot mean a work that did not exist yet. The \
+one exception is editorial matter added to a later edition (an afterword, an \
+author biography, an "also by" list), which may name later works; those are real \
+references and should be accepted. For music, prefer the composer over a \
+performer. Empty string when the work is anonymous or traditional, or when you \
+are not confident.
 - manner: how the passage uses the work. "read" when someone reads, owns, buys \
 or is given it; "quoted" when its words are quoted or sung; "discussed" when its \
 content or merits are talked about; "recommended" when it is praised or urged on \
