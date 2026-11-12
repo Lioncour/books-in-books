@@ -52,7 +52,7 @@
     "kind": "book",
     "cover_id": "95718",
     "cover_url": "https://covers.openlibrary.org/b/id/95718-M.jpg",
-    "outgoing_count": 61,
+    "outgoing_count": 65,
     "incoming_count": 0
   },
   {
@@ -122,6 +122,20 @@
     "kind": "movie",
     "cover_id": null,
     "cover_url": "https://upload.wikimedia.org/wikipedia/en/f/fa/A_Nightmare_on_Elm_Street_%281984%29_theatrical_poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 564,
+    "title": "A Tale of Two Cities",
+    "author": "Charles Dickens",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL8193465W",
+    "kind": "book",
+    "cover_id": "13301713",
+    "cover_url": "https://covers.openlibrary.org/b/id/13301713-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -542,7 +556,7 @@
     "kind": "book",
     "cover_id": "26230",
     "cover_url": "https://covers.openlibrary.org/b/id/26230-M.jpg",
-    "outgoing_count": 42,
+    "outgoing_count": 43,
     "incoming_count": 0
   },
   {
@@ -808,7 +822,7 @@
     "kind": "book",
     "cover_id": "14852090",
     "cover_url": "https://covers.openlibrary.org/b/id/14852090-M.jpg",
-    "outgoing_count": 32,
+    "outgoing_count": 33,
     "incoming_count": 0
   },
   {
@@ -934,7 +948,7 @@
     "kind": "book",
     "cover_id": "10543524",
     "cover_url": "https://covers.openlibrary.org/b/id/10543524-M.jpg",
-    "outgoing_count": 47,
+    "outgoing_count": 49,
     "incoming_count": 0
   },
   {
@@ -980,13 +994,13 @@
     "incoming_count": 1
   },
   {
-    "id": 381,
-    "title": "Considérations sur Cicéron",
+    "id": 560,
+    "title": "Considération sur Cicéron",
     "author": "Michel de Montaigne",
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_book_considérations sur cicéron_michel_montaigne",
+    "open_library_id": "judge_book_considération sur cicéron_michel_montaigne",
     "kind": "book",
     "cover_id": null,
     "cover_url": null,
@@ -1078,6 +1092,20 @@
     "incoming_count": 1
   },
   {
+    "id": 563,
+    "title": "Discourse on the Method",
+    "author": "Rene Descartes",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL27098410W",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Descartes_Discours_de_la_Methode.jpg/330px-Descartes_Discours_de_la_Methode.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 422,
     "title": "Dixie",
     "author": "Daniel Decatur Emmett",
@@ -1134,6 +1162,20 @@
     "incoming_count": 1
   },
   {
+    "id": 566,
+    "title": "Dragon Ball",
+    "author": "鳥山 明 [Akira Toriyama]",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL5753031W",
+    "kind": "book",
+    "cover_id": "380394",
+    "cover_url": "https://covers.openlibrary.org/b/id/380394-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 511,
     "title": "Dumbo",
     "author": "Ben Sharpsteen",
@@ -1186,6 +1228,20 @@
     "kind": "book",
     "cover_id": "104154",
     "cover_url": "https://covers.openlibrary.org/b/id/104154-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 552,
+    "title": "Essays",
+    "author": "Leigh Hunt",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL69382W",
+    "kind": "book",
+    "cover_id": "8236351",
+    "cover_url": "https://covers.openlibrary.org/b/id/8236351-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1270,6 +1326,20 @@
     "kind": "book",
     "cover_id": "1065826",
     "cover_url": "https://covers.openlibrary.org/b/id/1065826-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 557,
+    "title": "Final Report of the Commission of Investigation into Mother and Baby Homes",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_final report commission investigation into mother baby homes",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1400,6 +1470,20 @@
     "incoming_count": 1
   },
   {
+    "id": 554,
+    "title": "Frances (series)",
+    "author": "Russell Hoban",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_frances series_hoban_russell",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 430,
     "title": "Frankenstein",
     "author": "Mary Shelley",
@@ -1433,7 +1517,7 @@
     "author": "Arnold Lobel",
     "is_starting": false,
     "verified": true,
-    "match_score": 1.0,
+    "match_score": 0.6,
     "open_library_id": "/works/OL1973422W",
     "kind": "book",
     "cover_id": "11304253",
@@ -1494,6 +1578,20 @@
     "kind": "book",
     "cover_id": "13721",
     "cover_url": "https://covers.openlibrary.org/b/id/13721-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 561,
+    "title": "Ghostbusters",
+    "author": "Ivan Reitman",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q1392942",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/2/2f/Ghostbusters_%281984%29_theatrical_poster.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1592,6 +1690,20 @@
     "kind": "book",
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Harry_Potter_logo.svg/330px-Harry_Potter_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 558,
+    "title": "Harry Potter and the Philosopher's Stone",
+    "author": "Chris Columbus",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q102438",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/6/6b/Harry_Potter_and_the_Philosopher%27s_Stone_Book_Cover.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1820,16 +1932,16 @@
     "incoming_count": 1
   },
   {
-    "id": 527,
+    "id": 570,
     "title": "Iron Man",
-    "author": "Gene Colan",
+    "author": "Stan Lee",
     "is_starting": false,
     "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL24512339W",
+    "match_score": null,
+    "open_library_id": "/works/OL3759468W",
     "kind": "book",
-    "cover_id": "11138809",
-    "cover_url": "https://covers.openlibrary.org/b/id/11138809-M.jpg",
+    "cover_id": "7903643",
+    "cover_url": "https://covers.openlibrary.org/b/id/7903643-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2012,20 +2124,6 @@
     "kind": "book",
     "cover_id": "433380",
     "cover_url": "https://covers.openlibrary.org/b/id/433380-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 424,
-    "title": "Jubilee",
-    "author": "Traditional",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_music_jubilee",
-    "kind": "music",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2380,20 +2478,6 @@
     "incoming_count": 1
   },
   {
-    "id": 535,
-    "title": "My First Reader",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_my first reader",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 416,
     "title": "Nearer, My God, to Thee",
     "author": "Sarah Flower Adams",
@@ -2610,10 +2694,10 @@
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_movie_one man s family_carlton_morse",
+    "open_library_id": "wikidata_Q3107397",
     "kind": "movie",
     "cover_id": null,
-    "cover_url": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/en/thumb/6/67/Onemantable.jpg/330px-Onemantable.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2671,7 +2755,7 @@
     "cover_id": "3367514",
     "cover_url": "https://covers.openlibrary.org/b/id/3367514-M.jpg",
     "outgoing_count": 0,
-    "incoming_count": 1
+    "incoming_count": 2
   },
   {
     "id": 361,
@@ -3010,16 +3094,16 @@
     "incoming_count": 1
   },
   {
-    "id": 233,
-    "title": "She-Ra, Princess of Power (She-Ra Princess of Power)",
-    "author": "John Grant",
+    "id": 555,
+    "title": "She-Ra: Princess of Power",
+    "author": "Filmation",
     "is_starting": false,
     "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL6828216W",
-    "kind": "book",
-    "cover_id": "7150524",
-    "cover_url": "https://covers.openlibrary.org/b/id/7150524-M.jpg",
+    "match_score": null,
+    "open_library_id": "wikidata_Q126883",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/en/thumb/2/25/Sherapopjc5.png/330px-Sherapopjc5.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3076,7 +3160,7 @@
     "kind": "book",
     "cover_id": "10507091",
     "cover_url": "https://covers.openlibrary.org/b/id/10507091-M.jpg",
-    "outgoing_count": 13,
+    "outgoing_count": 14,
     "incoming_count": 0
   },
   {
@@ -3118,7 +3202,7 @@
     "kind": "book",
     "cover_id": "9344864",
     "cover_url": "https://covers.openlibrary.org/b/id/9344864-M.jpg",
-    "outgoing_count": 28,
+    "outgoing_count": 29,
     "incoming_count": 1
   },
   {
@@ -3245,7 +3329,35 @@
     "cover_id": null,
     "cover_url": null,
     "outgoing_count": 0,
-    "incoming_count": 2
+    "incoming_count": 1
+  },
+  {
+    "id": 567,
+    "title": "Stargate SG-1",
+    "author": "Film / TV",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_movie_stargate sg 1",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 571,
+    "title": "Stargate SG-1",
+    "author": "Brad Wright and Jonathan Glassner",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_movie_stargate sg 1_brad_glassner_jonathan_wright",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
   },
   {
     "id": 496,
@@ -3556,6 +3668,20 @@
     "incoming_count": 1
   },
   {
+    "id": 556,
+    "title": "The Goose That Laid the Golden Eggs (First Reading Level 3)",
+    "author": "Aesop",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 0.9,
+    "open_library_id": "/works/OL15009444W",
+    "kind": "book",
+    "cover_id": "2638032",
+    "cover_url": "https://covers.openlibrary.org/b/id/2638032-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 529,
     "title": "The Gospel of John",
     "author": "Anonymous",
@@ -3748,6 +3874,20 @@
     "kind": "book",
     "cover_id": "12726168",
     "cover_url": "https://covers.openlibrary.org/b/id/12726168-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 559,
+    "title": "The Princess Bride",
+    "author": "William Goldman",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL486967W",
+    "kind": "book",
+    "cover_id": "9284881",
+    "cover_url": "https://covers.openlibrary.org/b/id/9284881-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -4200,6 +4340,20 @@
     "incoming_count": 1
   },
   {
+    "id": 568,
+    "title": "The pilgrims' way",
+    "author": "Arthur Quiller-Couch",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL3863963W",
+    "kind": "book",
+    "cover_id": "5555168",
+    "cover_url": "https://covers.openlibrary.org/b/id/5555168-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 231,
     "title": "The tiger's child",
     "author": "Torey L Hayden",
@@ -4233,8 +4387,8 @@
     "author": "Walter Savage Landor",
     "is_starting": false,
     "verified": true,
-    "match_score": 0.952,
-    "open_library_id": "/works/OL107288W",
+    "match_score": 1.0,
+    "open_library_id": "/works/OL44399375W",
     "kind": "book",
     "cover_id": "5851411",
     "cover_url": "https://covers.openlibrary.org/b/id/5851411-M.jpg",
@@ -4242,7 +4396,7 @@
     "incoming_count": 1
   },
   {
-    "id": 214,
+    "id": 569,
     "title": "The works of John Donne",
     "author": "John Donne",
     "is_starting": false,
@@ -4266,20 +4420,20 @@
     "kind": "book",
     "cover_id": "14351077",
     "cover_url": "https://covers.openlibrary.org/b/id/14351077-M.jpg",
-    "outgoing_count": 33,
+    "outgoing_count": 31,
     "incoming_count": 0
   },
   {
-    "id": 406,
-    "title": "Tom Swift and His Sky Racer",
+    "id": 562,
+    "title": "Tom Swift",
     "author": "Victor Appleton",
     "is_starting": false,
     "verified": true,
-    "match_score": 0.9,
-    "open_library_id": "/works/OL3581351W",
+    "match_score": null,
+    "open_library_id": "/works/OL3581414W",
     "kind": "book",
-    "cover_id": "15260682",
-    "cover_url": "https://covers.openlibrary.org/b/id/15260682-M.jpg",
+    "cover_id": "7425877",
+    "cover_url": "https://covers.openlibrary.org/b/id/7425877-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -4490,7 +4644,7 @@
     "kind": "book",
     "cover_id": "8421582",
     "cover_url": "https://covers.openlibrary.org/b/id/8421582-M.jpg",
-    "outgoing_count": 48,
+    "outgoing_count": 53,
     "incoming_count": 0
   },
   {
@@ -4547,7 +4701,7 @@
     "cover_id": null,
     "cover_url": null,
     "outgoing_count": 0,
-    "incoming_count": 0
+    "incoming_count": 1
   },
   {
     "id": 43,

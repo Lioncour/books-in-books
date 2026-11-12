@@ -51,8 +51,10 @@ if not os.environ.get("BOOKS_NO_ENV_FILE"):
 
 
 def provider() -> str:
-    """Which service answers: 'anthropic' (default) or 'bedrock'."""
+    """Which service answers: 'anthropic' (default), 'bedrock' or 'claude-code'."""
     value = os.environ.get("BOOKS_PROVIDER", "anthropic").strip().lower()
+    if value in ("claude-code", "claude_code", "claudecode", "cli"):
+        return "claude-code"
     return "bedrock" if value in ("bedrock", "aws") else "anthropic"
 
 
@@ -76,6 +78,9 @@ def resolve_model(configured: Optional[str], default: str = DEFAULT_MODEL) -> st
     The model id to send. A model you configure is used exactly as written;
     only the built-in default is translated to Bedrock's naming.
     """
+    if provider() == "claude-code":
+        # A Bedrock name left over in .env means nothing to the command-line tool
+        return configured if configured and "anthropic." not in configured else default
     if configured:
         return configured
     if provider() == "bedrock" and not default.startswith(BEDROCK_PREFIX):
@@ -91,7 +96,7 @@ def message_api(client):
     server. Bedrock does not offer that parameter, so there the plain Messages
     surface is used and a refusal simply falls back to title-only matching.
     """
-    if provider() == "bedrock":
+    if provider() in ("bedrock", "claude-code"):
         return client.messages, {}
     return client.beta.messages, {
         "betas": ["server-side-fallback-2026-07-01"],
@@ -224,6 +229,14 @@ def _get_client():
     if os.environ.get("BOOKS_JUDGE", "").lower() in ("0", "off", "false", "no"):
         _disabled_reason = "turned off with BOOKS_JUDGE=off"
         return None
+    if provider() == "claude-code":
+        import claude_code
+
+        if not claude_code.executable():
+            _disabled_reason = "BOOKS_PROVIDER=claude-code needs the `claude` program installed"
+            return None
+        _client = claude_code.ClaudeCodeClient()
+        return _client
     try:
         import anthropic
     except ImportError:

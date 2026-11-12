@@ -587,6 +587,54 @@ class EvalScriptTests(TempProject):
 
 
 class ReaderTests(TempProject):
+    def test_a_version_of_the_book_itself_is_not_a_link(self):
+        self.cur.execute("SELECT title FROM books WHERE id = ?", (self.source_id,))
+        own = self.cur.fetchone()[0]
+        found = [{
+            "title": f"{own} (play)", "context": "now a play", "source": "reader",
+            "verdict": {"is_reference": True, "kind": "book", "canonical_title": f"{own} (play)",
+                        "author": "Someone Else", "manner": "passing", "reason": "found by the Reader"},
+        }]
+        with mock.patch.object(pb, "lookup_open_library", return_value=None):
+            pb._store_references(found, self.source_id, self.cur, self.conn, quiet=True)
+        self.assertEqual(self.links(), [])
+        self.assertEqual(list(self.skipped().values()), ["The book itself, or a version of it"])
+
+    def test_a_second_reading_is_cached_apart_and_its_finds_are_added(self):
+        import reader
+
+        def find(title):
+            return {"title": title, "context": "c", "source": "reader", "verdict": {"is_reference": True}}
+
+        calls = []
+
+        def fake_read(title, author, text, progress_callback=None, overlap=0):
+            calls.append(overlap)
+            return [find("Emma")] if overlap == 0 else [find("Emma"), find("Persuasion")]
+
+        book = Path(self._tmp.name) / "b.txt"
+        book.write_text("some text", encoding="utf-8")
+        with mock.patch.dict(os.environ, {"BOOKS_READER": "on", "BOOKS_READER_PASSES": "2"}), \
+                mock.patch.object(reader, "read_for_mentions", side_effect=fake_read):
+            first = pb.add_reader_mentions([], book, self.source_id, "hash1", self.cur, self.conn)
+            again = pb.add_reader_mentions([], book, self.source_id, "hash1", self.cur, self.conn)
+        self.assertEqual([m["title"] for m in first], ["Emma", "Persuasion"])
+        self.assertEqual([m["title"] for m in again], ["Emma", "Persuasion"])
+        self.assertEqual(calls, [0, reader.SECOND_PASS_OVERLAP])  # the repeat came from the cache
+
+    def test_overlapping_parts_cover_every_boundary_twice(self):
+        import reader
+
+        text = "\n".join(f"Paragraph {n} " + "word " * 30 for n in range(400))
+        plain = reader.split_into_chunks(text, 5000)
+        lapped = reader.split_into_chunks(text, 5000, overlap=600)
+        self.assertGreater(len(plain), 3)
+        self.assertEqual("".join("".join(plain).split()), "".join(text.split()))
+        for earlier, later in zip(lapped, lapped[1:]):
+            # the next part begins with text the previous part ended on
+            self.assertIn(later[:100], earlier)
+        self.assertTrue(lapped[-1].endswith(text[-50:].strip()))
+
     """reader.read_for_mentions against a fake streaming client."""
 
     TEXT = (

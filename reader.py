@@ -101,6 +101,23 @@ def reader_model() -> str:
     return resolve_model(os.environ.get("BOOKS_READER_MODEL"), DEFAULT_MODEL)
 
 
+# The second reading starts each part this far back, so its parts are cut in
+# different places from the first reading's
+SECOND_PASS_OVERLAP = 4000
+
+
+def reader_passes() -> int:
+    """
+    How many times each book is read (1 or 2). Two readings of the same text
+    do not find exactly the same works; the second, cut at different places,
+    adds a few points of recall for twice the price.
+    """
+    try:
+        return 2 if int(os.environ.get("BOOKS_READER_PASSES", "1")) >= 2 else 1
+    except ValueError:
+        return 1
+
+
 def reader_parallel() -> int:
     """How many parts of a book are read at the same time."""
     try:
@@ -109,8 +126,12 @@ def reader_parallel() -> int:
         return 4
 
 
-def split_into_chunks(text: str, size: int = CHUNK_CHARS) -> List[str]:
-    """Cut at paragraph breaks where possible, never in the middle of a word."""
+def split_into_chunks(text: str, size: int = CHUNK_CHARS, overlap: int = 0) -> List[str]:
+    """
+    Cut at paragraph breaks where possible, never in the middle of a word.
+    With an overlap, each part starts that many characters before the previous
+    one ended, so a passage cut in two is read whole at least once.
+    """
     chunks = []
     start = 0
     while start < len(text):
@@ -124,7 +145,13 @@ def split_into_chunks(text: str, size: int = CHUNK_CHARS) -> List[str]:
         chunk = text[start:end].strip()
         if chunk:
             chunks.append(chunk)
+        if end >= len(text):
+            break
         start = end
+        if overlap:
+            # Step back to a paragraph break inside the overlap, if there is one
+            back = text.find("\n", end - overlap, end)
+            start = back if back != -1 else end - overlap
     return chunks
 
 
@@ -182,6 +209,7 @@ def read_for_mentions(
     text: str,
     progress_callback=None,
     client=None,
+    overlap: int = 0,
 ) -> Optional[List[Dict]]:
     """
     Returns candidate mentions that already carry a verdict:
@@ -195,7 +223,7 @@ def read_for_mentions(
 
     from concurrent.futures import ThreadPoolExecutor
 
-    chunks = split_into_chunks(text)
+    chunks = split_into_chunks(text, overlap=overlap)
 
     def read_part(n: int):
         try:

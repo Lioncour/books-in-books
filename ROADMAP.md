@@ -10,7 +10,7 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 87 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 95 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
@@ -37,13 +37,16 @@ Items are ordered by how much they improve the result for the effort.
 - **Gold sets for the long books.** *Columbus Day* and *Careless People* were labelled from the full text, in parts, by readers that never saw the links. First measurement: precision 100% on both, but recall only 68% and 67%. The Reader was missing works pointed at through a character ("the Barney guy", "crazy Rambo shit", a Smurf painted on a truck, a meeting room named after the Wicked Witch of the West).
 - **The Reader now follows characters to their work.** One paragraph in its instructions. After re-reading the library: *Columbus Day* 95% recall, *Careless People* 86%, *To Kill a Mockingbird* 96%, precision still 100% on all five gold sets. The library went from 308 to 347 links, and 19 works are now shared by several books, up from 10.
 - **Readings vary.** Two readings of the same book do not find exactly the same works: *Small Things Like These* went from 93% to 87% and *84, Charing Cross Road* from 95% to 93% in the same re-read, one or two works each. The numbers above are one reading, good to a few points.
+- **Two readings.** Measured at the Reader, over the five gold books (178 works): one reading found 87% and 90% on two tries, one reading with overlapping parts 91%, two plain readings together 90%, and a plain reading plus one cut at different places 93%. `BOOKS_READER_PASSES=2` does the last of these. With it on, across the library: precision 100% on all five gold sets, recall 97% (*84, Charing Cross Road*), 93% (*Small Things Like These*), 96% (*To Kill a Mockingbird*), 98% (*Columbus Day*), 86% (*Careless People*). 360 links, 19 works shared by several books. Each comparison is a single run, so read the differences as a few points either way.
+- **A book no longer links to its own film or stage version**, which the second reading picked up from a jacket text.
+- **Claude Code as a provider.** `BOOKS_PROVIDER=claude-code` runs the `claude` program on the machine instead of an API, so the work is drawn from a Claude subscription. Built and tested offline; not yet run against a real login.
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
 ## Next: do these first
 
-### 1. Steady the Reader
-Recall moves a few points between two readings of the same book, and what is still missed is mostly unnamed allusion (a game show described but not named, a line quoted without its source). Reading each book twice and keeping the union would cost twice as much; overlapping the parts is cheaper and may catch what falls on a boundary. Measure both against the five gold sets before choosing.
+### 1. Try the Claude Code provider for real
+It has only been tested with the program faked. Log in (`claude`, then `/login`), re-read one gold book through it, and compare with the Bedrock numbers before relying on it. Watch how much of the subscription's limit a whole book uses.
 
 ### 2. Cut the Reader's price
 Haiku 5.5 and Sonnet 5.5 were both tried as the Reader and both found clearly fewer mentions, so a smaller model is not the answer. The Message Batches API halves the price of the same model. Results are cached per file and model, so this only matters for new books.

@@ -2990,7 +2990,8 @@ ${mannerTag(r.manner)}
           const hint = $("judge-hint");
           if (!hint || !health.judge) return;
           hint.hidden = false;
-          const via = health.judge.provider === "bedrock" ? " via Amazon Bedrock" : "";
+          const via =
+            { bedrock: " via Amazon Bedrock", "claude-code": " via Claude Code" }[health.judge.provider] || "";
           hint.textContent = health.judge.available
             ? `The Judge is on (${health.judge.model}${via}): mentions are checked in context.`
             : `The Judge is off (${health.judge.reason || "no Claude credentials"}), so matching is by title only. See “Turning the Judge on” in the README.`;

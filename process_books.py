@@ -1360,6 +1360,8 @@ def _store_references(
 
     overrides = _load_overrides(cursor, source_book_id)
     makers = _override_makers(cursor, source_book_id)
+    cursor.execute("SELECT title FROM books WHERE id = ?", (source_book_id,))
+    own_title = ((cursor.fetchone() or [""])[0] or "").strip()
 
     # —— The Judge reads every candidate in its passage (cocktails come from a
     # curated lexicon and people's corrections are already decided) ——
@@ -1464,6 +1466,19 @@ def _store_references(
                 kind = verdict["kind"]
                 lookup_title = (verdict.get("canonical_title") or "").strip() or raw_title
                 author_hint = (verdict.get("author") or "").strip() or None
+                # The film or stage version of the book, named on its own jacket,
+                # is the book talking about itself, not a link to another work
+                bare_title = re.sub(r"\s*[\(\[].*?[\)\]]", "", lookup_title).strip()
+                if own_title and title_similarity(bare_title, own_title) >= 0.95:
+                    skipped += 1
+                    _record_skip(
+                        cursor,
+                        source_book_id,
+                        raw_title,
+                        "The book itself, or a version of it",
+                        context,
+                    )
+                    continue
             else:
                 kind = item.get("kind_hint") or classify_kind(raw_title, context)
                 if kind not in ("book", "movie", "music", "cocktail"):
@@ -2117,21 +2132,31 @@ def add_reader_mentions(
 
     if not reader.reader_enabled():
         return mentions
-    cache_key = (
-        f"reader{reader.READER_VERSION}:{reader.reader_model()}:{file_hash}" if file_hash else None
-    )
-    found = cached_candidates(cache_key, cursor)
-    if found is None:
-        cursor.execute("SELECT title, author FROM books WHERE id = ?", (source_book_id,))
-        row = cursor.fetchone() or ("", "")
-        text, _markup, _italic = read_book_file(file_path)
-        found = reader.read_for_mentions(
-            row[0] or "", row[1] or "", text, progress_callback=progress_callback
-        )
+    readings = []
+    text = None
+    # Each reading is cached on its own, so turning the second one on later
+    # does not pay for the first again
+    for number in range(1, reader.reader_passes() + 1):
+        tag = f"reader{reader.READER_VERSION}" + ("" if number == 1 else f"-pass{number}")
+        cache_key = f"{tag}:{reader.reader_model()}:{file_hash}" if file_hash else None
+        found = cached_candidates(cache_key, cursor)
         if found is None:
-            return mentions  # no credentials, or it failed: carry on without it
-        store_candidates(cache_key, found, cursor, conn)
-    return merge_mention_lists(found, mentions)
+            if text is None:
+                text, _markup, _italic = read_book_file(file_path)
+            cursor.execute("SELECT title, author FROM books WHERE id = ?", (source_book_id,))
+            row = cursor.fetchone() or ("", "")
+            found = reader.read_for_mentions(
+                row[0] or "",
+                row[1] or "",
+                text,
+                progress_callback=progress_callback,
+                overlap=0 if number == 1 else reader.SECOND_PASS_OVERLAP,
+            )
+            if found is None:
+                break  # no credentials, or it failed: carry on with what there is
+            store_candidates(cache_key, found, cursor, conn)
+        readings.append(found)
+    return merge_mention_lists(*readings, mentions)
 
 
 def process_book_file(

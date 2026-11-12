@@ -119,7 +119,7 @@ books in books/
 **The Judge** (Claude) reads each candidate in its passage and decides whether it really refers to a work, what kind it is, its catalogue title and who wrote it.  
 **Lucien** looks that title up *with the author* (Open Library / film / music / cocktail lexicon) and files what is real.
 
-Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused. Measured on *84, Charing Cross Road*, precision went from 58% to 95% and recall from 52% to 83% with the Judge alone, and to 98% and 93% with the Reader on as well. On four gold sets labelled independently from the full text, with the Reader and the Auditor on, precision is 100% on all of them and recall is 87% (*Small Things Like These*), 96% (*To Kill a Mockingbird*), 95% (*Columbus Day*) and 86% (*Careless People*).
+Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused. Measured on *84, Charing Cross Road*, precision went from 58% to 95% and recall from 52% to 83% with the Judge alone, and to 98% and 93% with the Reader on as well. On four gold sets labelled independently from the full text, with the Reader and the Auditor on, and each book read twice, precision is 100% on all of them and recall is 93% (*Small Things Like These*), 96% (*To Kill a Mockingbird*), 98% (*Columbus Day*) and 86% (*Careless People*).
 
 How a judged mention is filed:
 - **With an author:** the catalogue is searched by title and author. If no catalogue has it, the work is filed on the Judge's word and marked "Identified by the Judge".
@@ -151,6 +151,18 @@ Who pays: Bedrock usage is billed per token to **the AWS account behind that pro
 
 If the app reports that your role is "not authorized to perform: bedrock-mantle:CreateInference", your account only allows the older InvokeModel endpoint. List what you can use with `aws bedrock list-inference-profiles`, then set two more lines: `BOOKS_BEDROCK_API=runtime` and `BOOKS_JUDGE_MODEL=<your inference profile id>`, for example `eu.anthropic.claude-opus-5-5`. On Bedrock a refused request is not retried on a fallback model; that book simply falls back to title-only matching.
 
+### Using Claude Code
+
+If you have a Claude subscription and the Claude Code command-line tool, the app can ask that instead of an API. Set:
+
+```
+BOOKS_PROVIDER=claude-code
+```
+
+Log in once by running `claude` in a terminal and typing `/login`. The app then runs `claude -p` in the background for each batch of mentions and each part of a book, with no tools, so it can only answer.
+
+Who pays: nothing is billed per token. The work counts against **your Claude subscription's usage limits**, and reading a whole library with the Reader on uses a good share of them. It is also slower than the API, since every request starts the program afresh. This route has been tested without a network only; measure it with `eval_extraction.py` before trusting its numbers.
+
 ### Settings
 
 Settings can live in the terminal or in a `.env` file in the project folder (gitignored). The terminal wins.
@@ -158,12 +170,13 @@ Settings can live in the terminal or in a `.env` file in the project folder (git
 | Setting | Default | Purpose |
 |---------|---------|---------|
 | `ANTHROPIC_API_KEY` | unset | Credentials for the Judge (Claude API) |
-| `BOOKS_PROVIDER` | `anthropic` | `bedrock` reaches Claude through Amazon Bedrock |
+| `BOOKS_PROVIDER` | `anthropic` | `bedrock` reaches Claude through Amazon Bedrock, `claude-code` through the Claude Code program on this machine |
 | `AWS_PROFILE` / `AWS_REGION` | unset | Bedrock only: which AWS login and region to use |
 | `BOOKS_BEDROCK_API` | `mantle` | Bedrock only: `runtime` for the older InvokeModel endpoint |
 | `BOOKS_JUDGE_MODEL` | `claude-opus-5-5` | Model used to judge mentions (`anthropic.claude-opus-5-5` on Bedrock) |
 | `BOOKS_JUDGE` | on | `off` disables the Judge |
 | `BOOKS_READER` | off | `on` lets Claude read the whole book (see below) |
+| `BOOKS_READER_PASSES` | `1` | `2` reads each book a second time, cut at different places, and keeps what either reading found: a few points more recall for twice the price |
 | `BOOKS_READER_MODEL` | `claude-opus-5-5` | Model used by the Reader |
 | `BOOKS_READER_PARALLEL` | `4` | Parts of a book the Reader reads at once |
 | `BOOKS_AUDITOR` | on | `off` stops Claude checking the finished links |

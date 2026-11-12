@@ -127,5 +127,76 @@ class EnvFileTests(unittest.TestCase):
         judge.load_env_file("no-such-file.env")
 
 
+
+class ClaudeCodeTests(unittest.TestCase):
+    def reply(self, **fields):
+        import json as _json
+
+        return mock.Mock(stdout=_json.dumps({"type": "result", "is_error": False, **fields}),
+                         stderr="", returncode=0)
+
+    def test_the_provider_is_recognised_and_ignores_bedrock_model_names(self):
+        with clean_env(BOOKS_PROVIDER="claude-code"):
+            self.assertEqual(judge.provider(), "claude-code")
+            self.assertEqual(judge.resolve_model("eu.anthropic.claude-opus-5-5"), judge.DEFAULT_MODEL)
+            self.assertEqual(judge.resolve_model("sonnet"), "sonnet")
+
+    def test_a_request_becomes_one_run_of_the_claude_program(self):
+        import claude_code
+
+        schema = {"type": "object"}
+        with mock.patch.object(claude_code, "executable", return_value="claude"), mock.patch.object(
+            claude_code.subprocess, "run", return_value=self.reply(structured_output={"works": []})
+        ) as run:
+            response = claude_code.ClaudeCodeClient().messages.create(
+                model="claude-opus-5-5",
+                max_tokens=100,
+                system=[{"type": "text", "text": "Be brief."}],
+                output_config={"effort": "medium", "format": {"type": "json_schema", "schema": schema}},
+                messages=[{"role": "user", "content": "the whole stretch of text"}],
+            )
+        command = run.call_args.args[0]
+        self.assertEqual(command[:4], ["claude", "-p", "--model", "claude-opus-5-5"])
+        self.assertEqual(command[command.index("--system-prompt") + 1], "Be brief.")
+        self.assertEqual(command[command.index("--json-schema") + 1], '{"type": "object"}')
+        self.assertEqual(command[command.index("--tools") + 1], "")  # it may only answer
+        self.assertEqual(run.call_args.kwargs["input"], "the whole stretch of text")
+        self.assertEqual(response.content[0].text, '{"works": []}')
+        self.assertEqual(response.stop_reason, "end_turn")
+
+    def test_an_answer_wrapped_in_prose_is_still_read(self):
+        import claude_code
+
+        with mock.patch.object(claude_code, "executable", return_value="claude"), mock.patch.object(
+            claude_code.subprocess, "run",
+            return_value=self.reply(result='Here you go:\n```json\n{"works": []}\n```'),
+        ):
+            with claude_code.ClaudeCodeClient().messages.stream(
+                model="m", system="s", messages=[{"role": "user", "content": "t"}]
+            ) as stream:
+                self.assertEqual(stream.get_final_message().content[0].text, '{"works": []}')
+
+    def test_an_expired_login_says_how_to_fix_it(self):
+        import claude_code
+
+        failed = self.reply(is_error=True, result="Failed to authenticate: OAuth session expired")
+        with mock.patch.object(claude_code, "executable", return_value="claude"), mock.patch.object(
+            claude_code.subprocess, "run", return_value=failed
+        ):
+            with self.assertRaisesRegex(RuntimeError, "/login"):
+                claude_code.ask("m", "s", [{"role": "user", "content": "t"}])
+
+    def test_without_the_program_the_judge_reports_why(self):
+        import claude_code
+
+        with clean_env(BOOKS_PROVIDER="claude-code"), mock.patch.object(
+            claude_code, "executable", return_value=None
+        ):
+            judge._client, judge._disabled_reason = None, None
+            status = judge.judge_status()
+            self.assertFalse(status["available"])
+            self.assertIn("claude", status["reason"])
+            judge._client, judge._disabled_reason = None, None
+
 if __name__ == "__main__":
     unittest.main()

@@ -33,19 +33,13 @@
     "source": 1,
     "target": 404,
     "context": "the ape in Tarzan",
-    "manner": "passing"
+    "manner": "discussed"
   },
   {
     "source": 1,
     "target": 405,
     "context": "Mr. Crabtree in The Rover Boys",
     "manner": "discussed"
-  },
-  {
-    "source": 1,
-    "target": 406,
-    "context": "Dill bet Jem The Gray Ghost against two Tom Swifts",
-    "manner": "read"
   },
   {
     "source": 1,
@@ -133,12 +127,6 @@
   },
   {
     "source": 1,
-    "target": 424,
-    "context": "the line carefully, and it was sung. At the chorus Zeebo closed the book, a signal for the congregation to proceed without his help. On the dying notes of “Jubilee,” Zeebo said, “In that far-off sweet forever, just beyond the shining river.” Line for line, voices followed in simple harmony until the hymn ended in a me",
-    "manner": "quoted"
-  },
-  {
-    "source": 1,
     "target": 472,
     "context": "One day we were so busily playing Chapter XXV, Book II of One Man’s Family, we did not see Atticus standing on the sidewalk looking at us",
     "manner": null
@@ -147,7 +135,7 @@
     "source": 1,
     "target": 480,
     "context": "then copying out a chapter of the Bible beneath",
-    "manner": "compared"
+    "manner": "quoted"
   },
   {
     "source": 1,
@@ -187,15 +175,15 @@
   },
   {
     "source": 1,
-    "target": 535,
-    "context": "year. I suppose she chose me because she knew my name; as I read the alphabet a faint line appeared between her eyebrows, and after making me read most of My First Reader and the stock-market quotations from The Mobile Register aloud, she discovered that I was literate and looked at me with more than faint distaste. Miss Carolin",
-    "manner": "read"
+    "target": 536,
+    "context": "brought forth Eunice Ann saying she didn’t want to play Shadrach any more",
+    "manner": null
   },
   {
     "source": 1,
-    "target": 536,
-    "context": "brought forth Eunice Ann saying she didn’t want to play Shadrach any more",
-    "manner": "compared"
+    "target": 562,
+    "context": "Dill bet Jem The Gray Ghost against two Tom Swifts",
+    "manner": null
   },
   {
     "source": 3,
@@ -213,7 +201,7 @@
     "source": 3,
     "target": 34,
     "context": "It’s called Bread and Jam for Frances. That’s a funny one.",
-    "manner": "passing"
+    "manner": "read"
   },
   {
     "source": 3,
@@ -237,13 +225,13 @@
     "source": 3,
     "target": 215,
     "context": "Stimulated by a cartoon called The Masters of the Universe, these toys may not have actually ruled the universe",
-    "manner": "discussed"
+    "manner": "passing"
   },
   {
     "source": 3,
     "target": 216,
     "context": "“If You’re Happy and You Know It” was an old favorite.",
-    "manner": "quoted"
+    "manner": "passing"
   },
   {
     "source": 3,
@@ -304,12 +292,6 @@
     "target": 232,
     "context": "Twilight Children",
     "manner": "passing"
-  },
-  {
-    "source": 3,
-    "target": 233,
-    "context": "I picked it up. She-Ra, Princess of Power.",
-    "manner": "read"
   },
   {
     "source": 3,
@@ -387,7 +369,7 @@
     "source": 3,
     "target": 449,
     "context": "Little arrows in your clothing, Little arrows in your hair. When you’re in love you’ll find those little arrows everywhere,",
-    "manner": "quoted"
+    "manner": null
   },
   {
     "source": 3,
@@ -398,8 +380,8 @@
   {
     "source": 3,
     "target": 458,
-    "context": "fter the two of them, as did Julie, who had just come out of the building, as did Bob and another teacher. We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after Billy. When Billy reached the wall at the end of the playground, Venus cornered him and started to p",
-    "manner": "compared"
+    "context": "We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after Billy.",
+    "manner": null
   },
   {
     "source": 3,
@@ -441,13 +423,25 @@
     "source": 3,
     "target": 502,
     "context": "To me He-Man had seemed a pale imitation of the old-time superheroes, like Superman and Batman",
-    "manner": "compared"
+    "manner": null
   },
   {
     "source": 3,
     "target": 503,
     "context": "“You mean like James Bond!” Billy shouted.",
-    "manner": "compared"
+    "manner": null
+  },
+  {
+    "source": 3,
+    "target": 554,
+    "context": "I had left the Frog and Toad books, the Frances books, and the She-Ra comic all lying in plain view on top of the bookshelf.",
+    "manner": "read"
+  },
+  {
+    "source": 3,
+    "target": 555,
+    "context": "I picked it up. She-Ra, Princess of Power.",
+    "manner": null
   },
   {
     "source": 13,
@@ -459,7 +453,7 @@
     "source": 13,
     "target": 18,
     "context": "Not Star Trek level compatible, but we could probably subsist on an alien ecosystem.",
-    "manner": "compared"
+    "manner": "passing"
   },
   {
     "source": 13,
@@ -661,15 +655,15 @@
   },
   {
     "source": 13,
-    "target": 508,
-    "context": "The two colony ships, Bert and Ernie—yeah, they named themselves that, yes, voluntarily—came into the system",
+    "target": 499,
+    "context": "The holotank showed the fusion signatures of Calvin, Goku, and Linus as they left the system.",
     "manner": "compared"
   },
   {
     "source": 13,
-    "target": 517,
-    "context": "When I’d been a kid, watching Star Trek and Star Wars and Stargate and all the other science fiction shows",
-    "manner": "passing"
+    "target": 508,
+    "context": "The two colony ships, Bert and Ernie—yeah, they named themselves that, yes, voluntarily—came into the system",
+    "manner": "compared"
   },
   {
     "source": 13,
@@ -735,7 +729,37 @@
     "source": 13,
     "target": 548,
     "context": "a result of hubris not seen since the days of Babel",
+    "manner": null
+  },
+  {
+    "source": 13,
+    "target": 563,
+    "context": "For that matter, Descartes had his famous cogito ergo sum",
+    "manner": "quoted"
+  },
+  {
+    "source": 13,
+    "target": 564,
+    "context": "And this wasn’t the best of times.",
     "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 566,
+    "context": "The holotank showed the fusion signatures of Calvin, Goku, and Linus as they left the system.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 567,
+    "context": "I felt a pang of disappointment as visions of meeting Vulcans or Asgardians evaporated.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 571,
+    "context": "When I’d been a kid, watching Star Trek and Star Wars and Stargate and all the other science fiction shows",
+    "manner": "passing"
   },
   {
     "source": 48,
@@ -824,25 +848,25 @@
   {
     "source": 48,
     "target": 256,
-    "context": "The Expeditionary Force series Book 1: Columbus Day Book 2: SpecOps Book 3: Paradise Book ‘3.5’: Trouble on Paradise novella Book 4: Black Ops Book 5: Zero Hour Book 6: Mavericks Book 7: Renegades Book 8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
+    "context": "Book 4: Black Ops",
     "manner": "passing"
   },
   {
     "source": 48,
     "target": 257,
-    "context": "e series Book 1: Columbus Day Book 2: SpecOps Book 3: Paradise Book ‘3.5’: Trouble on Paradise novella Book 4: Black Ops Book 5: Zero Hour Book 6: Mavericks Book 7: Renegades Book 8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
+    "context": "Book 5: Zero Hour",
     "manner": "passing"
   },
   {
     "source": 48,
     "target": 258,
-    "context": "Columbus Day Book 2: SpecOps Book 3: Paradise Book ‘3.5’: Trouble on Paradise novella Book 4: Black Ops Book 5: Zero Hour Book 6: Mavericks Book 7: Renegades Book 8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
+    "context": "Book 6: Mavericks",
     "manner": "passing"
   },
   {
     "source": 48,
     "target": 259,
-    "context": "2: SpecOps Book 3: Paradise Book ‘3.5’: Trouble on Paradise novella Book 4: Black Ops Book 5: Zero Hour Book 6: Mavericks Book 7: Renegades Book 8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
+    "context": "Book 7: Renegades",
     "manner": "passing"
   },
   {
@@ -926,7 +950,7 @@
   {
     "source": 48,
     "target": 463,
-    "context": "age, and I was grateful that my guys shrugged and took it in stride. If this was the worst fuckup we got into, we’d be doing great. CHAPTER FOUR PARADISE Unlike Alpha, Paradise had a space elevator. It looked a bit different from the one that hovered over Earth, someone told me this one was put there by the R",
+    "context": "Book 3: Paradise",
     "manner": "passing"
   },
   {
@@ -1005,19 +1029,31 @@
     "source": 48,
     "target": 521,
     "context": "he spoke like Sherlock Holmes or one of those upper-crust royalty on a BBC TV show",
-    "manner": "compared"
+    "manner": null
   },
   {
     "source": 48,
     "target": 522,
     "context": "Sergeant Adams, drag sleeping beauty here out of the way somewhere.",
-    "manner": "compared"
+    "manner": null
   },
   {
     "source": 48,
     "target": 523,
     "context": "like, why was Iron Man waving to the Smurfs?",
-    "manner": "passing"
+    "manner": null
+  },
+  {
+    "source": 48,
+    "target": 558,
+    "context": "The idea for Ascendant came to me after watching the first Harry Potter movie",
+    "manner": "discussed"
+  },
+  {
+    "source": 48,
+    "target": 559,
+    "context": "sunk into the Pit of Despair",
+    "manner": "compared"
   },
   {
     "source": 49,
@@ -1035,7 +1071,7 @@
     "source": 49,
     "target": 54,
     "context": "if Santa would pleese bring Enid Blyton’s Five Go Down to the Sea or Five Run Away Together or both",
-    "manner": "passing"
+    "manner": "read"
   },
   {
     "source": 49,
@@ -1098,6 +1134,12 @@
     "manner": "quoted"
   },
   {
+    "source": 49,
+    "target": 557,
+    "context": "Earlier this year, the Mother and Baby Home Commission Report found that nine thousand children died in just eighteen of the institutions investigated.",
+    "manner": "discussed"
+  },
+  {
     "source": 74,
     "target": 18,
     "context": "In the background was the battle stations alarm from Star Trek, which I had forgotten Sergeant Adams had programmed into the ship’s systems.",
@@ -1113,7 +1155,7 @@
     "source": 74,
     "target": 252,
     "context": "ll it Hoth.\" Williams suggested. \"Hoth?\" I asked. \"Why's that?\" \"Hoth. You know, the ice planet where the rebels had their base in 'The Empire Strikes Back'. Star Wars.\" \"Oh, yeah.\" I remembered now. \"No, we're not calling it Hoth, sounds too much like 'hot'. This planet is a crappy place. Nobody wants to be there, we're onl",
-    "manner": "passing"
+    "manner": "discussed"
   },
   {
     "source": 74,
@@ -1161,7 +1203,7 @@
     "source": 74,
     "target": 393,
     "context": "launched into \"Ninety nine bottles of beer on the wall-\"",
-    "manner": "compared"
+    "manner": "quoted"
   },
   {
     "source": 74,
@@ -1255,15 +1297,21 @@
   },
   {
     "source": 74,
-    "target": 527,
-    "context": "Why don't you show me as Ironman or-",
-    "manner": "compared"
+    "target": 529,
+    "context": "The truth shall set you free.",
+    "manner": null
   },
   {
     "source": 74,
-    "target": 529,
-    "context": "The truth shall set you free.",
-    "manner": "quoted"
+    "target": 561,
+    "context": "“Joe, Doctor Venkman is on her way to see you, the science team asked her to talk to you about-”",
+    "manner": "passing"
+  },
+  {
+    "source": 74,
+    "target": 570,
+    "context": "Why don't you show me as Ironman or-",
+    "manner": "compared"
   },
   {
     "source": 80,
@@ -1275,7 +1323,7 @@
     "source": 80,
     "target": 86,
     "context": "please don’t worry about us using old books such as Clarendon’s Rebellion for wrapping",
-    "manner": "passing"
+    "manner": "discussed"
   },
   {
     "source": 80,
@@ -1287,7 +1335,7 @@
     "source": 80,
     "target": 90,
     "context": "About the Sir Roger de Coverley Papers, we happen to have in stock a volume of eighteenth century essays which includes a good selection of them",
-    "manner": "discussed"
+    "manner": "read"
   },
   {
     "source": 80,
@@ -1299,7 +1347,7 @@
     "source": 80,
     "target": 99,
     "context": "We had several copies of Lamb’s Essays of Elia earlier on but they were snapped up during the holiday rush.",
-    "manner": "discussed"
+    "manner": "read"
   },
   {
     "source": 80,
@@ -1395,7 +1443,7 @@
     "source": 80,
     "target": 197,
     "context": "as she was later to describe in Underfoot in Show Business (1961)",
-    "manner": "discussed"
+    "manner": "passing"
   },
   {
     "source": 80,
@@ -1425,7 +1473,7 @@
     "source": 80,
     "target": 202,
     "context": "Like Bach’s St. Matthew Passion and Handel’s Messiah?",
-    "manner": "discussed"
+    "manner": "passing"
   },
   {
     "source": 80,
@@ -1437,7 +1485,7 @@
     "source": 80,
     "target": 204,
     "context": "It’s a Giant Modern Library book.",
-    "manner": "read"
+    "manner": "criticised"
   },
   {
     "source": 80,
@@ -1473,19 +1521,13 @@
     "source": 80,
     "target": 211,
     "context": "The Book-Lovers’ Anthology stepped out of its wrappings, all gold-embossed leather and gold-tipped pages",
-    "manner": "read"
+    "manner": null
   },
   {
     "source": 80,
     "target": 213,
-    "context": "ided you had the wit to leave all three open at the right pages which I didn’t. So break it to me gently: how hard is it going to be to find me John Donne’s Complete Sermons and how much is it going to cost? i am going to bed. i will have hideous nightmares involving huge monsters in academic robes carrying long bloody butcher k",
-    "manner": "discussed"
-  },
-  {
-    "source": 80,
-    "target": 214,
-    "context": "py comes along. The price is approximately $2.65 and you have a credit with us of 50 cents. I am afraid the complete Donne Sermons can be had only by buying Donne’s Complete Works. This runs to more than 40 volumes and would be very expensive if in good condition. We hope you had a good Christmas and New Year in spite of the Giant Mod",
-    "manner": "discussed"
+    "context": "Sermon XV and there they are: Excerpts I, II and III,—only when you get to the end of Excerpt I you discover they have deleted Jezebel off it. So you get down Donne’s Sermons, Selected Passages (Logan Pearsall Smith) where you spend twenty minutes locating Sermon XV, Excerpt I, because by Logan Pearsall Smith it isn’t Sermon XV, Excerpt I, it’s Passag",
+    "manner": "passing"
   },
   {
     "source": 80,
@@ -1621,6 +1663,12 @@
   },
   {
     "source": 80,
+    "target": 457,
+    "context": "she says it’s not worth reading so that killed my interest in the entire subject",
+    "manner": null
+  },
+  {
+    "source": 80,
     "target": 480,
     "context": "If you must clean your Grolier Bible, we should advise ordinary soap and water.",
     "manner": "discussed"
@@ -1628,8 +1676,32 @@
   {
     "source": 80,
     "target": 492,
-    "context": "e on the radio—Corelli or somebody—and this thing on the table. This Giant Modern Library thing. So I thought: “I will read the three standard passages from Sermon XV aloud,” you have to read Donne aloud, it’s like a Bach fugue. Would you like to know what I went through in an innocent attempt to read three contiguous unc",
+    "context": "I will read the three standard passages from Sermon XV aloud",
+    "manner": null
+  },
+  {
+    "source": 80,
+    "target": 549,
+    "context": "also a Vulgate New Testament which I hope will be O.K.",
     "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 552,
+    "context": "n your letter I will send it along. I am glad to say I have managed to dig out a few books for you from a private library that we have just bought. There is a Leigh Hunt which includes most of the essays you like, also a Vulgate New Testament which I hope will be O.K. I have also included a Dictionary to the Vulgate which you m",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 568,
+    "context": "ey were just two odd volumes with the covers detached and nobody in their right senses would have given us a shilling for them. The Quiller-Couch anthology, The Pilgrim’s Way, has been sent to you by Book Post. The balance due was $1.85 so your $2 more than covered it. We haven’t a copy of Pepys’ Diary in stock at the moment but sha",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 569,
+    "context": "py comes along. The price is approximately $2.65 and you have a credit with us of 50 cents. I am afraid the complete Donne Sermons can be had only by buying Donne’s Complete Works. This runs to more than 40 volumes and would be very expensive if in good condition. We hope you had a good Christmas and New Year in spite of the Giant Mod",
+    "manner": "passing"
   },
   {
     "source": 123,
@@ -1659,7 +1731,7 @@
     "source": 123,
     "target": 236,
     "context": "Mark launched it nearly a year ago, in August 2013, with a paper grandly titled “Is Connectivity a Human Right?”",
-    "manner": "discussed"
+    "manner": "quoted"
   },
   {
     "source": 123,
@@ -1784,7 +1856,7 @@
   {
     "source": 123,
     "target": 479,
-    "context": "in Seoul. The guys are dancing and goofing off. Mark is back at it again with the Backstreet Boys, interspersed with Adele and Disney—“A Whole New World” from Aladdin—and I perch at the back of the plane just trying to make myself as invisible as possible, not sure what the etiquette of this situation requires. I suppose I c",
+    "context": "interspersed with Adele and Disney—“A Whole New World” from Aladdin—",
     "manner": "passing"
   },
   {
@@ -1821,6 +1893,12 @@
     "source": 123,
     "target": 509,
     "context": "provide admiring feedback on her words or, as I’ve come to think of them, her emperor’s clothes",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 556,
+    "context": "If Facebook is the goose that lays the golden egg, no one wants to kill the goose.",
     "manner": "compared"
   },
   {
@@ -1935,7 +2013,7 @@
     "source": 143,
     "target": 270,
     "context": "ide: a swirling helix of a family saga… a new writer as toe-curling as early Roth, as roomy as Franzen and as caustic as Houellebecq’ Sunday Telegraph THE PARROTS FILIPPO BOLOGNA ‘A five-star satire on literary vanity… a wonderful, surprising novel’ Metro I WAS JACK MORTIMER ALEXANDE",
-    "manner": "recommended"
+    "manner": "passing"
   },
   {
     "source": 143,
@@ -1953,7 +2031,7 @@
     "source": 143,
     "target": 273,
     "context": "FROM THE FATHERLAND, WITH LOVE",
-    "manner": "recommended"
+    "manner": "passing"
   },
   {
     "source": 143,
@@ -1964,7 +2042,7 @@
   {
     "source": 143,
     "target": 275,
-    "context": "photocopying, recording or otherwise, without prior permission in writing from Pushkin Press Cover illustration: Black and white illustration from The Essays of Michel de Montaigne (p.128), published by Doubleday in 1947 © Salvador Dalí, Fundació Gala-Salvador Dalí, DACS 2015 www.pushkinpress.com",
+    "context": "But one must also ask why the Seigneur de Montaigne decides, in 1580, to have printed in Bordeaux two volumes of these Essais.",
     "manner": "passing"
   },
   {
@@ -2059,15 +2137,9 @@
   },
   {
     "source": 143,
-    "target": 381,
-    "context": "e to me, a young man of the new twentieth century, were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’ or his ‘Considérations sur Cicéron’? This Frenchman, already yellowed by time and lost in the riddles of his Latin quotations, seemed so scholarly and anachronistic. And even his wisdom, so gent",
-    "manner": "criticised"
-  },
-  {
-    "source": 143,
     "target": 466,
     "context": "one of his most successful books being an account of the exploits of Joseph Fouché, the ruthless enforcer in revolutionary France who took down Robespierre",
-    "manner": null
+    "manner": "discussed"
   },
   {
     "source": 143,
@@ -2079,6 +2151,12 @@
     "source": 143,
     "target": 525,
     "context": "were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’",
+    "manner": "criticised"
+  },
+  {
+    "source": 143,
+    "target": 560,
+    "context": "e to me, a young man of the new twentieth century, were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’ or his ‘Considérations sur Cicéron’? This Frenchman, already yellowed by time and lost in the riddles of his Latin quotations, seemed so scholarly and anachronistic. And even his wisdom, so gent",
     "manner": "criticised"
   }
 ]
