@@ -161,7 +161,7 @@ BOOKS_PROVIDER=claude-code
 
 Log in once by running `claude` in a terminal and typing `/login`. The app then runs `claude -p` in the background for each batch of mentions and each part of a book, with no tools, so it can only answer.
 
-Who pays: nothing is billed per token. The work counts against **your Claude subscription's usage limits**, and reading a whole library with the Reader on uses a good share of them. It is also slower than the API, since every request starts the program afresh. Check that it answers with `python process_books.py --check`, run from your own terminal: started from inside a Claude Code session the program cannot reach its login. This route has been tested without a network only; measure it with `eval_extraction.py` before trusting its numbers.
+Who pays: nothing is billed per token. The work counts against **your Claude subscription's usage limits**, and reading a whole library with the Reader on uses a good share of them. It is also slower than the API, since every request starts the program afresh. Check that it answers with `python process_books.py --check`, run from your own terminal: started from inside a Claude Code session the program cannot reach its login. On *Small Things Like These* the Reader found the same 13 of 15 gold works through Claude Code as through Bedrock, in 14 seconds. `python eval/reader_check.py <gold set> <book file>` repeats that comparison for any gold book without touching the library.
 
 ### Settings
 
