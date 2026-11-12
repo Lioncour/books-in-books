@@ -68,7 +68,7 @@ Public Pages = explore only. Editing stays on `/manage`.
 # or: .\.venv\Scripts\python export_static.py
 ```
 
-Commit `docs/`, enable Pages (GitHub Actions workflow or branch folder `/docs`). See [DEPLOY.md](DEPLOY.md).
+Commit `docs/` and enable Pages from the branch folder `/docs`. See [DEPLOY.md](DEPLOY.md).
 
 ## Project structure
 

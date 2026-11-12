@@ -35,8 +35,7 @@ GitHub Pages cannot run Python, so uploads never happen on the public site.
 
 4. Enable Pages in the repo:
    - Settings → Pages
-   - Source: **GitHub Actions** (preferred, uses `.github/workflows/deploy-pages.yml`), **or**
-   - Deploy from branch → `main` → folder `/docs`
+   - Source: **Deploy from a branch** → `master` → folder `/docs`
 
 5. Site URL:
    ```
@@ -49,7 +48,7 @@ After you add or remove books locally:
 
 1. Open `/manage` → **Export docs/ for Pages**
 2. Commit `docs/` and push
-3. Actions deploys automatically (or wait a minute for branch `/docs` deploy)
+3. GitHub rebuilds the site from `/docs` within a minute or so
 
 ## What the public site includes
 

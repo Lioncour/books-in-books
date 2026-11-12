@@ -143,7 +143,13 @@ def main():
         docs_static = docs_dir / "static"
         if docs_static.exists():
             shutil.rmtree(docs_static)
-        shutil.copytree(static_dir, docs_static)
+        # The public page is explore-only: leave out the local manage, admin
+        # and review assets.
+        shutil.copytree(
+            static_dir,
+            docs_static,
+            ignore=shutil.ignore_patterns("admin.*", "manage.*", "review.*"),
+        )
         print(f"  Copied static files to {docs_static}")
 
     print("Creating static index.html...")

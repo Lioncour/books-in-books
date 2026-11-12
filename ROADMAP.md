@@ -62,7 +62,6 @@ A re-read repeats the slow transformer pass even when only the judging or matchi
 - A proper WSGI server (waitress) for anyone who exposes it beyond their own machine.
 
 ### 12. Housekeeping
-- The duplicate file `The Boy, The Mole, The Fox and The Horse (Charlie Mackesy) (1).epub` is processed twice.
 - `/verify` overlaps with `/review` and re-runs spaCy on every book when opened; retire it or fold it in.
 - Orphaned works (no link in or out after rejections) stay in the database; prune them on startup.
-- `.claude/` is untracked; add it to `.gitignore` or commit it.
+- Refuse an upload whose content is identical to a book already in the library.
