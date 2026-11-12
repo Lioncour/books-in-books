@@ -29,6 +29,8 @@ from judge import MANNERS, _get_client, message_api, resolve_model
 
 DEFAULT_MODEL = "claude-opus-5-5"
 CHUNK_CHARS = 40000
+# Raise when the prompt changes, so cached readings are not reused
+READER_VERSION = 2
 KINDS = ("book", "movie", "music", "cocktail")
 
 SYSTEM_PROMPT = """You help build a map of which books mention which other works.
@@ -37,8 +39,12 @@ You will be given one stretch of a book. List every specific, real, nameable \
 work the text refers to: books, plays, poems, essays, scripture, reference \
 works, films, TV series, songs, hymns, pieces of music, and named cocktails.
 
-Include a work when the text names it or unmistakably points at it (a famous \
-line quoted from it, "the Scottish play"). Leave out: the book you are reading \
+Include a work when the text names it or unmistakably points at it: a famous \
+line quoted from it, a nickname for it ("the Scottish play"), or one of its \
+characters used as a name, nickname, picture or figure of speech ("crazy Rambo \
+stuff", "spoke like Sherlock Holmes", a Smurf painted on a van, a room named \
+after the Wicked Witch of the West). File a character under the work it comes \
+from. Leave out: the book you are reading \
 itself, its chapter and section headings, newspapers and magazines as \
 publications, prizes, brands, games, websites, organisations, people, and \
 titles the story invents.

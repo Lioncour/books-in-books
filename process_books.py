@@ -2117,7 +2117,9 @@ def add_reader_mentions(
 
     if not reader.reader_enabled():
         return mentions
-    cache_key = f"reader:{reader.reader_model()}:{file_hash}" if file_hash else None
+    cache_key = (
+        f"reader{reader.READER_VERSION}:{reader.reader_model()}:{file_hash}" if file_hash else None
+    )
     found = cached_candidates(cache_key, cursor)
     if found is None:
         cursor.execute("SELECT title, author FROM books WHERE id = ?", (source_book_id,))

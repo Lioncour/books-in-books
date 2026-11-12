@@ -1,6 +1,12 @@
 [
   {
     "source": 1,
+    "target": 310,
+    "context": "opened a book and mystified the first grade with a long narrative about a toadfrog that lived in a hall.",
+    "manner": "read"
+  },
+  {
+    "source": 1,
     "target": 400,
     "context": "Lawyers, I suppose, were children once.",
     "manner": "quoted"
@@ -26,13 +32,13 @@
   {
     "source": 1,
     "target": 404,
-    "context": "He played the character parts formerly thrust upon me— the ape in Tarzan, Mr. Crabtree in The Rover Boys, Mr. Damon in Tom Swift.",
-    "manner": "discussed"
+    "context": "the ape in Tarzan",
+    "manner": "passing"
   },
   {
     "source": 1,
     "target": 405,
-    "context": "He played the character parts formerly thrust upon me— the ape in Tarzan, Mr. Crabtree in The Rover Boys, Mr. Damon in Tom Swift.",
+    "context": "Mr. Crabtree in The Rover Boys",
     "manner": "discussed"
   },
   {
@@ -44,7 +50,7 @@
   {
     "source": 1,
     "target": 407,
-    "context": "Our first raid came to pass only because Dill bet Jem The Gray Ghost against two Tom Swifts",
+    "context": "Atticus turned the book over. “Something of Jem’s. Called The Gray Ghost.”",
     "manner": "read"
   },
   {
@@ -52,12 +58,6 @@
     "target": 408,
     "context": "I was not to approach him with requests to enact a chapter of Tarzan and the Ant Men",
     "manner": "passing"
-  },
-  {
-    "source": 1,
-    "target": 409,
-    "context": "the diaries of Lorenzo Dow—anything Atticus happened to be reading",
-    "manner": "read"
   },
   {
     "source": 1,
@@ -97,12 +97,6 @@
   },
   {
     "source": 1,
-    "target": 417,
-    "context": "Jem would struggle the rest of an evening through the speeches of Henry W. Grady.",
-    "manner": "read"
-  },
-  {
-    "source": 1,
     "target": 418,
     "context": "Mayella sounded like a Mr. Jingle in a book I had been reading.",
     "manner": "compared"
@@ -128,7 +122,7 @@
   {
     "source": 1,
     "target": 422,
-    "context": "I must have heard her in my sleep, or the band playing Dixie woke me",
+    "context": "or the band playing Dixie woke me",
     "manner": "passing"
   },
   {
@@ -147,30 +141,66 @@
     "source": 1,
     "target": 472,
     "context": "One day we were so busily playing Chapter XXV, Book II of One Man’s Family, we did not see Atticus standing on the sidewalk looking at us",
-    "manner": "passing"
+    "manner": null
   },
   {
     "source": 1,
     "target": 480,
     "context": "then copying out a chapter of the Bible beneath",
-    "manner": null
+    "manner": "compared"
   },
   {
     "source": 1,
     "target": 484,
     "context": "“Let this cup pass from you, eh?”",
-    "manner": null
+    "manner": "quoted"
   },
   {
     "source": 1,
     "target": 485,
     "context": "a whole yard. Look here. When it comes fall this dries up and the wind blows it all over Maycomb County!” Miss Maudie’s face likened such an occurrence unto an Old Testament pestilence. Her speech was crisp for a Maycomb County inhabitant. She called us by all our names, and when she grinned she revealed two minute gold prongs",
-    "manner": null
+    "manner": "passing"
+  },
+  {
+    "source": 1,
+    "target": 521,
+    "context": "Sherlock Holmes and Jem Finch would agree.",
+    "manner": "compared"
+  },
+  {
+    "source": 1,
+    "target": 530,
+    "context": "the diaries of Lorenzo Dow—anything Atticus happened to be reading",
+    "manner": "read"
+  },
+  {
+    "source": 1,
+    "target": 531,
+    "context": "“Sleep, Little Three-Eyes?”",
+    "manner": "compared"
+  },
+  {
+    "source": 1,
+    "target": 534,
+    "context": "entangled his troops so far northwest in the forest primeval that they were eventually rescued by settlers moving inland",
+    "manner": "compared"
+  },
+  {
+    "source": 1,
+    "target": 535,
+    "context": "year. I suppose she chose me because she knew my name; as I read the alphabet a faint line appeared between her eyebrows, and after making me read most of My First Reader and the stock-market quotations from The Mobile Register aloud, she discovered that I was literate and looked at me with more than faint distaste. Miss Carolin",
+    "manner": "read"
+  },
+  {
+    "source": 1,
+    "target": 536,
+    "context": "brought forth Eunice Ann saying she didn’t want to play Shadrach any more",
+    "manner": "compared"
   },
   {
     "source": 3,
     "target": 27,
-    "context": "Given that most days my boys were intent on either killing one another or reenacting some version of Lord of the Flies",
+    "context": "reenacting some version of Lord of the Flies",
     "manner": "compared"
   },
   {
@@ -206,8 +236,8 @@
   {
     "source": 3,
     "target": 215,
-    "context": "Stimulated by a cartoon called The Masters of the Universe, these toys may not have actually ruled the universe, but for several years they’d come darned close in my classroom.",
-    "manner": "passing"
+    "context": "Stimulated by a cartoon called The Masters of the Universe, these toys may not have actually ruled the universe",
+    "manner": "discussed"
   },
   {
     "source": 3,
@@ -230,7 +260,7 @@
   {
     "source": 3,
     "target": 224,
-    "context": "it had taken almost seven minutes to choose Best Friends for Frances, so I settled down to read it.",
+    "context": "On this day, it had taken almost seven minutes to choose Best Friends for Frances, so I settled down to read it.",
     "manner": "read"
   },
   {
@@ -278,13 +308,19 @@
   {
     "source": 3,
     "target": 233,
-    "context": "Then as I was taking down folders from a higher shelf, a comic fell. I picked it up. She-Ra, Princess of Power.",
+    "context": "I picked it up. She-Ra, Princess of Power.",
     "manner": "read"
   },
   {
     "source": 3,
     "target": 234,
     "context": "She had long blonde hair pushed back with a headband à la Alice in Wonderland, whom she would have made a pretty good stand-in for",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 252,
+    "context": "However, beneath this veneer was a kid with the mind-set of Darth Vader.",
     "manner": "compared"
   },
   {
@@ -308,7 +344,7 @@
   {
     "source": 3,
     "target": 327,
-    "context": "Stuck my head in a little skunk’s hole! Little skunk said, ‘Well, bless my soul! Take it out! Take it out! Take it out!’",
+    "context": "“Stuck my head in a little skunk’s hole! Little skunk said, ‘Well, bless my soul! Take it out! Take it out! Take it out!’”",
     "manner": "quoted"
   },
   {
@@ -327,48 +363,42 @@
     "source": 3,
     "target": 334,
     "context": "“Yeah, Springfield, Illinois!” Billy interjected. “That’s where Bart Simpson lives!”",
-    "manner": "passing"
+    "manner": "discussed"
   },
   {
     "source": 3,
     "target": 335,
-    "context": "h the boys loved because of its shouting. But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,” because they were funny, could be mimed, and stood up well to being sung with gusto. But mainly because I could remember the words! And, of course, as it was",
+    "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
     "manner": "quoted"
   },
   {
     "source": 3,
     "target": 447,
     "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
-    "manner": "quoted"
+    "manner": null
   },
   {
     "source": 3,
     "target": 448,
     "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
-    "manner": "quoted"
+    "manner": null
   },
   {
     "source": 3,
     "target": 449,
-    "context": "“Little arrows in your clothing, Little arrows in your hair. When you’re in love you’ll find those little arrows everywhere,”",
+    "context": "Little arrows in your clothing, Little arrows in your hair. When you’re in love you’ll find those little arrows everywhere,",
     "manner": "quoted"
-  },
-  {
-    "source": 3,
-    "target": 450,
-    "context": "I was reminded, as I did this, of a scene from a Star Trek program where a member of the starship crew was trying to teach the fine art of eating to a woman who had spent most of her life as a sort of living machine.",
-    "manner": "compared"
   },
   {
     "source": 3,
     "target": 452,
     "context": "Donna, the girl whose story I told in The Saddest Girl in the World, had left us in November",
-    "manner": "passing"
+    "manner": null
   },
   {
     "source": 3,
     "target": 458,
-    "context": "We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after Billy.",
+    "context": "fter the two of them, as did Julie, who had just come out of the building, as did Bob and another teacher. We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after Billy. When Billy reached the wall at the end of the playground, Venus cornered him and started to p",
     "manner": "compared"
   },
   {
@@ -376,6 +406,48 @@
     "target": 474,
     "context": "“Pride goeth before a fall.”",
     "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 493,
+    "context": "The kid’s like Spiderman. She can get over anything.",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 495,
+    "context": "Billy – Billy the Kid. Jesse – Jesse James. And Shane. And Zane.",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 496,
+    "context": "To me He-Man had seemed a pale imitation of the old-time superheroes, like Superman and Batman",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 499,
+    "context": "I thought he was supposed to be the cartoon character Snoopy",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 501,
+    "context": "In our own ersatz – von Trapp family way, we finally started coming together as a class.",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 502,
+    "context": "To me He-Man had seemed a pale imitation of the old-time superheroes, like Superman and Batman",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 503,
+    "context": "“You mean like James Bond!” Billy shouted.",
+    "manner": "compared"
   },
   {
     "source": 13,
@@ -387,7 +459,7 @@
     "source": 13,
     "target": 18,
     "context": "Not Star Trek level compatible, but we could probably subsist on an alien ecosystem.",
-    "manner": "passing"
+    "manner": "compared"
   },
   {
     "source": 13,
@@ -398,7 +470,7 @@
   {
     "source": 13,
     "target": 43,
-    "context": "“Chrissake, Eeyore, get a grip.",
+    "context": "“Chrissake, Eeyore, get a grip. We pick based on need.",
     "manner": "compared"
   },
   {
@@ -416,8 +488,8 @@
   {
     "source": 13,
     "target": 252,
-    "context": "Really, if you’re up on Star Wars and Star Trek, you’re golden.",
-    "manner": "recommended"
+    "context": "a muttered curse from a Jedi Knight wannabe",
+    "manner": "compared"
   },
   {
     "source": 13,
@@ -447,18 +519,18 @@
     "source": 13,
     "target": 296,
     "context": "Homer had come up with endless variations on the Beans, Beans song, some of which had caught on Earthside.",
-    "manner": "compared"
-  },
-  {
-    "source": 13,
-    "target": 297,
-    "context": "Bert and Ernie had adopted Battlestar Galactica-style uniforms and command deck VRs. I was a little surprised by that, as it hadn’t been one of my favorite shows.",
-    "manner": "discussed"
+    "manner": "passing"
   },
   {
     "source": 13,
     "target": 334,
     "context": "I didn’t like being bested by Homer Simpson.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 368,
+    "context": "tried to de-hoist himself from his own petard",
     "manner": "compared"
   },
   {
@@ -488,20 +560,20 @@
   {
     "source": 13,
     "target": 430,
-    "context": "I wasn’t the rampaging Frankenstein they seemed to be concerned about.",
+    "context": "In any case, I wasn’t the rampaging Frankenstein they seemed to be concerned about.",
     "manner": "compared"
   },
   {
     "source": 13,
     "target": 431,
-    "context": "Well, that’s double-plus ungood.",
+    "context": "The Ministry of Truth, which is backing this venture, is surprisingly pragmatic.",
     "manner": "compared"
   },
   {
     "source": 13,
     "target": 432,
-    "context": "We always liked Bill the Cat.",
-    "manner": "passing"
+    "context": "“That makes sense. We always liked Bill the Cat.”",
+    "manner": "compared"
   },
   {
     "source": 13,
@@ -542,14 +614,8 @@
   {
     "source": 13,
     "target": 439,
-    "context": "“Oh, goody,” I said, smacking my forehead, “a quest. Will there be nine of them? They can stop in Rivendell…”",
+    "context": "Will there be nine of them? They can stop in Rivendell…",
     "manner": "compared"
-  },
-  {
-    "source": 13,
-    "target": 440,
-    "context": "When I’d been a kid, watching Star Trek and Star Wars and Stargate and all the other science fiction shows, it seemed like every planet was M-class and every star was yellow.",
-    "manner": "passing"
   },
   {
     "source": 13,
@@ -578,43 +644,115 @@
   {
     "source": 13,
     "target": 445,
-    "context": "While we didn’t expect Medeiros to be a “two-dimensional thinker”—he was after all, military",
+    "context": "While we didn’t expect Medeiros to be a “two-dimensional thinker”—he was after all, military—we did expect his assets to be mostly along the ecliptic.",
     "manner": "quoted"
   },
   {
     "source": 13,
     "target": 462,
     "context": "“Auntie Em! Auntie Em!” Homer’s VR came online, smiling.",
-    "manner": "quoted"
+    "manner": null
   },
   {
     "source": 13,
     "target": 473,
-    "context": "You couldn’t truly say you’d been to a science fiction con until you’d been run over by Farscape cosplayers",
+    "context": "until you’d been run over by Farscape cosplayers",
+    "manner": null
+  },
+  {
+    "source": 13,
+    "target": 508,
+    "context": "The two colony ships, Bert and Ernie—yeah, they named themselves that, yes, voluntarily—came into the system",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 517,
+    "context": "When I’d been a kid, watching Star Trek and Star Wars and Stargate and all the other science fiction shows",
     "manner": "passing"
   },
   {
     "source": 13,
-    "target": 489,
-    "context": "“All their base are belong to us.”",
-    "manner": null
+    "target": 537,
+    "context": "I’d invoked She Who Must Not Be Named.",
+    "manner": "compared"
   },
   {
-    "source": 48,
-    "target": 17,
-    "context": "I had pictured wormholes as a sort a Stargate thing, a big ring hanging in space, with a glowing center.",
+    "source": 13,
+    "target": 538,
+    "context": "This Jack the Bodiless business is getting on my nerves, er, circuits.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 540,
+    "context": "[By your command]",
+    "manner": "quoted"
+  },
+  {
+    "source": 13,
+    "target": 541,
+    "context": "Flash-Gordon-style floating platform, anyway.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 542,
+    "context": "Conan the Barbarian would have been proud.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 543,
+    "context": "I don’t want to be reduced to some Doctor Evil cliché.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 544,
+    "context": "I couldn’t help thinking of the Utopia Planitia scenes in the Star Trek movies when a starship was being constructed.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 545,
+    "context": "“Okay, General Bullmoose. Just remember the little people, okay?”",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 546,
+    "context": "Admiral Ackbar stared back at me, blank fishy expression revealing nothing.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 547,
+    "context": "The external comms array on its head was strangely reminiscent of a famous pair of antlers.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 548,
+    "context": "a result of hubris not seen since the days of Babel",
     "manner": "compared"
   },
   {
     "source": 48,
     "target": 18,
     "context": "Warp factor five was not an option, unfortunately.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 43,
+    "context": "supposed to be Winnie the Pooh",
     "manner": "passing"
   },
   {
     "source": 48,
     "target": 61,
-    "context": "I didn’t have to imagine that scenario, since I’d already seen that in the movie Red Dawn.",
+    "context": "I’d already seen that in the movie Red Dawn.",
     "manner": "compared"
   },
   {
@@ -650,13 +788,13 @@
   {
     "source": 48,
     "target": 249,
-    "context": "the music changed to ‘Camptown Races’",
+    "context": "the music changed to 'Camptown Races'",
     "manner": "passing"
   },
   {
     "source": 48,
     "target": 250,
-    "context": "then ‘Pop Goes the Weasel’",
+    "context": "then ‘Pop Goes the Weasel’ then a couple video game theme songs",
     "manner": "passing"
   },
   {
@@ -668,8 +806,8 @@
   {
     "source": 48,
     "target": 252,
-    "context": "For a second, I pictured a Death Star. Only filled with lizards instead of storm troopers.",
-    "manner": "compared"
+    "context": "And, was that Darth Vader down near the right front fender",
+    "manner": "passing"
   },
   {
     "source": 48,
@@ -686,25 +824,25 @@
   {
     "source": 48,
     "target": 256,
-    "context": "Book 4: Black Ops",
+    "context": "The Expeditionary Force series Book 1: Columbus Day Book 2: SpecOps Book 3: Paradise Book ‘3.5’: Trouble on Paradise novella Book 4: Black Ops Book 5: Zero Hour Book 6: Mavericks Book 7: Renegades Book 8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
     "manner": "passing"
   },
   {
     "source": 48,
     "target": 257,
-    "context": "Book 5: Zero Hour",
+    "context": "e series Book 1: Columbus Day Book 2: SpecOps Book 3: Paradise Book ‘3.5’: Trouble on Paradise novella Book 4: Black Ops Book 5: Zero Hour Book 6: Mavericks Book 7: Renegades Book 8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
     "manner": "passing"
   },
   {
     "source": 48,
     "target": 258,
-    "context": "Book 6: Mavericks",
+    "context": "Columbus Day Book 2: SpecOps Book 3: Paradise Book ‘3.5’: Trouble on Paradise novella Book 4: Black Ops Book 5: Zero Hour Book 6: Mavericks Book 7: Renegades Book 8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
     "manner": "passing"
   },
   {
     "source": 48,
     "target": 259,
-    "context": "Book 7: Renegades",
+    "context": "2: SpecOps Book 3: Paradise Book ‘3.5’: Trouble on Paradise novella Book 4: Black Ops Book 5: Zero Hour Book 6: Mavericks Book 7: Renegades Book 8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
     "manner": "passing"
   },
   {
@@ -715,21 +853,15 @@
   },
   {
     "source": 48,
-    "target": 355,
-    "context": "bringing it with me didn’t mean I was going to get all cuddly and sing Kumbaya with the damned Ruhar",
-    "manner": "compared"
-  },
-  {
-    "source": 48,
     "target": 356,
-    "context": "It’s just a flesh wound.",
+    "context": "It’s just a flesh wound.”",
     "manner": "quoted"
   },
   {
     "source": 48,
     "target": 358,
     "context": "Two out of three ain’t bad, I was on a roll.",
-    "manner": "compared"
+    "manner": "quoted"
   },
   {
     "source": 48,
@@ -746,7 +878,7 @@
   {
     "source": 48,
     "target": 361,
-    "context": "Is the Dutchman the squid guy in that Johnny Depp pirates movie? Man, that guy gave me the creeps.",
+    "context": "Is the Dutchman the squid guy in that Johnny Depp pirates movie?",
     "manner": "discussed"
   },
   {
@@ -754,6 +886,12 @@
     "target": 364,
     "context": "The idea for Ascendant came to me after watching the first Harry Potter movie",
     "manner": "discussed"
+  },
+  {
+    "source": 48,
+    "target": 384,
+    "context": "Barney, the big purple cartoon dinosaur with the perpetual stupid grin.",
+    "manner": "passing"
   },
   {
     "source": 48,
@@ -765,55 +903,121 @@
     "source": 48,
     "target": 459,
     "context": "They did that in Avatar, right, you saw that movie?",
-    "manner": "discussed"
+    "manner": null
   },
   {
     "source": 48,
     "target": 460,
     "context": "You got some ‘splanin’ to do, Lucy.",
-    "manner": "quoted"
+    "manner": null
   },
   {
     "source": 48,
     "target": 461,
     "context": "A magic beanstalk that led home.",
-    "manner": "compared"
+    "manner": null
   },
   {
     "source": 48,
     "target": 462,
     "context": "“Yeah, man, what you need is a brain, and you better talk to the Wizard of Oz about that.”",
-    "manner": "compared"
+    "manner": null
   },
   {
     "source": 48,
     "target": 463,
-    "context": "Book 3: Paradise",
+    "context": "age, and I was grateful that my guys shrugged and took it in stride. If this was the worst fuckup we got into, we’d be doing great. CHAPTER FOUR PARADISE Unlike Alpha, Paradise had a space elevator. It looked a bit different from the one that hovered over Earth, someone told me this one was put there by the R",
     "manner": "passing"
   },
   {
     "source": 48,
     "target": 464,
     "context": "‘Turkey in the Straw’ blared out of the rooftop speakers",
-    "manner": "passing"
+    "manner": null
   },
   {
     "source": 48,
     "target": 465,
     "context": "Besides, I’m watching Wheel Of Fortune.",
-    "manner": "passing"
+    "manner": null
   },
   {
     "source": 48,
     "target": 480,
     "context": "What did the Bible say, something like ‘many who are first will be last, and the last, first’?",
-    "manner": null
+    "manner": "quoted"
   },
   {
     "source": 48,
-    "target": 483,
-    "context": "the words of the US Army Field Manual popped into my head.",
-    "manner": null
+    "target": 493,
+    "context": "His tone touched off my spidey senses.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 507,
+    "context": "Listen, oh great and powerful Oz, I’m really sorry that I ever called you Skippy.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 511,
+    "context": "The guards called them ‘Dumbos’, because of their large body and relatively small wings.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 512,
+    "context": "bringing it with me didn’t mean I was going to get all cuddly and sing Kumbaya with the damned Ruhar",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 513,
+    "context": "We’ve already had incidents of people trying crazy Rambo shit to get noticed.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 514,
+    "context": "I found myself wondering what James Bond would do in this situation.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 517,
+    "context": "I had pictured wormholes as a sort a Stargate thing, a big ring hanging in space, with a glowing center.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 518,
+    "context": "Ironman, or a mech suit from Halo or a dozen other video game, came to mind when I looked at the suit.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 520,
+    "context": "Party on, dudes!",
+    "manner": "quoted"
+  },
+  {
+    "source": 48,
+    "target": 521,
+    "context": "he spoke like Sherlock Holmes or one of those upper-crust royalty on a BBC TV show",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 522,
+    "context": "Sergeant Adams, drag sleeping beauty here out of the way somewhere.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 523,
+    "context": "like, why was Iron Man waving to the Smurfs?",
+    "manner": "passing"
   },
   {
     "source": 49,
@@ -825,7 +1029,7 @@
     "source": 49,
     "target": 53,
     "context": "if Santa would pleese bring Enid Blyton’s Five Go Down to the Sea or Five Run Away Together or both",
-    "manner": "passing"
+    "manner": "recommended"
   },
   {
     "source": 49,
@@ -843,13 +1047,13 @@
     "source": 49,
     "target": 245,
     "context": "Sheila turned on the television and lay on the settee watching an episode of All Creatures Great and Small.",
-    "manner": "read"
+    "manner": "passing"
   },
   {
     "source": 49,
     "target": 246,
-    "context": "Or David Copperfield. I never did get round to reading that one.",
-    "manner": "passing"
+    "context": "A Walter Macken, maybe. Or David Copperfield. I never did get round to reading that one.",
+    "manner": "discussed"
   },
   {
     "source": 49,
@@ -878,26 +1082,20 @@
   {
     "source": 49,
     "target": 467,
-    "context": "closed his eyes and sang ‘The Croppy Boy’",
-    "manner": "quoted"
+    "context": "closed his eyes and sang ‘The Croppy Boy’. The song and the way he sang it made the hairs stand up on the back of Furlong’s neck",
+    "manner": null
   },
   {
     "source": 49,
     "target": 480,
     "context": "both prayer books and the bible were left lying on the hallstand until the following Sunday or holy day",
-    "manner": null
+    "manner": "passing"
   },
   {
     "source": 49,
     "target": 481,
     "context": "Excerpt from ‘The Proclamation of the Irish Republic’, 1916",
-    "manner": null
-  },
-  {
-    "source": 49,
-    "target": 482,
-    "context": "Earlier this year, the Mother and Baby Home Commission Report found that nine thousand children died in just eighteen of the institutions investigated.",
-    "manner": null
+    "manner": "quoted"
   },
   {
     "source": 74,
@@ -908,7 +1106,7 @@
   {
     "source": 74,
     "target": 251,
-    "context": "Skippy played the annoying theme music from 'Jeopardy' while I thought furiously",
+    "context": "Skippy played the annoying theme music from 'Jeopardy'",
     "manner": "quoted"
   },
   {
@@ -932,56 +1130,50 @@
   {
     "source": 74,
     "target": 383,
-    "context": "\"Oh, that's ‘Soul Finger’ by the Bar-Kays.\"",
-    "manner": "discussed"
-  },
-  {
-    "source": 74,
-    "target": 384,
-    "context": "Skippy had replaced my image and voice, with Barney. Barney, the big stupid purple dinosaur.",
-    "manner": "compared"
-  },
-  {
-    "source": 74,
-    "target": 385,
-    "context": "I'd forgotten about the Smurfs.",
+    "context": "Oh, that's ‘Soul Finger’ by the Bar-Kays.",
     "manner": "passing"
   },
   {
     "source": 74,
+    "target": 384,
+    "context": "Breaking it down Barney style, pun intended",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
     "target": 388,
-    "context": "Oh, that was Don't Stop Believin' by Journey.",
+    "context": "\"Oh, that was Don't Stop Believin' by Journey. I thought you'd be lonely while I was crunching numbers.\"",
     "manner": "passing"
   },
   {
     "source": 74,
     "target": 390,
-    "context": "Hoth. You know, the ice planet where the rebels had their base in 'The Empire Strikes Back'. Star Wars.",
+    "context": "You know, the ice planet where the rebels had their base in 'The Empire Strikes Back'. Star Wars.",
     "manner": "discussed"
   },
   {
     "source": 74,
     "target": 392,
-    "context": "he sang \"The wheels on the bus go round and round-\"",
+    "context": "The wheels on the bus go round and round-",
     "manner": "quoted"
   },
   {
     "source": 74,
     "target": 393,
     "context": "launched into \"Ninety nine bottles of beer on the wall-\"",
-    "manner": "quoted"
+    "manner": "compared"
   },
   {
     "source": 74,
     "target": 394,
-    "context": "\"They been spending most their lives livin' in the gangster's paradise-\"",
+    "context": "They been spending most their lives livin' in the gangster's paradise-",
     "manner": "quoted"
   },
   {
     "source": 74,
     "target": 396,
-    "context": "No one aboard is singing the Kristang version of 'Ninety Nine Bottles of Beer on the Wall', Joe, these lizards are not a crew of happy campers.",
-    "manner": "compared"
+    "context": "No one aboard is singing the Kristang version of 'Ninety Nine Bottles of Beer on the Wall',",
+    "manner": "passing"
   },
   {
     "source": 74,
@@ -998,44 +1190,80 @@
   {
     "source": 74,
     "target": 455,
-    "context": "Good Ship Lollipop for all he cared, it wouldn't change",
-    "manner": "passing"
+    "context": "the UN could name our captured alien star carrier the Good Ship Lollipop for all he cared",
+    "manner": null
   },
   {
     "source": 74,
     "target": 460,
-    "context": "You got some 'splainin' to do, Lucy.",
-    "manner": "quoted"
+    "context": "\"What?\" That surprised me. \"You got some 'splainin' to do, Lucy.\"",
+    "manner": null
+  },
+  {
+    "source": 74,
+    "target": 461,
+    "context": "We have our magic beanstalk, an Elder wormhole controller module, in a cargo bay, right?",
+    "manner": "compared"
   },
   {
     "source": 74,
     "target": 468,
-    "context": "Although, when you think about it, Goldilocks was a bit of a dimwitted bee-atch. Who falls asleep in a house owned by bears?",
-    "manner": "discussed"
+    "context": "Baldilocks is on his way to see you.",
+    "manner": null
   },
   {
     "source": 74,
     "target": 469,
     "context": "For the moment, I will refrain from making the humorous Godfather references that you know I am dying to say, so make it quick.",
-    "manner": "compared"
+    "manner": null
   },
   {
     "source": 74,
     "target": 470,
     "context": "a Hollywood film where a car turns into a flying robot, isn't it?",
-    "manner": "compared"
+    "manner": null
   },
   {
     "source": 74,
     "target": 471,
-    "context": "I think you mean 'to infinity and beyond', Skippy.",
-    "manner": "quoted"
+    "context": "\"I think you mean 'to infinity and beyond', Skippy.\" I said.",
+    "manner": null
   },
   {
     "source": 74,
     "target": 480,
-    "context": "so how about 'vengeance is mine, sayeth the Lord'?",
-    "manner": null
+    "context": "Oh yee of little faith, Joe, you should be ashamed of yourself.",
+    "manner": "quoted"
+  },
+  {
+    "source": 74,
+    "target": 493,
+    "context": "My Spidey sense was tingling at Level Ten.",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 523,
+    "context": "I'd forgotten about the Smurfs.",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 526,
+    "context": "Chang actually enjoyed being called 'King Kong', that nickname had totally backfired on Skippy.",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 527,
+    "context": "Why don't you show me as Ironman or-",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 529,
+    "context": "The truth shall set you free.",
+    "manner": "quoted"
   },
   {
     "source": 80,
@@ -1047,7 +1275,7 @@
     "source": 80,
     "target": 86,
     "context": "please don’t worry about us using old books such as Clarendon’s Rebellion for wrapping",
-    "manner": "discussed"
+    "manner": "passing"
   },
   {
     "source": 80,
@@ -1064,14 +1292,14 @@
   {
     "source": 80,
     "target": 98,
-    "context": "Don’t know whether I ever told you how dearly I love that Tristram Shandy, the Robb illustrations are enchanting",
+    "context": "Like Tristram Shandy’s description of his father’s remarkable library which “contained every book and treatise which had ever been wrote upon the subject of great noses.”",
     "manner": "read"
   },
   {
     "source": 80,
     "target": 99,
     "context": "We had several copies of Lamb’s Essays of Elia earlier on but they were snapped up during the holiday rush.",
-    "manner": "read"
+    "manner": "discussed"
   },
   {
     "source": 80,
@@ -1082,7 +1310,7 @@
   {
     "source": 80,
     "target": 105,
-    "context": "you get down Donne’s Sermons, Selected Passages (Logan Pearsall Smith)",
+    "context": "So you get down Donne’s Sermons, Selected Passages (Logan Pearsall Smith)",
     "manner": "read"
   },
   {
@@ -1100,7 +1328,7 @@
   {
     "source": 80,
     "target": 110,
-    "context": "the two volumes of Virginia Woolf’s Common Reader are on their way to you",
+    "context": "the two volumes of Virginia Woolf’s Common Reader are on their way to you.",
     "manner": "read"
   },
   {
@@ -1112,13 +1340,13 @@
   {
     "source": 80,
     "target": 118,
-    "context": "Some time ago you asked us for Newman’s Idea of a University.",
+    "context": "Some time ago you asked us for Newman’s Idea of a University. Would you be interested in a copy of the first edition?",
     "manner": "read"
   },
   {
     "source": 80,
     "target": 122,
-    "context": "of Bloomsbury Street (1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964). “It’s unreal to me, what the last 10 years have been like,” Ms. Hanff said in 1982. “The fans—people all over the world who regard me as a friend! A",
+    "context": "the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964).",
     "manner": "passing"
   },
   {
@@ -1149,7 +1377,7 @@
     "source": 80,
     "target": 191,
     "context": "two days after offering you the Shorter Oxford Dictionary for your friend, a man came in and bought it",
-    "manner": "read"
+    "manner": "passing"
   },
   {
     "source": 80,
@@ -1159,26 +1387,20 @@
   },
   {
     "source": 80,
-    "target": 193,
-    "context": "e on the radio—Corelli or somebody—and this thing on the table. This Giant Modern Library thing. So I thought: “I will read the three standard passages from Sermon XV aloud,” you have to read Donne aloud, it’s like a Bach fugue. Would you like to know what I went through in an innocent attempt to read three contiguous unc",
-    "manner": "read"
-  },
-  {
-    "source": 80,
     "target": 196,
-    "context": "it has the schoolroom smell of Lamb’s Tales from Shakespeare",
+    "context": "it has the schoolroom smell of Lamb’s Tales from Shakespeare.",
     "manner": "compared"
   },
   {
     "source": 80,
     "target": 197,
-    "context": "Underfoot in Show Business",
+    "context": "as she was later to describe in Underfoot in Show Business (1961)",
     "manner": "discussed"
   },
   {
     "source": 80,
     "target": 198,
-    "context": "rney documented in The Duchess of Bloomsbury Street (1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964). “It’s unreal to me, what the last 10 years have been like,” Ms. Hanff said in 1982. “The fans—people all over the world w",
+    "context": "the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964).",
     "manner": "passing"
   },
   {
@@ -1214,7 +1436,7 @@
   {
     "source": 80,
     "target": 204,
-    "context": "It was given to me by a gent who knows I’m fond of John Donne.",
+    "context": "It’s a Giant Modern Library book.",
     "manner": "read"
   },
   {
@@ -1226,25 +1448,25 @@
   {
     "source": 80,
     "target": 206,
-    "context": "hop eventually closed. Hanff did finally visit Charing Cross Road and the empty but still standing shop in the summer of 1971, a trip recorded in her 1973 book The Duchess of Bloomsbury Street. In Duchess, Hanff describes her visits with friends and fans to various locations and places of literary and historical interest in London and Southern Englan",
+    "context": "a trip recorded in her 1973 book The Duchess of Bloomsbury Street.",
     "manner": "discussed"
   },
   {
     "source": 80,
     "target": 207,
-    "context": "isited the boarded-up bookshop and met Mr. Doel’s widow, Nora, a journey documented in The Duchess of Bloomsbury Street (1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964). “It’s unreal to me, what the last 10 years ha",
+    "context": "Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977)",
     "manner": "passing"
   },
   {
     "source": 80,
     "target": 208,
-    "context": "up bookshop and met Mr. Doel’s widow, Nora, a journey documented in The Duchess of Bloomsbury Street (1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964). “It’s unreal to me, what the last 10 years have been like,” Ms. Hanff",
+    "context": "Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977)",
     "manner": "passing"
   },
   {
     "source": 80,
     "target": 209,
-    "context": "So that’s how John Donne made the “Hallmark Hall of Fame” and paid for all the books you ever sent me and five teeth.",
+    "context": "So that’s how John Donne made the “Hallmark Hall of Fame”",
     "manner": "passing"
   },
   {
@@ -1256,8 +1478,8 @@
   {
     "source": 80,
     "target": 213,
-    "context": "Sermon XV and there they are: Excerpts I, II and III,—only when you get to the end of Excerpt I you discover they have deleted Jezebel off it. So you get down Donne’s Sermons, Selected Passages (Logan Pearsall Smith) where you spend twenty minutes locating Sermon XV, Excerpt I, because by Logan Pearsall Smith it isn’t Sermon XV, Excerpt I, it’s Passag",
-    "manner": "passing"
+    "context": "ided you had the wit to leave all three open at the right pages which I didn’t. So break it to me gently: how hard is it going to be to find me John Donne’s Complete Sermons and how much is it going to cost? i am going to bed. i will have hideous nightmares involving huge monsters in academic robes carrying long bloody butcher k",
+    "manner": "discussed"
   },
   {
     "source": 80,
@@ -1287,12 +1509,12 @@
     "source": 80,
     "target": 301,
     "context": "this is not pepys’ diary, this is some busybody editor’s miserable collection of EXCERPTS from pepys’ diary may he rot.",
-    "manner": "criticised"
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 302,
-    "context": "it sounds green and gracious in Eric Coates’ London Suite.",
+    "context": "it sounds green and gracious in Eric Coates’ London Suite",
     "manner": "discussed"
   },
   {
@@ -1316,14 +1538,14 @@
   {
     "source": 80,
     "target": 306,
-    "context": "thanks to Hemingway everybody knows No Man Is An Island, all I had to do was work that in and it was sold.",
+    "context": "thanks to Hemingway everybody knows No Man Is An Island",
     "manner": "quoted"
   },
   {
     "source": 80,
     "target": 308,
     "context": "Have you got De Tocqueville’s Journey to America?",
-    "manner": "read"
+    "manner": "passing"
   },
   {
     "source": 80,
@@ -1335,12 +1557,12 @@
     "source": 80,
     "target": 310,
     "context": "Brian introduced me to Kenneth Grahame’s Wind in the Willows and I have to have this",
-    "manner": "read"
+    "manner": "recommended"
   },
   {
     "source": 80,
     "target": 311,
-    "context": "like miniver cheevy, I was born too late.",
+    "context": "and like miniver cheevy I cough and call it fate and go on drinking.",
     "manner": "compared"
   },
   {
@@ -1358,7 +1580,7 @@
   {
     "source": 80,
     "target": 315,
-    "context": "I bought myself a Cassell’s dictionary, I’ll work out the hard passages by myself.",
+    "context": "I bought myself a Cassell’s dictionary",
     "manner": "read"
   },
   {
@@ -1370,14 +1592,14 @@
   {
     "source": 80,
     "target": 318,
-    "context": "Playhouse 90, The Adventures of Ellery Queen and Hallmark Hall of Fame",
+    "context": "writing screenplays for television programs including Playhouse 90, The Adventures of Ellery Queen and Hallmark Hall of Fame.",
     "manner": "passing"
   },
   {
     "source": 80,
     "target": 319,
     "context": "James Madison’s stenographic record of the Constitutional Convention",
-    "manner": "passing"
+    "manner": "read"
   },
   {
     "source": 80,
@@ -1387,39 +1609,33 @@
   },
   {
     "source": 80,
-    "target": 322,
-    "context": "ion Helene at the typewriter Helene circa 1990s Helene—sample letter 30 Sept 1974; text below: “Open House” will—with lotsa luck—be in the hands of the printers around Christmas (or Gene, my editor, and I, will both commit suicide) & will be out next September. M",
-    "manner": "passing"
-  },
-  {
-    "source": 80,
     "target": 446,
     "context": "I’ve been using my Latin teacher’s Vulgate, what I imagine I’ll do is just not give it back till you find me one of my own.",
-    "manner": "read"
+    "manner": null
   },
   {
     "source": 80,
     "target": 456,
-    "context": "we have a Latin New Testament, also a Greek New Testament, ordinary modern editions in cloth binding",
+    "context": "please use the 70c toward the price of the New Testaments, both of which I want.",
     "manner": "read"
-  },
-  {
-    "source": 80,
-    "target": 457,
-    "context": "She also filled me in on Beowulf and his illegitimate son Sidwith—or is it Widsith?",
-    "manner": "passing"
   },
   {
     "source": 80,
     "target": 480,
     "context": "If you must clean your Grolier Bible, we should advise ordinary soap and water.",
-    "manner": null
+    "manner": "discussed"
+  },
+  {
+    "source": 80,
+    "target": 492,
+    "context": "e on the radio—Corelli or somebody—and this thing on the table. This Giant Modern Library thing. So I thought: “I will read the three standard passages from Sermon XV aloud,” you have to read Donne aloud, it’s like a Bach fugue. Would you like to know what I went through in an innocent attempt to read three contiguous unc",
+    "manner": "read"
   },
   {
     "source": 123,
     "target": 130,
     "context": "he remained bitter about Andrew Ross Sorkin’s account of his role in the book Too Big to Fail",
-    "manner": "criticised"
+    "manner": "discussed"
   },
   {
     "source": 123,
@@ -1437,7 +1653,7 @@
     "source": 123,
     "target": 235,
     "context": "Lean In is based on eleven principles that basically boil down to: if a woman works hard enough, she can thrive at home and at work.",
-    "manner": "quoted"
+    "manner": "discussed"
   },
   {
     "source": 123,
@@ -1454,7 +1670,7 @@
   {
     "source": 123,
     "target": 238,
-    "context": "messaging Sheryl that the experience is “a total Pretty Woman moment (the good one not the one where they kick her out).",
+    "context": "a total Pretty Woman moment (the good one not the one where they kick her out).",
     "manner": "compared"
   },
   {
@@ -1484,7 +1700,7 @@
   {
     "source": 123,
     "target": 336,
-    "context": "—F. SCOTT FITZGERALD, THE GREAT GATSBY",
+    "context": "They were careless people, Tom and Daisy—they smashed up things and creatures and then retreated back into their money or their vast carelessness",
     "manner": "quoted"
   },
   {
@@ -1520,7 +1736,7 @@
   {
     "source": 123,
     "target": 346,
-    "context": "He publishes a six-thousand-word manifesto full of global aspirations.",
+    "context": "Progress now requires humanity coming together not just as cities or nations but also as a global community.",
     "manner": "quoted"
   },
   {
@@ -1544,13 +1760,13 @@
   {
     "source": 123,
     "target": 350,
-    "context": "“You’re catching on,” he said. “So you see, one of these things is not like the other.”",
+    "context": "“So you see, one of these things is not like the other.”",
     "manner": "quoted"
   },
   {
     "source": 123,
     "target": 453,
-    "context": "quietly sing “Happy Birthday” to Sasha before she goes to sleep",
+    "context": "quietly sing \"Happy Birthday\" to Sasha before she goes to sleep",
     "manner": "quoted"
   },
   {
@@ -1567,33 +1783,45 @@
   },
   {
     "source": 123,
-    "target": 477,
-    "context": "ew hotel I transferred to because it advertised access to internet. In reality, there’s no Wi-Fi, though for some reason there is a book next to the bed titled How to Use the Internet. The next morning I discover a rotary phone; strangely, you can’t dial out, people have to call you. But these are far from my biggest problems. I have a 10:00",
-    "manner": "passing"
-  },
-  {
-    "source": 123,
-    "target": 478,
-    "context": "pajamas with our colleagues. Women’s Day is part evangelical church event, part multilevel marketing summit, part Tony Robbins seminar, part yoga retreat, part Oprah episode. Sheryl presides, dressed in Lululemon yoga pants and Ugg boots. There’s a lot of talk about motherhood. Sheryl’s favored lieutenants, in shiny uniform",
-    "manner": "compared"
-  },
-  {
-    "source": 123,
     "target": 479,
     "context": "in Seoul. The guys are dancing and goofing off. Mark is back at it again with the Backstreet Boys, interspersed with Adele and Disney—“A Whole New World” from Aladdin—and I perch at the back of the plane just trying to make myself as invisible as possible, not sure what the etiquette of this situation requires. I suppose I c",
     "manner": "passing"
   },
   {
     "source": 123,
-    "target": 487,
-    "context": "As Mark declares in the Little Red Book every employee is handed when they’re hired,",
-    "manner": null
+    "target": 504,
+    "context": "working on policy at Facebook was way less like enacting a chapter from Machiavelli",
+    "manner": "compared"
   },
   {
     "source": 123,
-    "target": 488,
-    "context": "desperately trying to memorize the foundational texts and the more perfect union that US citizens strive for but sometimes fall short of.",
-    "manner": null
+    "target": 505,
+    "context": "My mind involuntarily keeps repeating the John Updike quote “Celebrity is a mask that eats into the face.”",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 506,
+    "context": "Women’s Day is part evangelical church event, part multilevel marketing summit, part Tony Robbins seminar, part yoga retreat, part Oprah episode.",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 507,
+    "context": "the name of the meeting room, Wicked Witch of the West, is displayed, without explanation, under Chris’s talking head for the entire meeting",
+    "manner": "passing"
+  },
+  {
+    "source": 123,
+    "target": 508,
+    "context": "Elliot doesn’t want Mark to follow a giant yellow Muppet—so I need Big Bird moved again.",
+    "manner": "passing"
+  },
+  {
+    "source": 123,
+    "target": 509,
+    "context": "provide admiring feedback on her words or, as I’ve come to think of them, her emperor’s clothes",
+    "manner": "compared"
   },
   {
     "source": 143,
@@ -1604,8 +1832,8 @@
   {
     "source": 143,
     "target": 145,
-    "context": "provided him with his trilogy The Struggle with the Daemon (1925)",
-    "manner": "passing"
+    "context": "whose unavoidable, self-destructive trajectories provided him with his trilogy The Struggle with the Daemon (1925)",
+    "manner": "quoted"
   },
   {
     "source": 143,
@@ -1665,7 +1893,7 @@
     "source": 143,
     "target": 262,
     "context": "n Kleist, whose unavoidable, self-destructive trajectories provided him with his trilogy The Struggle with the Daemon (1925). This was the second of his three ‘Master Builders of the Spirit’ trilogies. Preceding this had been a volume containing studies of Dostoevsky, Balzac and Dickens (1920), and the series concluded with Casanova, Stendhal and",
-    "manner": "passing"
+    "manner": "discussed"
   },
   {
     "source": 143,
@@ -1682,7 +1910,7 @@
   {
     "source": 143,
     "target": 266,
-    "context": "the Aeneid by Virgil, the dramas of Plautus in their original language",
+    "context": "the Aeneid by Virgil",
     "manner": "read"
   },
   {
@@ -1707,7 +1935,7 @@
     "source": 143,
     "target": 270,
     "context": "ide: a swirling helix of a family saga… a new writer as toe-curling as early Roth, as roomy as Franzen and as caustic as Houellebecq’ Sunday Telegraph THE PARROTS FILIPPO BOLOGNA ‘A five-star satire on literary vanity… a wonderful, surprising novel’ Metro I WAS JACK MORTIMER ALEXANDE",
-    "manner": "passing"
+    "manner": "recommended"
   },
   {
     "source": 143,
@@ -1725,7 +1953,7 @@
     "source": 143,
     "target": 273,
     "context": "FROM THE FATHERLAND, WITH LOVE",
-    "manner": "passing"
+    "manner": "recommended"
   },
   {
     "source": 143,
@@ -1753,26 +1981,20 @@
   },
   {
     "source": 143,
-    "target": 366,
-    "context": "the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’",
-    "manner": "criticised"
-  },
-  {
-    "source": 143,
     "target": 368,
-    "context": "the noble sorrow that his follower Shakespeare knew how to articulate in such an unforgettable manner, through characters so dear to him: Hamlet, Brutus, Prospero.",
+    "context": "through characters so dear to him: Hamlet, Brutus, Prospero",
     "manner": "passing"
   },
   {
     "source": 143,
     "target": 369,
-    "context": "the noble sorrow that his follower Shakespeare knew how to articulate in such an unforgettable manner, through characters so dear to him: Hamlet, Brutus, Prospero.",
+    "context": "through characters so dear to him: Hamlet, Brutus, Prospero",
     "manner": "passing"
   },
   {
     "source": 143,
     "target": 370,
-    "context": "the noble sorrow that his follower Shakespeare knew how to articulate in such an unforgettable manner, through characters so dear to him: Hamlet, Brutus, Prospero.",
+    "context": "through characters so dear to him: Hamlet, Brutus, Prospero",
     "manner": "passing"
   },
   {
@@ -1784,13 +2006,13 @@
   {
     "source": 143,
     "target": 372,
-    "context": "Admittedly these travel notes are not a work of art, inasmuch as Montaigne has only written a very brief account and in a language not his own.",
+    "context": "He accompanies the corpse to Soissons and begins his remarkable journal on 5th September 1580.",
     "manner": "discussed"
   },
   {
     "source": 143,
     "target": 373,
-    "context": "THE SPECTRE OF ALE X ANDERWOLF",
+    "context": "‘A mesmerising work of literature’ Antony Beevor",
     "manner": "recommended"
   },
   {
@@ -1833,18 +2055,30 @@
     "source": 143,
     "target": 380,
     "context": "lity of meeting my own soul. Of what relevance to me, a young man of the new twentieth century, were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’ or his ‘Considérations sur Cicéron’? This Frenchman, already yellowed by time and lost in the riddles of his Latin quotations, seemed so scholarly and anachro",
-    "manner": "discussed"
+    "manner": "criticised"
   },
   {
     "source": 143,
     "target": 381,
     "context": "e to me, a young man of the new twentieth century, were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’ or his ‘Considérations sur Cicéron’? This Frenchman, already yellowed by time and lost in the riddles of his Latin quotations, seemed so scholarly and anachronistic. And even his wisdom, so gent",
-    "manner": "discussed"
+    "manner": "criticised"
   },
   {
     "source": 143,
     "target": 466,
-    "context": "one of his most successful books being an account of the exploits of Joseph Fouché",
-    "manner": "discussed"
+    "context": "one of his most successful books being an account of the exploits of Joseph Fouché, the ruthless enforcer in revolutionary France who took down Robespierre",
+    "manner": null
+  },
+  {
+    "source": 143,
+    "target": 524,
+    "context": "having just completed the study of Erasmus in which he used the great humanist and theologian as a template to espouse his own convictions",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 525,
+    "context": "were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’",
+    "manner": "criticised"
   }
 ]

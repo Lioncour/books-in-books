@@ -535,6 +535,29 @@ class EvalScriptTests(TempProject):
         self.assertEqual(result["recall"], round(1 / 3, 3))
         self.assertEqual(sorted(result["missed"]), ["Persuasion", "Selected Essays"])
 
+    def test_an_optional_gold_work_is_not_a_miss(self):
+        import eval_extraction
+
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified) VALUES ('Lean In', 'Sheryl Sandberg', 'l', 1)"
+        )
+        self.cur.execute(
+            "INSERT INTO book_references (source_book_id, referenced_book_id) VALUES (?, ?)",
+            (self.source_id, self.cur.lastrowid),
+        )
+        self.conn.commit()
+        gold = {
+            "source": {"title": "Careless People", "author": "Sarah Wynn-Williams"},
+            "works": [
+                {"title": "Lean In", "authors": ["Sheryl Sandberg"]},
+                {"title": "Some Newspaper Headline", "optional": True},
+            ],
+        }
+        result = eval_extraction.evaluate(gold, self.cur)
+        self.assertEqual(result["missed"], [])
+        self.assertEqual(result["gold_works"], 1)
+        self.assertEqual(result["recall"], 1.0)
+
     def test_a_placeholder_creator_does_not_make_a_right_work_wrong(self):
         import eval_extraction
 

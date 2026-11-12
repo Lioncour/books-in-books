@@ -52,7 +52,7 @@
     "kind": "book",
     "cover_id": "95718",
     "cover_url": "https://covers.openlibrary.org/b/id/95718-M.jpg",
-    "outgoing_count": 63,
+    "outgoing_count": 61,
     "incoming_count": 0
   },
   {
@@ -150,20 +150,6 @@
     "kind": "book",
     "cover_id": "1880779",
     "cover_url": "https://covers.openlibrary.org/b/id/1880779-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 193,
-    "title": "A sermon vpon the XV. verse of the XX. chapter of the Booke of Ivdges",
-    "author": "John Donne",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 0.9,
-    "open_library_id": "/works/OL1222838W",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -434,6 +420,20 @@
     "incoming_count": 1
   },
   {
+    "id": 543,
+    "title": "Austin Powers: International Man of Mystery",
+    "author": "Jay Roach",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q501703",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/d/d7/Austin_Powers_International_Man_of_Mystery_theatrical_poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 459,
     "title": "Avatar",
     "author": "James Cameron",
@@ -487,16 +487,30 @@
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/en/thumb/3/3b/Barneylogo.png/330px-Barneylogo.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
+    "incoming_count": 2
+  },
+  {
+    "id": 502,
+    "title": "Batman",
+    "author": "Bob Kane",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "/works/OL2897789W",
+    "kind": "book",
+    "cover_id": "2737891",
+    "cover_url": "https://covers.openlibrary.org/b/id/2737891-M.jpg",
+    "outgoing_count": 0,
     "incoming_count": 1
   },
   {
-    "id": 297,
+    "id": 540,
     "title": "Battlestar Galactica",
-    "author": "2004–2009 American science fiction television series, reimagining of a 1970s series",
+    "author": "Glen A. Larson",
     "is_starting": false,
     "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "wikidata_Q237072",
+    "match_score": null,
+    "open_library_id": "judge_movie_battlestar galactica_glen_larson",
     "kind": "movie",
     "cover_id": null,
     "cover_url": null,
@@ -528,7 +542,7 @@
     "kind": "book",
     "cover_id": "26230",
     "cover_url": "https://covers.openlibrary.org/b/id/26230-M.jpg",
-    "outgoing_count": 35,
+    "outgoing_count": 42,
     "incoming_count": 0
   },
   {
@@ -570,6 +584,20 @@
     "kind": "book",
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/en/thumb/e/ed/%22Beware_of_Pity%22_%281946%29.jpg/330px-%22Beware_of_Pity%22_%281946%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 520,
+    "title": "Bill & Ted's Excellent Adventure",
+    "author": "Stephen Herek",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q795042",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/b/bc/Bill_%26_Ted.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -644,16 +672,30 @@
     "incoming_count": 1
   },
   {
+    "id": 536,
+    "title": "Book of Daniel",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "/works/OL55238W",
+    "kind": "book",
+    "cover_id": "8269274",
+    "cover_url": "https://covers.openlibrary.org/b/id/8269274-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 474,
     "title": "Book of Proverbs",
     "author": "Anonymous",
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_book_book proverbs",
+    "open_library_id": "/works/OL1819678W",
     "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
+    "cover_id": "572137",
+    "cover_url": "https://covers.openlibrary.org/b/id/572137-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -692,10 +734,10 @@
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_movie_buffy vampire slayer_joss_whedon",
+    "open_library_id": "wikidata_Q183513",
     "kind": "movie",
     "cover_id": null,
-    "cover_url": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Buffy_the_vampire_slayer.svg/330px-Buffy_the_vampire_slayer.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -766,7 +808,7 @@
     "kind": "book",
     "cover_id": "14852090",
     "cover_url": "https://covers.openlibrary.org/b/id/14852090-M.jpg",
-    "outgoing_count": 30,
+    "outgoing_count": 32,
     "incoming_count": 0
   },
   {
@@ -892,7 +934,7 @@
     "kind": "book",
     "cover_id": "10543524",
     "cover_url": "https://covers.openlibrary.org/b/id/10543524-M.jpg",
-    "outgoing_count": 36,
+    "outgoing_count": 47,
     "incoming_count": 0
   },
   {
@@ -924,6 +966,20 @@
     "incoming_count": 1
   },
   {
+    "id": 542,
+    "title": "Conan the Barbarian",
+    "author": "Robert E. Howard",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL19624419W",
+    "kind": "book",
+    "cover_id": "8537396",
+    "cover_url": "https://covers.openlibrary.org/b/id/8537396-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 381,
     "title": "Considérations sur Cicéron",
     "author": "Michel de Montaigne",
@@ -931,20 +987,6 @@
     "verified": true,
     "match_score": null,
     "open_library_id": "judge_book_considérations sur cicéron_michel_montaigne",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 488,
-    "title": "Constitution of the United States",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_constitution united states",
     "kind": "book",
     "cover_id": null,
     "cover_url": null,
@@ -1092,6 +1134,20 @@
     "incoming_count": 1
   },
   {
+    "id": 511,
+    "title": "Dumbo",
+    "author": "Ben Sharpsteen",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q40895",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/a/a7/Dumbo-1941-poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 316,
     "title": "Ellen Terry and Bernard Shaw",
     "author": "Terry, Ellen Dame",
@@ -1102,6 +1158,20 @@
     "kind": "book",
     "cover_id": "6494877",
     "cover_url": "https://covers.openlibrary.org/b/id/6494877-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 524,
+    "title": "Erasmus of Rotterdam",
+    "author": "Stefan Zweig",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL28407W",
+    "kind": "book",
+    "cover_id": "9306161",
+    "cover_url": "https://covers.openlibrary.org/b/id/9306161-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1148,16 +1218,16 @@
     "incoming_count": 1
   },
   {
-    "id": 483,
-    "title": "FM 3-0 Operations (US Army Field Manual)",
-    "author": "Anonymous",
+    "id": 534,
+    "title": "Evangeline",
+    "author": "Henry Wadsworth Longfellow",
     "is_starting": false,
     "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_fm 3 0 operations us army field manual",
+    "match_score": 1.0,
+    "open_library_id": "/works/OL495761W",
     "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
+    "cover_id": "6153860",
+    "cover_url": "https://covers.openlibrary.org/b/id/6153860-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1204,20 +1274,6 @@
     "incoming_count": 1
   },
   {
-    "id": 482,
-    "title": "Final Report of the Commission of Investigation into Mother and Baby Homes",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_final report commission investigation into mother baby homes",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 337,
     "title": "Finding Nemo",
     "author": "2003 animated film directed by Andrew Stanton",
@@ -1228,6 +1284,20 @@
     "kind": "movie",
     "cover_id": null,
     "cover_url": "https://upload.wikimedia.org/wikipedia/en/2/29/Finding_Nemo.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 513,
+    "title": "First Blood",
+    "author": "Ted Kotcheff",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q244963",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/d/d6/First_blood_poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1270,6 +1340,20 @@
     "kind": "book",
     "cover_id": "14605188",
     "cover_url": "https://covers.openlibrary.org/b/id/14605188-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 541,
+    "title": "Flash Gordon",
+    "author": "Alex Raymond",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL4443455W",
+    "kind": "book",
+    "cover_id": "12478061",
+    "cover_url": "https://covers.openlibrary.org/b/id/12478061-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1386,6 +1470,20 @@
     "incoming_count": 1
   },
   {
+    "id": 548,
+    "title": "Genesis",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_genesis",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 229,
     "title": "Ghost Girl",
     "author": "Torey L Hayden",
@@ -1420,10 +1518,10 @@
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_book_gospel matthew",
+    "open_library_id": "/works/OL1800314W",
     "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
+    "cover_id": "10717455",
+    "cover_url": "https://covers.openlibrary.org/b/id/10717455-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1467,7 +1565,7 @@
     "cover_id": "8281954",
     "cover_url": "https://covers.openlibrary.org/b/id/8281954-M.jpg",
     "outgoing_count": 0,
-    "incoming_count": 2
+    "incoming_count": 3
   },
   {
     "id": 453,
@@ -1480,6 +1578,20 @@
     "kind": "music",
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dd/Birthday_candles.jpg/330px-Birthday_candles.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 537,
+    "title": "Harry Potter",
+    "author": "J. K. Rowling",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL21385222W",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Harry_Potter_logo.svg/330px-Harry_Potter_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1540,6 +1652,20 @@
     "incoming_count": 1
   },
   {
+    "id": 530,
+    "title": "History of cosmopolite, or, The four volumes of Lorenzo Dow's journal concentrated in one",
+    "author": "Lorenzo Dow",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 0.9,
+    "open_library_id": "/works/OL32869089W",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 434,
     "title": "Hook",
     "author": "Steven Spielberg",
@@ -1550,20 +1676,6 @@
     "kind": "movie",
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/KamAZ-53213_Kranaufbau.jpg/330px-KamAZ-53213_Kranaufbau.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 477,
-    "title": "How to use the Internet",
-    "author": "Rogers Cadenhead",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL516623W",
-    "kind": "book",
-    "cover_id": "1335149",
-    "cover_url": "https://covers.openlibrary.org/b/id/1335149-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1694,6 +1806,34 @@
     "incoming_count": 1
   },
   {
+    "id": 518,
+    "title": "Iron Man",
+    "author": "Film / TV",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q192724",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/4/47/Iron_Man_%28circa_2018%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 527,
+    "title": "Iron Man",
+    "author": "Gene Colan",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL24512339W",
+    "kind": "book",
+    "cover_id": "11138809",
+    "cover_url": "https://covers.openlibrary.org/b/id/11138809-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 236,
     "title": "Is Connectivity a Human Right?",
     "author": "Mark Zuckerberg",
@@ -1728,10 +1868,52 @@
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_book_jack beanstalk",
+    "open_library_id": "/works/OL3184014W",
     "kind": "book",
+    "cover_id": "6986646",
+    "cover_url": "https://covers.openlibrary.org/b/id/6986646-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 2
+  },
+  {
+    "id": 538,
+    "title": "Jack the Bodiless",
+    "author": "Julian May",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL2360684W",
+    "kind": "book",
+    "cover_id": "7249763",
+    "cover_url": "https://covers.openlibrary.org/b/id/7249763-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 503,
+    "title": "James Bond",
+    "author": "Ian Fleming",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "/works/OL2947484W",
+    "kind": "book",
+    "cover_id": "7164197",
+    "cover_url": "https://covers.openlibrary.org/b/id/7164197-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 514,
+    "title": "James Bond",
+    "author": "Ian Fleming",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_movie_james bond_fleming_ian",
+    "kind": "movie",
     "cover_id": null,
-    "cover_url": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/c/c5/Fleming007impression.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1876,13 +2058,27 @@
     "incoming_count": 1
   },
   {
-    "id": 355,
-    "title": "Kumbaya",
+    "id": 526,
+    "title": "King Kong",
+    "author": "Merian C. Cooper",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q160215",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/King_Kong_1933_Promotional_Image.png/330px-King_Kong_1933_Promotional_Image.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 512,
+    "title": "Kum ba yah",
     "author": "Traditional",
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_music_kumbaya",
+    "open_library_id": "judge_music_kum ba yah",
     "kind": "music",
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Come_By_Here_Kumbaya_Transcription_of_1926_recording.jpg/330px-Come_By_Here_Kumbaya_Transcription_of_1926_recording.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
@@ -1914,6 +2110,20 @@
     "kind": "book",
     "cover_id": "7254305",
     "cover_url": "https://covers.openlibrary.org/b/id/7254305-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 545,
+    "title": "Li'L Abner",
+    "author": "Al Capp",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL4280379W",
+    "kind": "book",
+    "cover_id": "2674800",
+    "cover_url": "https://covers.openlibrary.org/b/id/2674800-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2152,7 +2362,7 @@
     "kind": "book",
     "cover_id": "14256190",
     "cover_url": "https://covers.openlibrary.org/b/id/14256190-M.jpg",
-    "outgoing_count": 42,
+    "outgoing_count": 43,
     "incoming_count": 0
   },
   {
@@ -2166,6 +2376,20 @@
     "kind": "movie",
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/en/thumb/0/08/Monty-Python-1975-poster.png/330px-Monty-Python-1975-poster.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 535,
+    "title": "My First Reader",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_my first reader",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2268,13 +2492,13 @@
     "incoming_count": 1
   },
   {
-    "id": 366,
-    "title": "Of the Ceremony of the Interviews of Princes",
+    "id": 525,
+    "title": "Of the Ceremony of the Interview of Princes",
     "author": "Michel de Montaigne",
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_book_ceremony interviews princes_michel_montaigne",
+    "open_library_id": "judge_book_ceremony interview princes_michel_montaigne",
     "kind": "book",
     "cover_id": null,
     "cover_url": null,
@@ -2408,16 +2632,16 @@
     "incoming_count": 1
   },
   {
-    "id": 322,
-    "title": "Open House",
-    "author": "Helene Hanff",
+    "id": 531,
+    "title": "One-Eye, Two-Eyes, and Three-Eyes",
+    "author": "Brothers Grimm",
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "/works/OL8368887W",
+    "open_library_id": "judge_book_one eye two eyes three eyes_brothers_grimm",
     "kind": "book",
-    "cover_id": "370244",
-    "cover_url": "https://covers.openlibrary.org/b/id/370244-M.jpg",
+    "cover_id": null,
+    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2432,6 +2656,20 @@
     "kind": "book",
     "cover_id": "9317237",
     "cover_url": "https://covers.openlibrary.org/b/id/9317237-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 499,
+    "title": "Peanuts",
+    "author": "Charles M. Schulz",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL25894W",
+    "kind": "book",
+    "cover_id": "3367514",
+    "cover_url": "https://covers.openlibrary.org/b/id/3367514-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2526,10 +2764,10 @@
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_book_proclamation irish republic",
+    "open_library_id": "/works/OL11849838W",
     "kind": "book",
     "cover_id": null,
-    "cover_url": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/Proclamation_of_the_Irish_Republic_-_Proclamation_de_la_R%C3%A9publique_irlandaise_%28cropped%29.jpg/330px-Proclamation_of_the_Irish_Republic_-_Proclamation_de_la_R%C3%A9publique_irlandaise_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2702,6 +2940,34 @@
     "incoming_count": 1
   },
   {
+    "id": 505,
+    "title": "Self-consciousness",
+    "author": "John Updike",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL463819W",
+    "kind": "book",
+    "cover_id": "290535",
+    "cover_url": "https://covers.openlibrary.org/b/id/290535-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 492,
+    "title": "Sermon XV",
+    "author": "John Donne",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_sermon xv_donne_john",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 213,
     "title": "Sermons",
     "author": "John Donne",
@@ -2712,6 +2978,34 @@
     "kind": "book",
     "cover_id": "8339750",
     "cover_url": "https://covers.openlibrary.org/b/id/8339750-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 508,
+    "title": "Sesame Street",
+    "author": "Film / TV",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q155629",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Sesame_Street_logo.svg/330px-Sesame_Street_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 2
+  },
+  {
+    "id": 495,
+    "title": "Shane",
+    "author": "Jack Schaefer",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL3916716W",
+    "kind": "book",
+    "cover_id": "4688425",
+    "cover_url": "https://covers.openlibrary.org/b/id/4688425-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2758,6 +3052,20 @@
     "incoming_count": 1
   },
   {
+    "id": 522,
+    "title": "Sleeping Beauty",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_sleeping beauty",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 49,
     "title": "Small Things Like These",
     "author": "Claire Keegan",
@@ -2768,7 +3076,7 @@
     "kind": "book",
     "cover_id": "10507091",
     "cover_url": "https://covers.openlibrary.org/b/id/10507091-M.jpg",
-    "outgoing_count": 14,
+    "outgoing_count": 13,
     "incoming_count": 0
   },
   {
@@ -2810,8 +3118,22 @@
     "kind": "book",
     "cover_id": "9344864",
     "cover_url": "https://covers.openlibrary.org/b/id/9344864-M.jpg",
-    "outgoing_count": 23,
+    "outgoing_count": 28,
     "incoming_count": 1
+  },
+  {
+    "id": 493,
+    "title": "Spider-Man",
+    "author": "Stan Lee",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL20658931W",
+    "kind": "book",
+    "cover_id": "2626105",
+    "cover_url": "https://covers.openlibrary.org/b/id/2626105-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 3
   },
   {
     "id": 202,
@@ -2842,6 +3164,20 @@
     "incoming_count": 3
   },
   {
+    "id": 544,
+    "title": "Star Trek (film series)",
+    "author": "Film / TV",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_movie_star trek film series",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 445,
     "title": "Star Trek II: The Wrath of Khan",
     "author": "Nicholas Meyer",
@@ -2852,20 +3188,6 @@
     "kind": "movie",
     "cover_id": null,
     "cover_url": "https://upload.wikimedia.org/wikipedia/en/9/9a/Star_Trek_II_The_Wrath_of_Khan.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 450,
-    "title": "Star Trek: Voyager",
-    "author": "1995 American science fiction television series",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "wikidata_Q156329",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2881,7 +3203,7 @@
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Star_wars2.svg/330px-Star_wars2.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
-    "incoming_count": 3
+    "incoming_count": 4
   },
   {
     "id": 390,
@@ -2898,30 +3220,44 @@
     "incoming_count": 1
   },
   {
-    "id": 17,
-    "title": "Stargate",
-    "author": "Dean Devlin",
+    "id": 546,
+    "title": "Star Wars: Episode VI – Return of the Jedi",
+    "author": "Richard Marquand",
     "is_starting": false,
     "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "wikidata_Q215287",
+    "match_score": null,
+    "open_library_id": "wikidata_Q181803",
     "kind": "movie",
-    "cover_id": "4636238",
-    "cover_url": "https://covers.openlibrary.org/b/id/4636238-M.jpg",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/b/b2/ReturnOfTheJediPoster1983.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
     "incoming_count": 1
   },
   {
-    "id": 440,
-    "title": "Stargate SG-1",
-    "author": "Film / TV",
+    "id": 517,
+    "title": "Stargate",
+    "author": "Roland Emmerich",
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_movie_stargate sg 1",
+    "open_library_id": "judge_movie_stargate_emmerich_roland",
     "kind": "movie",
     "cover_id": null,
     "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 2
+  },
+  {
+    "id": 496,
+    "title": "Superman",
+    "author": "Jerry Siegel",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL1917817W",
+    "kind": "book",
+    "cover_id": "798447",
+    "cover_url": "https://covers.openlibrary.org/b/id/798447-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3038,6 +3374,20 @@
     "incoming_count": 1
   },
   {
+    "id": 521,
+    "title": "The Adventures of Sherlock Holmes [12 stories]",
+    "author": "Arthur Conan Doyle",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 0.9,
+    "open_library_id": "/works/OL262421W",
+    "kind": "book",
+    "cover_id": "6717853",
+    "cover_url": "https://covers.openlibrary.org/b/id/6717853-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 2
+  },
+  {
     "id": 428,
     "title": "The Andromeda Strain",
     "author": "1971 film by Robert Wise",
@@ -3075,7 +3425,7 @@
     "open_library_id": "judge_book_bible",
     "kind": "book",
     "cover_id": null,
-    "cover_url": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/330px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 5
   },
@@ -3118,20 +3468,6 @@
     "kind": "music",
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Charlotte_Schreiber_-_The_Croppy_Boy.jpg/330px-Charlotte_Schreiber_-_The_Croppy_Boy.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 409,
-    "title": "The Diaries of Lorenzo Dow",
-    "author": "Lorenzo Dow",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_diaries lorenzo dow_dow_lorenzo",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3184,10 +3520,10 @@
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_book_gingerbread boy",
+    "open_library_id": "/works/OL5098899W",
     "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
+    "cover_id": "255548",
+    "cover_url": "https://covers.openlibrary.org/b/id/255548-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3216,6 +3552,20 @@
     "kind": "movie",
     "cover_id": null,
     "cover_url": "https://upload.wikimedia.org/wikipedia/en/5/55/GodfatherIII2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 529,
+    "title": "The Gospel of John",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_gospel john",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3276,20 +3626,6 @@
     "incoming_count": 1
   },
   {
-    "id": 487,
-    "title": "The Little Red Book (Facebook)",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_little red book facebook",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 439,
     "title": "The Lord of the Rings",
     "author": "J.R.R. Tolkien",
@@ -3332,13 +3668,13 @@
     "incoming_count": 1
   },
   {
-    "id": 478,
+    "id": 506,
     "title": "The Oprah Winfrey Show",
-    "author": "Film / TV",
+    "author": "Oprah Winfrey",
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_movie_oprah winfrey show",
+    "open_library_id": "judge_movie_oprah winfrey show_oprah_winfrey",
     "kind": "movie",
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/The_Oprah_Winfrey_Show_logo.png/330px-The_Oprah_Winfrey_Show_logo.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
@@ -3402,6 +3738,20 @@
     "incoming_count": 1
   },
   {
+    "id": 504,
+    "title": "The Prince",
+    "author": "Niccolò Machiavelli",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL1089297W",
+    "kind": "book",
+    "cover_id": "12726168",
+    "cover_url": "https://covers.openlibrary.org/b/id/12726168-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 160,
     "title": "The Rabbit Back Literature Society",
     "author": "Pasi Ilmari Jaaskelainen",
@@ -3412,6 +3762,20 @@
     "kind": "book",
     "cover_id": "8573774",
     "cover_url": "https://covers.openlibrary.org/b/id/8573774-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 547,
+    "title": "The Rocky and Bullwinkle Show",
+    "author": "Jay Ward",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q2318552",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/7/76/Rocky_and_Bullwinkle_intro.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3472,16 +3836,30 @@
     "incoming_count": 1
   },
   {
-    "id": 385,
+    "id": 523,
     "title": "The Smurfs",
-    "author": "1981 animated television series",
+    "author": "Peyo",
     "is_starting": false,
     "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "wikidata_Q1216045",
-    "kind": "movie",
+    "match_score": null,
+    "open_library_id": "/works/OL24299114W",
+    "kind": "book",
+    "cover_id": "10807652",
+    "cover_url": "https://covers.openlibrary.org/b/id/10807652-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 2
+  },
+  {
+    "id": 501,
+    "title": "The Sound of Music",
+    "author": "Rodgers and Hammerstein",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_music_sound music_hammerstein_rodgers",
+    "kind": "music",
     "cover_id": null,
-    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Smurfs_logo_%282019%29.png/330px-The_Smurfs_logo_%282019%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/6/6b/Musical1959-SoundOfMusic-OriginalPoster.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3496,20 +3874,6 @@
     "kind": "book",
     "cover_id": "7767383",
     "cover_url": "https://covers.openlibrary.org/b/id/7767383-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 417,
-    "title": "The Speeches Of Henry W. Grady",
-    "author": "Henry W. Grady",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL9163311W",
-    "kind": "book",
-    "cover_id": "2874926",
-    "cover_url": "https://covers.openlibrary.org/b/id/2874926-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3623,7 +3987,7 @@
     "cover_id": "13335427",
     "cover_url": "https://covers.openlibrary.org/b/id/13335427-M.jpg",
     "outgoing_count": 0,
-    "incoming_count": 1
+    "incoming_count": 2
   },
   {
     "id": 462,
@@ -3636,6 +4000,20 @@
     "kind": "movie",
     "cover_id": null,
     "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 2
+  },
+  {
+    "id": 507,
+    "title": "The Wonderful Wizard of Oz",
+    "author": "L. Frank Baum",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL18417W",
+    "kind": "book",
+    "cover_id": "552443",
+    "cover_url": "https://covers.openlibrary.org/b/id/552443-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 2
   },
@@ -3659,7 +4037,7 @@
     "author": "R. M. Leonard",
     "is_starting": false,
     "verified": true,
-    "match_score": 1.0,
+    "match_score": 0.6,
     "open_library_id": "/works/OL54207W",
     "kind": "book",
     "cover_id": "6584678",
@@ -3734,6 +4112,20 @@
     "kind": "book",
     "cover_id": "3202",
     "cover_url": "https://covers.openlibrary.org/b/id/3202-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 509,
+    "title": "The emperor's new clothes",
+    "author": "Hans Christian Andersen",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL15138675W",
+    "kind": "book",
+    "cover_id": "1363457",
+    "cover_url": "https://covers.openlibrary.org/b/id/1363457-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3874,7 +4266,7 @@
     "kind": "book",
     "cover_id": "14351077",
     "cover_url": "https://covers.openlibrary.org/b/id/14351077-M.jpg",
-    "outgoing_count": 28,
+    "outgoing_count": 33,
     "incoming_count": 0
   },
   {
@@ -4098,7 +4490,7 @@
     "kind": "book",
     "cover_id": "8421582",
     "cover_url": "https://covers.openlibrary.org/b/id/8421582-M.jpg",
-    "outgoing_count": 37,
+    "outgoing_count": 48,
     "incoming_count": 0
   },
   {
@@ -4155,7 +4547,7 @@
     "cover_id": null,
     "cover_url": null,
     "outgoing_count": 0,
-    "incoming_count": 1
+    "incoming_count": 0
   },
   {
     "id": 43,
@@ -4169,7 +4561,7 @@
     "cover_id": "8610816",
     "cover_url": "https://covers.openlibrary.org/b/id/8610816-M.jpg",
     "outgoing_count": 0,
-    "incoming_count": 2
+    "incoming_count": 3
   },
   {
     "id": 257,
@@ -4197,6 +4589,6 @@
     "cover_id": null,
     "cover_url": "https://upload.wikimedia.org/wikipedia/en/b/bb/Zero_Wing_arcade_flyer.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
-    "incoming_count": 1
+    "incoming_count": 0
   }
 ]

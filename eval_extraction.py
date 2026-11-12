@@ -130,7 +130,10 @@ def evaluate(gold: Dict, cursor) -> Optional[Dict]:
             unlabelled.append(label)
 
     judged = len(correct) + len(wrong) + len(false_positive)
-    missed = [w["title"] for w in works if w["title"] not in found]
+    # An optional work is right when linked but not a miss when absent: things
+    # the tool leaves out on purpose, such as newspaper headlines.
+    required = [w for w in works if not w.get("optional")]
+    missed = [w["title"] for w in required if w["title"] not in found]
     return {
         "source": gold["source"]["title"],
         "links": len(links),
@@ -140,9 +143,11 @@ def evaluate(gold: Dict, cursor) -> Optional[Dict]:
         "unlabelled": unlabelled,
         "kind_mismatch": kind_mismatch,
         "missed": missed,
-        "gold_works": len(works),
+        "gold_works": len(required),
         "precision": round(len(correct) / judged, 3) if judged else None,
-        "recall": round(len(found) / len(works), 3) if works else None,
+        "recall": (
+            round((len(required) - len(missed)) / len(required), 3) if required else None
+        ),
     }
 
 

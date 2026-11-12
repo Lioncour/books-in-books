@@ -119,7 +119,7 @@ books in books/
 **The Judge** (Claude) reads each candidate in its passage and decides whether it really refers to a work, what kind it is, its catalogue title and who wrote it.  
 **Lucien** looks that title up *with the author* (Open Library / film / music / cocktail lexicon) and files what is real.
 
-Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused. Measured on *84, Charing Cross Road*, precision went from 58% to 95% and recall from 52% to 83% with the Judge alone, and to 98% and 93% with the Reader on as well. On two gold sets labelled independently from the full text, with the Reader and the Auditor on, precision is 100% and recall 93% (*Small Things Like These*) and 88% (*To Kill a Mockingbird*).
+Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused. Measured on *84, Charing Cross Road*, precision went from 58% to 95% and recall from 52% to 83% with the Judge alone, and to 98% and 93% with the Reader on as well. On four gold sets labelled independently from the full text, with the Reader and the Auditor on, precision is 100% on all of them and recall is 87% (*Small Things Like These*), 96% (*To Kill a Mockingbird*), 95% (*Columbus Day*) and 86% (*Careless People*).
 
 How a judged mention is filed:
 - **With an author:** the catalogue is searched by title and author. If no catalogue has it, the work is filed on the Judge's word and marked "Identified by the Judge".
@@ -223,7 +223,7 @@ One extra file, `tests/test_live_judge.py`, checks the real Judge against five p
 .\.venv\Scripts\python eval_extraction.py --details
 ```
 
-This compares the links in the database with hand-checked gold sets in `eval/gold/` and reports precision (links that point at the right work) and recall (real mentions that got a link). Run it before and after changing the Judge's prompt or model, or the matching rules. Three gold sets ship. The one for *84, Charing Cross Road* was built partly from the tool's own output, so it flatters. The ones for *Small Things Like These* and *To Kill a Mockingbird* were labelled from the full text by a reader that never saw the links, and are the ones to trust.
+This compares the links in the database with hand-checked gold sets in `eval/gold/` and reports precision (links that point at the right work) and recall (real mentions that got a link). Run it before and after changing the Judge's prompt or model, or the matching rules. Five gold sets ship. The one for *84, Charing Cross Road* was built partly from the tool's own output, so it flatters. The other four (*Small Things Like These*, *To Kill a Mockingbird*, *Columbus Day*, *Careless People*) were labelled from the full text by readers that never saw the links, and are the ones to trust. A gold work marked `"optional": true` counts as right when linked but is not a miss when absent; newspaper headlines are marked that way, because the tool leaves them out on purpose.
 
 ## Useful commands
 
