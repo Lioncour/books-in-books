@@ -39,19 +39,16 @@ Items are ordered by how much they improve the result for the effort.
 - **Readings vary.** Two readings of the same book do not find exactly the same works: *Small Things Like These* went from 93% to 87% and *84, Charing Cross Road* from 95% to 93% in the same re-read, one or two works each. The numbers above are one reading, good to a few points.
 - **Two readings.** Measured at the Reader, over the five gold books (178 works): one reading found 87% and 90% on two tries, one reading with overlapping parts 91%, two plain readings together 90%, and a plain reading plus one cut at different places 93%. `BOOKS_READER_PASSES=2` does the last of these. With it on, across the library: precision 100% on all five gold sets, recall 97% (*84, Charing Cross Road*), 93% (*Small Things Like These*), 96% (*To Kill a Mockingbird*), 98% (*Columbus Day*), 86% (*Careless People*). 360 links, 19 works shared by several books. Each comparison is a single run, so read the differences as a few points either way.
 - **A book no longer links to its own film or stage version**, which the second reading picked up from a jacket text.
-- **Claude Code as a provider.** `BOOKS_PROVIDER=claude-code` runs the `claude` program on the machine instead of an API, so the work is drawn from a Claude subscription. Run for real on one book: the Reader found 13 of 15 gold works in *Small Things Like These*, the same as a single reading through Bedrock. Two things had to be fixed first: started from inside a Claude Code session the program borrowed that session's login, and an API key in the environment overrode the subscription. `process_books.py --check` asks one small question to show the provider answers; `eval/reader_check.py` scores one reading against a gold set.
+- **Claude Code as a provider.** `BOOKS_PROVIDER=claude-code` runs the `claude` program on the machine instead of an API, so the work is drawn from a Claude subscription. Run for real on one book: the Reader found 13 of 15 gold works in *Small Things Like These*, the same as a single reading through Bedrock. Two things had to be fixed first: started from inside a Claude Code session the program borrowed that session's login, and an API key in the environment overrode the subscription. `process_books.py --check` asks one small question to show the provider answers; `eval/reader_check.py` scores one reading against a gold set. A long book works too: *Columbus Day* (950,000 characters, 24 parts) took 65 seconds and found 37 of 41 gold works, in line with single readings through Bedrock (38 and 39). The Auditor passed all 14 links of *Small Things Like These* through it. The library now runs on Claude Code; the links themselves were made through Bedrock and have not been re-read.
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
 ## Next: do these first
 
-### 1. Decide which provider the library runs on
-Claude Code answers and matches Bedrock on one short book. Before switching the whole library: read a long book through it (*Columbus Day*), note how much of the subscription's limit it uses, and compare the Judge and the Auditor too, not only the Reader.
-
-### 2. Cut the Reader's price
+### 1. Cut the Reader's price
 Haiku 5.5 and Sonnet 5.5 were both tried as the Reader and both found clearly fewer mentions, so a smaller model is not the answer. The Message Batches API halves the price of the same model. Results are cached per file and model, so this only matters for new books.
 
-### 3. Make the graph connect
+### 2. Make the graph connect
 Ten books now share 19 works (the Bible in five of them, then The Simpsons, Star Wars, Spider-Man, Hamlet, Winnie-the-Pooh, Star Trek and others), up from two. Three things would create more real links:
 - **More books.** The network effect needs a larger library; batch upload already works.
 - **Second-hop links from the catalogue.** For a mentioned book you do not own, pull its own mentions from the shared catalogue, so two of your books connect through a third.
@@ -59,18 +56,18 @@ Ten books now share 19 works (the Bible in five of them, then The Simpsons, Star
 
 ## Then: product
 
-### 4. Add a book by title, no file needed
+### 3. Add a book by title, no file needed
 The stated long-term direction. The catalogue tables and admin page exist. What is missing is a public shelf view: search a title, see what it mentions, add it to "my shelf". Needs the catalogue to be populated, which the Judge now makes trustworthy enough to do in bulk from public-domain texts (Project Gutenberg).
 
-### 5. Graph usability
+### 4. Graph usability
 - Filter the graph to one author or one decade.
 - A list view for phones, where a force graph is hard to use.
 
 ## Later: engineering
 
-### 6. Split the big files
+### 5. Split the big files
 `app.py` (about 1,900 lines), `process_books.py` (about 2,200) and `static/main.js` (about 2,800) each do several jobs. Split along the seams that now exist: text reading, candidate finding, judging, catalogue lookup, storage; and on the front end graph, panels, upload and processing. Do it with the tests green before and after.
 
-### 7. Housekeeping
-- `process_books.py` still holds matching, storage, file reading and the command line in one file (see item 6).
+### 6. Housekeeping
+- `process_books.py` still holds matching, storage, file reading and the command line in one file (see item 5).
 - The candidate finder changed, so the first re-read of each book repeats the slow spaCy pass once.
