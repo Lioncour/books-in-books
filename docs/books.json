@@ -252,6 +252,20 @@
     "incoming_count": 1
   },
   {
+    "id": 479,
+    "title": "Aladdin",
+    "author": "Ron Clements and John Musker",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "wikidata_Q215518",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/Alad.jpg/330px-Alad.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 234,
     "title": "Alice's Adventures in Wonderland",
     "author": "Lewis Carroll",
@@ -336,16 +350,16 @@
     "incoming_count": 1
   },
   {
-    "id": 345,
-    "title": "Annual Message to Congress (December 1, 1862)",
+    "id": 476,
+    "title": "Annual Message to Congress (1862)",
     "author": "Abraham Lincoln",
     "is_starting": false,
     "verified": true,
     "match_score": null,
-    "open_library_id": "judge_book_annual message congress december 1 1862_abraham_lincoln",
+    "open_library_id": "/works/OL3211501W",
     "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
+    "cover_id": "5964927",
+    "cover_url": "https://covers.openlibrary.org/b/id/5964927-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -630,6 +644,20 @@
     "incoming_count": 1
   },
   {
+    "id": 474,
+    "title": "Book of Proverbs",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_book proverbs",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 168,
     "title": "Boy, the Mole, the Fox and the Horse",
     "author": "Charlie Mackesy",
@@ -658,16 +686,16 @@
     "incoming_count": 1
   },
   {
-    "id": 341,
+    "id": 475,
     "title": "Buffy the Vampire Slayer",
-    "author": "American supernatural drama television series",
+    "author": "Joss Whedon",
     "is_starting": false,
     "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "wikidata_Q183513",
+    "match_score": null,
+    "open_library_id": "judge_movie_buffy vampire slayer_joss_whedon",
     "kind": "movie",
     "cover_id": null,
-    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Buffy_the_vampire_slayer.svg/330px-Buffy_the_vampire_slayer.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -738,7 +766,7 @@
     "kind": "book",
     "cover_id": "14852090",
     "cover_url": "https://covers.openlibrary.org/b/id/14852090-M.jpg",
-    "outgoing_count": 27,
+    "outgoing_count": 28,
     "incoming_count": 0
   },
   {
@@ -1466,6 +1494,20 @@
     "kind": "movie",
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/KamAZ-53213_Kranaufbau.jpg/330px-KamAZ-53213_Kranaufbau.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 477,
+    "title": "How to use the Internet",
+    "author": "Rogers Cadenhead",
+    "is_starting": false,
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL516623W",
+    "kind": "book",
+    "cover_id": "1335149",
+    "cover_url": "https://covers.openlibrary.org/b/id/1335149-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2576,20 +2618,6 @@
     "incoming_count": 1
   },
   {
-    "id": 340,
-    "title": "Self-consciousness",
-    "author": "John Updike",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL463819W",
-    "kind": "book",
-    "cover_id": "290535",
-    "cover_url": "https://covers.openlibrary.org/b/id/290535-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 213,
     "title": "Sermons",
     "author": "John Donne",
@@ -3192,6 +3220,20 @@
     "incoming_count": 1
   },
   {
+    "id": 478,
+    "title": "The Oprah Winfrey Show",
+    "author": "Film / TV",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_movie_oprah winfrey show",
+    "kind": "movie",
+    "cover_id": null,
+    "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/The_Oprah_Winfrey_Show_logo.png/330px-The_Oprah_Winfrey_Show_logo.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 89,
     "title": "The Oxford book of English prose",
     "author": "Arthur Quiller-Couch",
@@ -3244,20 +3286,6 @@
     "kind": "book",
     "cover_id": "2596865",
     "cover_url": "https://covers.openlibrary.org/b/id/2596865-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 338,
-    "title": "The Prince",
-    "author": "Niccolò Machiavelli",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL1089297W",
-    "kind": "book",
-    "cover_id": "12726168",
-    "cover_url": "https://covers.openlibrary.org/b/id/12726168-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3510,20 +3538,6 @@
     "kind": "book",
     "cover_id": "6793214",
     "cover_url": "https://covers.openlibrary.org/b/id/6793214-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 451,
-    "title": "The book of Proverbs",
-    "author": "Bruce K. Waltke",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL1819678W",
-    "kind": "book",
-    "cover_id": "572137",
-    "cover_url": "https://covers.openlibrary.org/b/id/572137-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },

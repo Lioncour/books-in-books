@@ -343,12 +343,6 @@
   },
   {
     "source": 3,
-    "target": 451,
-    "context": "“Pride goeth before a fall.”",
-    "manner": "quoted"
-  },
-  {
-    "source": 3,
     "target": 452,
     "context": "Donna, the girl whose story I told in The Saddest Girl in the World, had left us in November",
     "manner": "passing"
@@ -358,6 +352,12 @@
     "target": 458,
     "context": "We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after Billy.",
     "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 474,
+    "context": "“Pride goeth before a fall.”",
+    "manner": "quoted"
   },
   {
     "source": 13,
@@ -1353,7 +1353,7 @@
     "source": 123,
     "target": 130,
     "context": "he remained bitter about Andrew Ross Sorkin’s account of his role in the book Too Big to Fail",
-    "manner": "discussed"
+    "manner": "criticised"
   },
   {
     "source": 123,
@@ -1364,14 +1364,14 @@
   {
     "source": 123,
     "target": 169,
-    "context": "“I’m getting mojitos for all of us,”",
+    "context": "“I’m getting mojitos for all of us,” and strides off to the bar",
     "manner": "passing"
   },
   {
     "source": 123,
     "target": 235,
     "context": "Lean In is based on eleven principles that basically boil down to: if a woman works hard enough, she can thrive at home and at work.",
-    "manner": "criticised"
+    "manner": "quoted"
   },
   {
     "source": 123,
@@ -1388,13 +1388,13 @@
   {
     "source": 123,
     "target": 238,
-    "context": "a total Pretty Woman moment (the good one not the one where they kick her out)",
+    "context": "messaging Sheryl that the experience is “a total Pretty Woman moment (the good one not the one where they kick her out).",
     "manner": "compared"
   },
   {
     "source": 123,
     "target": 239,
-    "context": "I’d pictured it more like a Wall Street boardroom, or maybe the jury room in Twelve Angry Men",
+    "context": "I’d pictured it more like a Wall Street boardroom, or maybe the jury room in Twelve Angry Men, people in suits earnestly and thoroughly sifting through reports, spreadsheets, and data.",
     "manner": "compared"
   },
   {
@@ -1406,8 +1406,8 @@
   {
     "source": 123,
     "target": 242,
-    "context": "“A Whole New World” from Aladdin",
-    "manner": "quoted"
+    "context": "interspersed with Adele and Disney—“A Whole New World” from Aladdin—",
+    "manner": "passing"
   },
   {
     "source": 123,
@@ -1429,27 +1429,9 @@
   },
   {
     "source": 123,
-    "target": 338,
-    "context": "working on policy at Facebook was way less like enacting a chapter from Machiavelli",
-    "manner": "compared"
-  },
-  {
-    "source": 123,
     "target": 339,
     "context": "Like Chairman Mao’s original, Facebook’s Little Red Book is filled with quotes, images, and core principles from its supreme leader",
     "manner": "compared"
-  },
-  {
-    "source": 123,
-    "target": 340,
-    "context": "My mind involuntarily keeps repeating the John Updike quote “Celebrity is a mask that eats into the face.”",
-    "manner": "quoted"
-  },
-  {
-    "source": 123,
-    "target": 341,
-    "context": "(“Project Buffy”—named semi-ironically for Buffy the Vampire Slayer and “social layer”)",
-    "manner": "passing"
   },
   {
     "source": 123,
@@ -1467,12 +1449,6 @@
     "source": 123,
     "target": 344,
     "context": "“The cat’s in the bag and the bag’s in the river.”",
-    "manner": "quoted"
-  },
-  {
-    "source": 123,
-    "target": 345,
-    "context": "The occasion is piled high with difficulty, and we must rise with the occasion. As our case is new, so we must think anew, act anew.",
     "manner": "quoted"
   },
   {
@@ -1496,7 +1472,7 @@
   {
     "source": 123,
     "target": 349,
-    "context": "are taking turns onstage with embarrassing stilted karaoke renditions of the raps from Hamilton.",
+    "context": "taking turns onstage with embarrassing stilted karaoke renditions of the raps from Hamilton",
     "manner": "passing"
   },
   {
@@ -1508,8 +1484,38 @@
   {
     "source": 123,
     "target": 453,
-    "context": "quietly sing \"Happy Birthday\" to Sasha before she goes to sleep",
+    "context": "quietly sing “Happy Birthday” to Sasha before she goes to sleep",
     "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 475,
+    "context": "(“Project Buffy”—named semi-ironically for Buffy the Vampire Slayer and “social layer”)",
+    "manner": "passing"
+  },
+  {
+    "source": 123,
+    "target": 476,
+    "context": "The occasion is piled high with difficulty, and we must rise with the occasion. As our case is new, so we must think anew, act anew.",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 477,
+    "context": "ew hotel I transferred to because it advertised access to internet. In reality, there’s no Wi-Fi, though for some reason there is a book next to the bed titled How to Use the Internet. The next morning I discover a rotary phone; strangely, you can’t dial out, people have to call you. But these are far from my biggest problems. I have a 10:00",
+    "manner": "passing"
+  },
+  {
+    "source": 123,
+    "target": 478,
+    "context": "pajamas with our colleagues. Women’s Day is part evangelical church event, part multilevel marketing summit, part Tony Robbins seminar, part yoga retreat, part Oprah episode. Sheryl presides, dressed in Lululemon yoga pants and Ugg boots. There’s a lot of talk about motherhood. Sheryl’s favored lieutenants, in shiny uniform",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 479,
+    "context": "in Seoul. The guys are dancing and goofing off. Mark is back at it again with the Backstreet Boys, interspersed with Adele and Disney—“A Whole New World” from Aladdin—and I perch at the back of the plane just trying to make myself as invisible as possible, not sure what the etiquette of this situation requires. I suppose I c",
+    "manner": "passing"
   },
   {
     "source": 143,
