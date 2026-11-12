@@ -88,7 +88,7 @@ def create_static_index(docs_dir: Path):
     # Keep a cache-bust on main.js for Pages deploy
     html_content = html_content.replace(
         'src="static/main.js"',
-        'src="static/main.js?v=39"',
+        'src="static/main.js?v=40"',
     )
 
     # Explore-only: no local manage routes on Pages

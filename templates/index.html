@@ -76,6 +76,8 @@
                     </div>
                     <div class="toolbar-right">
                         <div class="layer-toggles" id="layer-toggles">
+                            <label class="sr-only" for="manner-filter">How the work is mentioned</label>
+                            <select id="manner-filter" class="manner-filter" title="Show only works mentioned in this way" hidden></select>
                             <label class="layer-chip" title="Hide works that only one of your books mentions"><input type="checkbox" id="layer-connected"> Connections only</label>
                             <span class="layer-label">Also show</span>
                             <label class="layer-chip" title="Dotted lines between different works by the same author"><input type="checkbox" id="layer-author"> <span class="kind-swatch kind-author" aria-hidden="true"></span> Same author</label>
@@ -140,6 +142,6 @@
 
     <div id="node-tooltip" class="node-tooltip" hidden></div>
 
-    <script src="{{ url_for('static', filename='main.js') }}?v=39"></script>
+    <script src="{{ url_for('static', filename='main.js') }}?v=40"></script>
 </body>
 </html>

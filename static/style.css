@@ -624,6 +624,16 @@ button.quiet-link.as-button:hover,
     box-shadow: none;
 }
 
+.manner-filter {
+    font: inherit;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+    background: #1a2220;
+    color: #c5d0cb;
+}
+
 .inline-manner {
     text-transform: none;
     font-style: italic;
