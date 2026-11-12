@@ -10,16 +10,22 @@ import threading
 import copy
 import json
 import re
+import hmac
+import ipaddress
 import os
+import secrets
 import time
 from pathlib import Path
+from urllib.parse import urlparse
 from functools import wraps
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 80 * 1024 * 1024  # 80 MB
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "books-in-books-dev-secret")
-ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "books-admin")
+# No built-in secrets: a random session key per start unless one is configured,
+# and no default admin token. Without ADMIN_TOKEN, only this machine is admin.
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+ADMIN_TOKEN = (os.environ.get("ADMIN_TOKEN") or "").strip() or None
 
 ALLOWED_EXTENSIONS = {".epub", ".txt"}
 BOOKS_DIR = Path("books")
@@ -155,6 +161,30 @@ def parse_filename_parts(stem: str):
     return extract_title_and_author(stem)
 
 
+def file_identity(file_path: Path):
+    """(title, author) for a library file: EPUB metadata first, filename second."""
+    from process_books import file_title_and_author
+
+    return file_title_and_author(file_path)
+
+
+def owned_book_files():
+    """{book id: filename} for files whose library row was recorded at extraction."""
+    conn = get_db_connection()
+    try:
+        rows = conn.execute(
+            "SELECT filename, book_id FROM processed_files WHERE book_id IS NOT NULL ORDER BY filename"
+        ).fetchall()
+    except sqlite3.OperationalError:
+        rows = []
+    conn.close()
+    owned = {}
+    for row in rows:
+        if (BOOKS_DIR / row["filename"]).exists():
+            owned.setdefault(row["book_id"], row["filename"])
+    return owned
+
+
 def collect_file_books():
     """List of (title, author, title_lower, author_lower, filename) from books/ folder."""
     file_books = []
@@ -162,7 +192,7 @@ def collect_file_books():
         return file_books
     for file_path in sorted(BOOKS_DIR.glob("*")):
         if file_path.suffix.lower() in ALLOWED_EXTENSIONS:
-            title, author = parse_filename_parts(file_path.stem)
+            title, author = file_identity(file_path)
             file_books.append(
                 (
                     title,
@@ -177,7 +207,10 @@ def collect_file_books():
 
 def match_starting_books(books_rows):
     """Annotate DB books with is_starting and reference counts."""
-    file_books = collect_file_books()
+    owned_by_id = owned_book_files()
+    recorded_files = set(owned_by_id.values())
+    # Files not yet tied to a row fall back to title/author matching
+    file_books = [fb for fb in collect_file_books() if fb[4] not in recorded_files]
     matched_files = set()
     books_list = []
 
@@ -190,7 +223,10 @@ def match_starting_books(books_rows):
 
         is_starting = False
         source_filename = None
-        if "summary of" not in db_title and "paperback" not in db_title:
+        if book["id"] in owned_by_id:
+            is_starting = True
+            source_filename = owned_by_id[book["id"]]
+        elif "summary of" not in db_title and "paperback" not in db_title:
             matched_file_idx = -1
             for idx, (file_title, file_author, file_title_lower, file_author_lower, filename) in enumerate(
                 file_books
@@ -366,7 +402,7 @@ def index():
 @app.route("/manage")
 def manage_page():
     """Local-only library management: add/remove books and publish to Pages."""
-    return render_template("manage.html", default_hint="books-admin")
+    return render_template("manage.html")
 
 
 @app.route("/api/books")
@@ -834,7 +870,14 @@ def api_health():
         "spacy": False,
         "spacy_model": False,
         "database": Path("database.db").exists(),
+        "judge": {"available": False, "model": None, "reason": None},
     }
+    try:
+        from judge import judge_status
+
+        info["judge"] = judge_status()
+    except Exception as e:
+        info["judge"]["reason"] = str(e)
     try:
         BOOKS_DIR.mkdir(exist_ok=True)
         probe = BOOKS_DIR / ".write_test"
@@ -1209,19 +1252,305 @@ def api_verify():
         return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
 
 
+# —— Review queue: fast accept / reject, remembered across re-extraction ——
+
+
+@app.route("/review")
+def review_page():
+    return render_template("review.html")
+
+
+def _set_override(cursor, source_id, raw_key, action, target_id=None):
+    if not raw_key:
+        return
+    cursor.execute(
+        """
+        INSERT INTO reference_overrides (source_book_id, raw_key, action, target_book_id)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(source_book_id, raw_key)
+        DO UPDATE SET action = excluded.action, target_book_id = excluded.target_book_id
+        """,
+        (source_id, raw_key, action, target_id),
+    )
+
+
+@app.route("/api/review/queue")
+def api_review_queue():
+    """Links awaiting a decision and mentions that were dropped, per library book."""
+    show_all = request.args.get("show") == "all"
+    source_filter = request.args.get("source", type=int)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    where, params = [], []
+    if source_filter:
+        where.append("br.source_book_id = ?")
+        params.append(source_filter)
+    if not show_all:
+        where.append("IFNULL(br.confirmed, 0) = 0")
+    cursor.execute(
+        f"""
+        SELECT br.source_book_id, s.title AS source_title, s.author AS source_author,
+               t.id AS target_id, t.title, t.author, t.kind, t.match_score,
+               t.cover_id, t.cover_url, t.open_library_id,
+               br.context, br.raw_title, IFNULL(br.confirmed, 0) AS confirmed
+        FROM book_references br
+        JOIN books s ON s.id = br.source_book_id
+        JOIN books t ON t.id = br.referenced_book_id
+        {"WHERE " + " AND ".join(where) if where else ""}
+        ORDER BY s.title, t.title
+        """,
+        params,
+    )
+    links = [
+        {
+            "type": "link",
+            "source_id": r["source_book_id"],
+            "source_title": r["source_title"],
+            "source_author": r["source_author"],
+            "target_id": r["target_id"],
+            "title": r["title"],
+            "author": r["author"],
+            "kind": r["kind"] or "book",
+            "match_score": r["match_score"],
+            "cover_url": book_cover_url(r, size="M"),
+            "open_library_id": r["open_library_id"],
+            "context": r["context"],
+            "raw_title": r["raw_title"],
+            "confirmed": bool(r["confirmed"]),
+        }
+        for r in cursor.fetchall()
+    ]
+
+    where, params = [], []
+    if source_filter:
+        where.append("sm.source_book_id = ?")
+        params.append(source_filter)
+    if not show_all:
+        where.append("IFNULL(sm.reason, '') != 'Rejected by you'")
+    cursor.execute(
+        f"""
+        SELECT sm.id, sm.source_book_id, s.title AS source_title, sm.raw_title, sm.reason,
+               sm.context, sm.suggested_title, sm.suggested_author
+        FROM skipped_mentions sm
+        JOIN books s ON s.id = sm.source_book_id
+        {"WHERE " + " AND ".join(where) if where else ""}
+        ORDER BY (sm.suggested_title IS NULL), s.title, sm.raw_title
+        """,
+        params,
+    )
+    dropped = [
+        {
+            "type": "dropped",
+            "skipped_id": r["id"],
+            "source_id": r["source_book_id"],
+            "source_title": r["source_title"],
+            "raw_title": r["raw_title"],
+            "reason": r["reason"],
+            "context": r["context"],
+            "suggested_title": r["suggested_title"],
+            "suggested_author": r["suggested_author"],
+        }
+        for r in cursor.fetchall()
+    ]
+
+    cursor.execute(
+        """
+        SELECT b.id, b.title FROM books b
+        WHERE b.id IN (SELECT source_book_id FROM book_references
+                       UNION SELECT source_book_id FROM skipped_mentions)
+        ORDER BY b.title
+        """
+    )
+    sources = [{"id": r["id"], "title": r["title"]} for r in cursor.fetchall()]
+    conn.close()
+    return jsonify({"links": links, "dropped": dropped, "sources": sources})
+
+
+@app.route("/api/review/link", methods=["POST"])
+def api_review_link():
+    """Confirm, reject or restore one source -> target link."""
+    from process_books import override_key, clean_context
+
+    data = request.get_json(silent=True) or {}
+    action = data.get("action")
+    try:
+        source_id = int(data.get("source_id"))
+        target_id = int(data.get("target_id"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "source_id and target_id are required"}), 400
+    if action not in ("confirm", "reject", "restore") or source_id == target_id:
+        return jsonify({"error": "Unknown action"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT context, raw_title FROM book_references WHERE source_book_id = ? AND referenced_book_id = ?",
+        (source_id, target_id),
+    )
+    row = cursor.fetchone()
+    raw_title = (row["raw_title"] if row else None) or data.get("raw_title")
+    context = (row["context"] if row else None) or data.get("context")
+    raw_key = override_key(raw_title) if raw_title else ""
+
+    if action == "confirm":
+        if not row:
+            conn.close()
+            return jsonify({"error": "Link not found"}), 404
+        cursor.execute(
+            "UPDATE book_references SET confirmed = 1 WHERE source_book_id = ? AND referenced_book_id = ?",
+            (source_id, target_id),
+        )
+        _set_override(cursor, source_id, raw_key, "link", target_id)
+    elif action == "reject":
+        cursor.execute(
+            "DELETE FROM book_references WHERE source_book_id = ? AND referenced_book_id = ?",
+            (source_id, target_id),
+        )
+        _set_override(cursor, source_id, raw_key, "reject")
+        _set_override(cursor, source_id, f"#{target_id}", "reject")
+    else:  # restore (undo a reject)
+        cursor.execute(
+            "DELETE FROM reference_overrides WHERE source_book_id = ? AND raw_key IN (?, ?)",
+            (source_id, raw_key, f"#{target_id}"),
+        )
+        if not row:
+            cursor.execute(
+                """
+                INSERT INTO book_references
+                    (source_book_id, referenced_book_id, context, raw_title, confirmed)
+                VALUES (?, ?, ?, ?, 0)
+                """,
+                (source_id, target_id, clean_context(context), raw_title),
+            )
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "action": action})
+
+
+@app.route("/api/review/lookup")
+def api_review_lookup():
+    """Find the catalogue record a dropped mention should point at."""
+    from process_books import lookup_open_library
+
+    title = (request.args.get("title") or "").strip()
+    author = (request.args.get("author") or "").strip() or None
+    if not title:
+        return jsonify({"error": "title is required"}), 400
+    match = lookup_open_library(title, author=author)
+    if match and match.get("cover_id"):
+        match["cover_url"] = f"https://covers.openlibrary.org/b/id/{match['cover_id']}-M.jpg"
+    return jsonify({"match": match})
+
+
+@app.route("/api/review/dropped", methods=["POST"])
+def api_review_dropped():
+    """Link a dropped mention to a work, or dismiss it for good."""
+    from process_books import (
+        get_or_create_book,
+        override_key,
+        ensure_cover_for_book,
+        _link_reference,
+    )
+
+    data = request.get_json(silent=True) or {}
+    action = data.get("action")
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT source_book_id, raw_title, context FROM skipped_mentions WHERE id = ?",
+        (data.get("skipped_id"),),
+    )
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"error": "Mention not found"}), 404
+    source_id, raw_title, context = row
+    raw_key = override_key(raw_title)
+
+    if action == "dismiss":
+        _set_override(cursor, source_id, raw_key, "reject")
+        cursor.execute(
+            "UPDATE skipped_mentions SET reason = 'Rejected by you' WHERE id = ?",
+            (data.get("skipped_id"),),
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"ok": True})
+
+    if action != "link":
+        conn.close()
+        return jsonify({"error": "Unknown action"}), 400
+
+    title = (data.get("title") or raw_title or "").strip()
+    author = (data.get("author") or "").strip() or None
+    target_id = get_or_create_book(
+        title, cursor, conn, require_verified=True, kind="book", author=author
+    )
+    if target_id is None or target_id == source_id:
+        conn.close()
+        return jsonify({"error": "No catalogue match for that title and author"}), 404
+    try:
+        ensure_cover_for_book(target_id, cursor, conn)
+    except Exception:
+        pass
+    _link_reference(cursor, source_id, target_id, context, raw_title, confirmed=True)
+    _set_override(cursor, source_id, raw_key, "link", target_id)
+    cursor.execute("DELETE FROM skipped_mentions WHERE id = ?", (data.get("skipped_id"),))
+    conn.commit()
+    cursor.execute("SELECT title, author FROM books WHERE id = ?", (target_id,))
+    linked = cursor.fetchone()
+    conn.close()
+    return jsonify({"ok": True, "target_id": target_id, "title": linked[0], "author": linked[1]})
+
+
 # —— Shared catalog admin ——
 
 
+def _is_local_request() -> bool:
+    """True when the request comes from this machine (loopback)."""
+    try:
+        return ipaddress.ip_address(request.remote_addr or "").is_loopback
+    except ValueError:
+        return False
+
+
 def _admin_authorized() -> bool:
+    """
+    With ADMIN_TOKEN set, that token is required from everyone.
+    Without it, requests from this machine are admin and nobody else is.
+    """
+    if not ADMIN_TOKEN:
+        return _is_local_request()
     header = request.headers.get("X-Admin-Token", "")
-    query = request.args.get("token", "")
     body_token = ""
-    if request.is_json and isinstance(request.json, dict):
-        body_token = request.json.get("token") or ""
+    if request.is_json:
+        payload = request.get_json(silent=True)
+        if isinstance(payload, dict):
+            body_token = payload.get("token") or ""
     form_token = request.form.get("token", "") if request.form else ""
     session_token = session.get("admin_token", "")
-    provided = header or query or body_token or form_token or session_token
-    return bool(provided) and provided == ADMIN_TOKEN
+    provided = header or body_token or form_token or session_token
+    return bool(provided) and hmac.compare_digest(str(provided), ADMIN_TOKEN)
+
+
+@app.before_request
+def guard_writes():
+    """
+    Every request that changes something must come from this app's own pages
+    (not another website open in the browser) and, when it comes from another
+    machine, must carry the admin token.
+    """
+    if request.method in ("GET", "HEAD", "OPTIONS"):
+        return None
+    origin = request.headers.get("Origin")
+    if origin and urlparse(origin).netloc != request.host:
+        return jsonify({"error": "Cross-site request refused"}), 403
+    if request.path == "/api/admin/login":
+        return None
+    if not _is_local_request() and not _admin_authorized():
+        return jsonify({"error": "Unauthorized. Changes from another machine need ADMIN_TOKEN."}), 401
+    return None
 
 
 def require_admin(fn):
@@ -1332,14 +1661,18 @@ def api_admin_export_static():
 @app.route("/admin")
 def admin_page():
     """Simple catalog curation dashboard."""
-    return render_template("admin.html", default_hint="books-admin")
+    return render_template("admin.html")
 
 
 @app.route("/api/admin/login", methods=["POST"])
 def api_admin_login():
     data = request.get_json(silent=True) or {}
     token = (data.get("token") or "").strip()
-    if token != ADMIN_TOKEN:
+    if not ADMIN_TOKEN:
+        if _is_local_request():
+            return jsonify({"ok": True})
+        return jsonify({"error": "Set ADMIN_TOKEN on the server to manage it remotely"}), 401
+    if not hmac.compare_digest(token, ADMIN_TOKEN):
         return jsonify({"error": "Invalid token"}), 401
     session["admin_token"] = token
     return jsonify({"ok": True})
@@ -1615,7 +1948,16 @@ ensure_runtime_dirs()
 if __name__ == "__main__":
     print("Books in Books - Web Server")
     print("=" * 50)
-    print("Server starting on http://localhost:5000")
+    # Local by default. To reach it from another machine set HOST=0.0.0.0 and
+    # ADMIN_TOKEN. The debugger lets a visitor run code, so it is never enabled
+    # on a non-local address.
+    host = os.environ.get("HOST", "127.0.0.1")
+    port = int(os.environ.get("PORT", "5000"))
+    local_only = host in ("127.0.0.1", "localhost", "::1")
+    debug = os.environ.get("FLASK_DEBUG") == "1" and local_only
+    print(f"Server starting on http://{'localhost' if local_only else host}:{port}")
+    if not local_only and not ADMIN_TOKEN:
+        print("Note: reachable from other machines, read-only for them (ADMIN_TOKEN not set).")
     print("Press Ctrl+C to stop")
     print()
-    app.run(debug=True, host="0.0.0.0", port=5000, threaded=True, use_reloader=False)
+    app.run(debug=debug, host=host, port=port, threaded=True, use_reloader=False)

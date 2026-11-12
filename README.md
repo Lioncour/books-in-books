@@ -9,7 +9,7 @@ Visualize how the books you own mention other books — a literary network of yo
 ## What it does
 
 1. **Add** EPUB or TXT files from your library  
-2. **Extract** book titles mentioned in the text (spaCy + Open Library verification)  
+2. **Extract** book titles mentioned in the text (spaCy finds candidates, Claude judges them in context, Open Library verifies)  
 3. **Explore** an interactive force-directed graph of connections  
 
 Owned books sit in the sidebar with covers; referenced titles appear as linked nodes. Mentions that fail a strong Open Library match are skipped (and listed in the detail panel).
@@ -50,7 +50,8 @@ Long-term: a curated **mention graph** so users can add a book by title and get 
 **Catalog admin (local):** [http://localhost:5000/admin](http://localhost:5000/admin)  
 **Library manage (local):** [http://localhost:5000/manage](http://localhost:5000/manage)
 
-- Login token defaults to `books-admin` (set `ADMIN_TOKEN` to change)
+- No token is needed on your own machine. There is no default token: to manage from another machine, start with `HOST=0.0.0.0` and an `ADMIN_TOKEN` of your choosing
+- `/review` — confirm or reject links with the keyboard; decisions are remembered
 - `/manage` — add/remove library books, extract references, export for Pages
 - `/admin` — curated catalog works + mention edges
 - **Import from my library** copies your existing verified EPUB extractions into the catalog as a starting point
@@ -75,6 +76,8 @@ Commit `docs/`, enable Pages (GitHub Actions workflow or branch folder `/docs`).
 books in books/
 ├── app.py                 # Flask server + APIs
 ├── process_books.py       # NLP extraction + Open Library matching
+├── judge.py               # Claude judges each candidate mention in context
+├── tests/                 # Offline tests
 ├── export_static.py       # Build docs/ for GitHub Pages
 ├── requirements.txt
 ├── books/                 # Your EPUB/TXT files
@@ -97,20 +100,61 @@ books in books/
 | GET | `/api/network/export` | Portable `{books, references}` JSON |
 | POST | `/api/network/import` | Merge a network export into the DB |
 | GET | `/api/health` | spaCy / books dir / database checks |
-| GET | `/verify` | Manual verification UI |
+| GET | `/verify` | Compare stored links with a fresh scan |
+| GET | `/review` | Review queue UI |
+| GET | `/api/review/queue` | Links awaiting a decision + dropped mentions |
+| POST | `/api/review/link` | Confirm, reject or restore a link |
+| POST | `/api/review/dropped` | Link or dismiss a dropped mention |
 
 ## How extraction works
 
-**Borges** reads the EPUB/TXT and finds mentions (books, and with cues: films, music, drinks).  
-**Lucien** checks the right shelves (Open Library / film / music / cocktail lexicon) and files what is real.
+**Borges** (spaCy) reads the EPUB/TXT and flags candidate titles. He is fast and noisy.  
+**The Judge** (Claude) reads each candidate in its passage and decides whether it really refers to a work, what kind it is, its catalogue title and who wrote it.  
+**Lucien** looks that title up *with the author* (Open Library / film / music / cocktail lexicon) and files what is real.
+
+Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused, and a work published after the book that mentions it is refused too.
+
+### Turning the Judge on
+
+```powershell
+$env:ANTHROPIC_API_KEY = "<your key>"   # or run `ant auth login` once
+.\.venv\Scripts\python app.py
+```
+
+The sidebar says whether the Judge is on. Without credentials the app still works, but falls back to title-only matching. Then re-read your books (**Retry** on each, or `python process_books.py --force`) so existing links are judged.
+
+| Setting | Default | Purpose |
+|---------|---------|---------|
+| `ANTHROPIC_API_KEY` | unset | Credentials for the Judge |
+| `BOOKS_JUDGE_MODEL` | `claude-opus-5-5` | Model used to judge mentions |
+| `BOOKS_JUDGE` | on | `off` disables the Judge |
+| `HOST` / `PORT` | `127.0.0.1` / `5000` | Where the server listens |
+| `ADMIN_TOKEN` | unset | Required for changes from another machine |
 
 The graph **defaults to books only**. Use **Also show → Movies / Music / Drinks** to opt into other layers.
 
-1. Text is pulled from EPUB/TXT  
-2. Borges tags candidates and guesses kind  
-3. Lucien verifies per domain  
-4. Weak hits are logged as skipped mentions  
-5. SQLite stores works with a `kind` field (`book|movie|music|cocktail`)  
+1. Text is pulled from EPUB/TXT; title and author come from the EPUB's own metadata, the filename is only a fallback  
+2. Borges tags candidates with the passage around them  
+3. Your own corrections are applied first, then the Judge rules on the rest  
+4. Lucien verifies per domain, by title and author  
+5. Dropped mentions are logged with the reason and can be rescued on `/review`  
+6. SQLite stores works with a `kind` field (`book|movie|music|cocktail`)  
+
+## Reviewing and correcting
+
+Open [http://localhost:5000/review](http://localhost:5000/review). **Links to check** lists every link with its quote: `A` confirms, `R` rejects, `U` undoes, `J`/`K` move. **Dropped mentions** lists what was left out and why: `L` links one to a work, `D` dismisses it. Confirmed links survive a re-read, and rejected ones stay out.
+
+## Connections
+
+The **Connections** button on the graph lists works mentioned by more than one of your books, authors who recur, your books that cite each other, and a reading list of books you do not own. **Same author** draws dotted ties between different works by one author. Works shared by several books are drawn in gold, and zooming in labels every node.
+
+## Tests
+
+```powershell
+.\.venv\Scripts\python -m unittest discover -s tests -v
+```
+
+They run offline: no network, spaCy model or Claude key needed.
 
 Duplicate rows with the same Open Library id or compatible title/author are merged on startup.
 
@@ -135,6 +179,7 @@ Open source — use freely for your personal book collection.
 ## Credits
 
 - spaCy — NLP  
+- Claude (Anthropic) — judging mentions in context  
 - Flask — web server  
 - D3 — graph visualization  
 - Open Library — metadata and covers  

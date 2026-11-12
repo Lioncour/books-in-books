@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review references — Books in Books</title>
+    <meta name="description" content="Confirm or reject the links found in your books. Decisions are remembered.">
+    <meta name="theme-color" content="#0f5c5c">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='review.css') }}">
+</head>
+<body class="review-body">
+    <main class="review-page">
+        <a href="/" class="review-back">← Back to the graph</a>
+        <h1 class="review-title">Review references</h1>
+        <p class="review-lede">
+            Confirm the links that are right and reject the ones that are not.
+            Your decisions are remembered and replayed whenever a book is read again.
+        </p>
+
+        <div class="review-bar">
+            <div class="review-tabs" role="tablist">
+                <button type="button" class="review-tab is-active" data-tab="links" role="tab">
+                    Links to check <span id="count-links" class="review-count">0</span>
+                </button>
+                <button type="button" class="review-tab" data-tab="dropped" role="tab">
+                    Dropped mentions <span id="count-dropped" class="review-count">0</span>
+                </button>
+            </div>
+            <label class="review-filter">
+                <span class="sr-only">Library book</span>
+                <select id="source-filter">
+                    <option value="">All library books</option>
+                </select>
+            </label>
+        </div>
+
+        <p class="review-keys" id="review-keys"></p>
+        <p class="review-status" id="review-status" role="status" aria-live="polite"></p>
+
+        <ol class="review-list" id="review-list"></ol>
+        <p class="review-empty" id="review-empty" hidden></p>
+    </main>
+    <script src="{{ url_for('static', filename='review.js') }}"></script>
+</body>
+</html>

@@ -22,6 +22,58 @@
   let focusBookId = null;
   /** Books always on; opt-in cultural layers */
   let enabledKinds = loadEnabledKinds();
+  let showAuthorLinks = loadAuthorLinksPref();
+  let sharedNodeIds = new Set();
+  let zoomK = 1;
+  const LABEL_ZOOM = 1.6; // zoomed in this far, every node gets its title
+  const AUTHOR_LINK_COLOR = "#c9a227";
+  const REF_LINK_COLOR = "#6d7c75";
+
+  function loadAuthorLinksPref() {
+    try {
+      return localStorage.getItem("bib.authorLinks") !== "off";
+    } catch (e) {
+      return true;
+    }
+  }
+
+  /* Stored quotes from older extractions still carry HTML entities (&#13;). */
+  function cleanQuote(text) {
+    if (!text) return "";
+    let out = String(text);
+    if (out.indexOf("&") !== -1) {
+      const area = document.createElement("textarea");
+      area.innerHTML = out;
+      out = area.value;
+    }
+    return out.replace(/\s+/g, " ").trim();
+  }
+
+  /* "Dickens, Charles" and "Charles Dickens" are the same author. */
+  function authorKey(name) {
+    const text = String(name || "")
+      .toLowerCase()
+      .replace(/\([^)]*\)/g, " ")
+      .replace(/[^\p{L}\s]/gu, " ");
+    const tokens = text.split(/\s+/).filter((t) => t.length > 1);
+    if (!tokens.length) return "";
+    const key = tokens.sort().join(" ");
+    const generic = ["unknown", "anonymous", "various", "cocktail", "movie", "music"];
+    return generic.includes(key) ? "" : key;
+  }
+
+  function linkStroke(d) {
+    return d && d.type === "author" ? AUTHOR_LINK_COLOR : REF_LINK_COLOR;
+  }
+
+  function linkDash(d) {
+    return d && d.type === "author" ? "2 5" : null;
+  }
+
+  function linkStrength(d) {
+    // Author ties only nudge clusters together; they must not reshape the graph
+    return d && d.type === "author" ? 0.06 : 0.55;
+  }
 
   const KIND_COLORS = {
     book: { fill: "#7a8f9c", stroke: "#4a5c66" },
@@ -421,7 +473,7 @@
                       : ""
                   }
                   <span class="ref-author">${escapeHtml(r.author || "")}</span>
-                  ${r.context ? `<span class="context-snippet">…${escapeHtml(r.context)}…</span>` : ""}
+                  ${r.context ? `<span class="context-snippet">…${escapeHtml(cleanQuote(r.context))}…</span>` : ""}
                 </button>
               </li>`
                 )
@@ -1040,7 +1092,8 @@
     if (d.isStarting) return true;
     if (kindOf(d) !== "book") return true;
     if (selectedNode && String(selectedNode.id) === String(d.id)) return true;
-    return false;
+    if (sharedNodeIds.has(String(d.id))) return true;
+    return zoomK >= LABEL_ZOOM;
   }
 
   function init2D() {
@@ -1051,8 +1104,8 @@
     let width = container.node().clientWidth;
     let height = container.node().clientHeight;
     if (!width || !height) {
-      width = window.innerWidth - 360;
-      height = window.innerHeight;
+      width = Math.max(320, window.innerWidth - 360);
+      height = Math.max(320, window.innerHeight);
     }
 
     svg = container
@@ -1087,6 +1140,9 @@
         nodeGroup.attr("transform", event.transform);
         linkGroup.attr("transform", event.transform);
         labelGroup.attr("transform", event.transform);
+        const wasClose = zoomK >= LABEL_ZOOM;
+        zoomK = event.transform.k;
+        if (zoomK >= LABEL_ZOOM !== wasClose) syncNodeLabels();
       });
     svg.call(zoom);
   }
@@ -1161,7 +1217,193 @@
       (ref) => visibleIds.has(ref.source) && visibleIds.has(ref.target)
     );
 
-    return { connectedBooks, connectedReferences };
+    // Works that two or more library books mention: the real connections
+    const sourcesByTarget = new Map();
+    connectedReferences.forEach((ref) => {
+      if (!sourcesByTarget.has(ref.target)) sourcesByTarget.set(ref.target, new Set());
+      sourcesByTarget.get(ref.target).add(ref.source);
+    });
+    const sharedIds = new Set();
+    sourcesByTarget.forEach((sources, target) => {
+      if (sources.size >= 2) sharedIds.add(target);
+    });
+
+    // Tie together different works by the same author (Dickens in one book,
+    // Dickens in another), as a chain so big groups don't become a hairball.
+    const direct = new Set();
+    connectedReferences.forEach((ref) => {
+      direct.add(`${ref.source}|${ref.target}`);
+      direct.add(`${ref.target}|${ref.source}`);
+    });
+    const byAuthor = new Map();
+    connectedBooks.forEach((book) => {
+      if (kindOf(book) !== "book") return;
+      const key = authorKey(book.author);
+      if (!key) return;
+      if (!byAuthor.has(key)) byAuthor.set(key, []);
+      byAuthor.get(key).push(String(book.id));
+    });
+    const authorLinks = [];
+    byAuthor.forEach((ids) => {
+      if (ids.length < 2) return;
+      ids.sort((a, b) => Number(a) - Number(b));
+      for (let i = 0; i < ids.length - 1; i += 1) {
+        if (!direct.has(`${ids[i]}|${ids[i + 1]}`)) {
+          authorLinks.push({ source: ids[i], target: ids[i + 1] });
+        }
+      }
+    });
+
+    return { connectedBooks, connectedReferences, authorLinks, sharedIds };
+  }
+
+  /* Everything the Connections panel shows, from the same data as the graph. */
+  function computeInsights() {
+    // Count films, music and drinks too, whatever the layer toggles show
+    const savedKinds = enabledKinds;
+    enabledKinds = new Set(Object.keys(KIND_COLORS).concat(["book"]));
+    let prepared;
+    try {
+      prepared = prepareGraphData(allBooks, allReferences);
+    } finally {
+      enabledKinds = savedKinds;
+    }
+    const { connectedBooks, connectedReferences } = prepared;
+    const byId = new Map(connectedBooks.map((b) => [String(b.id), b]));
+    const owned = new Set(startingBooks.map(String));
+
+    const sourcesByTarget = new Map();
+    connectedReferences.forEach((ref) => {
+      if (!owned.has(ref.source) || !byId.has(ref.target)) return;
+      if (!sourcesByTarget.has(ref.target)) sourcesByTarget.set(ref.target, new Set());
+      sourcesByTarget.get(ref.target).add(ref.source);
+    });
+    const withSources = (id) => ({
+      book: byId.get(id),
+      sources: [...(sourcesByTarget.get(id) || [])].map((s) => byId.get(s)).filter(Boolean),
+    });
+
+    const shared = [...sourcesByTarget.keys()]
+      .filter((id) => sourcesByTarget.get(id).size >= 2)
+      .map(withSources)
+      .sort((a, b) => b.sources.length - a.sources.length || a.book.title.localeCompare(b.book.title));
+
+    const ownedMentioned = [...sourcesByTarget.keys()]
+      .filter((id) => owned.has(id))
+      .map(withSources)
+      .sort((a, b) => a.book.title.localeCompare(b.book.title));
+
+    // Authors who turn up in more than one of your books, or with several works
+    const authors = new Map();
+    sourcesByTarget.forEach((sources, id) => {
+      const book = byId.get(id);
+      if (!book || kindOf(book) !== "book") return;
+      const key = authorKey(book.author);
+      if (!key) return;
+      if (!authors.has(key)) authors.set(key, { name: book.author, works: [], sources: new Set() });
+      const entry = authors.get(key);
+      entry.works.push(book);
+      sources.forEach((s) => entry.sources.add(s));
+    });
+    const recurringAuthors = [...authors.values()]
+      .filter((a) => a.sources.size >= 2 || a.works.length >= 2)
+      .map((a) => ({
+        name: a.name,
+        works: a.works.sort((x, y) => x.title.localeCompare(y.title)),
+        sources: [...a.sources].map((s) => byId.get(s)).filter(Boolean),
+      }))
+      .sort(
+        (a, b) =>
+          b.sources.length - a.sources.length ||
+          b.works.length - a.works.length ||
+          a.name.localeCompare(b.name)
+      );
+
+    const authorWeight = new Map();
+    recurringAuthors.forEach((a) => authorWeight.set(authorKey(a.name), a.sources.length + a.works.length));
+    const readingList = [...sourcesByTarget.keys()]
+      .filter((id) => !owned.has(id) && kindOf(byId.get(id)) === "book")
+      .map(withSources)
+      .map((entry) => ({
+        ...entry,
+        score: entry.sources.length * 10 + (authorWeight.get(authorKey(entry.book.author)) || 0),
+      }))
+      .sort((a, b) => b.score - a.score || a.book.title.localeCompare(b.book.title))
+      .slice(0, 20);
+
+    return { shared, ownedMentioned, recurringAuthors, readingList };
+  }
+
+  function openInsightsPanel() {
+    const panel = $("detail-panel");
+    const content = $("detail-content");
+    const app = document.querySelector(".app");
+    if (!panel || !content) return;
+    panel.hidden = false;
+    if (app) app.classList.add("detail-open");
+
+    const { shared, ownedMentioned, recurringAuthors, readingList } = computeInsights();
+    const names = (books) => books.map((b) => escapeHtml(b.title)).join(" · ");
+    const workItem = (entry) => `
+      <li>
+        <button type="button" data-jump-id="${entry.book.id}">
+          ${escapeHtml(entry.book.title)}${
+            kindOf(entry.book) !== "book"
+              ? ` <span class="inline-kind">${escapeHtml(kindLabel(kindOf(entry.book)))}</span>`
+              : ""
+          }
+          <span class="ref-author">${escapeHtml(entry.book.author || "")}</span>
+          <span class="context-snippet">mentioned in ${names(entry.sources)}</span>
+        </button>
+      </li>`;
+    const section = (title, hint, body, emptyText) => `
+      <section class="detail-section">
+        <h3>${title}</h3>
+        <p class="insight-hint">${hint}</p>
+        ${body || `<p class="detail-empty">${emptyText}</p>`}
+      </section>`;
+
+    content.innerHTML = `
+      <p class="detail-kicker">Connections</p>
+      <h2 class="detail-title">How your shelves meet</h2>
+      ${section(
+        `Shared mentions (${shared.length})`,
+        "Works that two or more of your books refer to.",
+        shared.length ? `<ul class="ref-list">${shared.map(workItem).join("")}</ul>` : "",
+        "No work is mentioned by more than one of your books yet."
+      )}
+      ${section(
+        `Recurring authors (${recurringAuthors.length})`,
+        "Authors who appear in several of your books, or with several works.",
+        recurringAuthors.length
+          ? `<ul class="ref-list">${recurringAuthors
+              .map(
+                (a) => `
+            <li>
+              <button type="button" data-jump-id="${a.works[0].id}">
+                ${escapeHtml(a.name)}
+                <span class="ref-author">${names(a.works)}</span>
+                <span class="context-snippet">mentioned in ${names(a.sources)}</span>
+              </button>
+            </li>`
+              )
+              .join("")}</ul>`
+          : "",
+        "No author recurs yet."
+      )}
+      ${section(
+        `Your books that cite each other (${ownedMentioned.length})`,
+        "Library books mentioned inside other library books.",
+        ownedMentioned.length ? `<ul class="ref-list">${ownedMentioned.map(workItem).join("")}</ul>` : "",
+        "None of your books mention another one you own."
+      )}
+      ${section(
+        "Reading list",
+        "Books you don't own, ranked by how often your library points to them.",
+        readingList.length ? `<ol class="ref-list reading-list">${readingList.map(workItem).join("")}</ol>` : "",
+        "Add and read a few books to build a list."
+      )}
+    `;
   }
 
   function styleForBook(book, connectedReferences) {
@@ -1185,6 +1427,11 @@
       size = Math.max(7, Math.min(15, 7 + connections));
       color = palette.fill;
       strokeColor = palette.stroke;
+    } else if (sharedNodeIds.has(String(book.id))) {
+      // Mentioned by two or more library books
+      size = Math.max(9, Math.min(16, 7 + connections * 1.5));
+      color = "#d9b23c";
+      strokeColor = "#8f7216";
     } else if (connections > 0) {
       size = Math.max(6, Math.min(14, 6 + connections));
       color = "#7a8f9c";
@@ -1200,7 +1447,7 @@
   function linkKey(link) {
     const s = typeof link.source === "object" ? link.source.id : link.source;
     const t = typeof link.target === "object" ? link.target.id : link.target;
-    return `${s}|${t}`;
+    return link.type === "author" ? `${s}|${t}|author` : `${s}|${t}`;
   }
 
   function findAnchorNode(bookId, refs, nodeById) {
@@ -1298,10 +1545,14 @@
   function syncGraph({ reset = false } = {}) {
     if (!svg || !linkGroup || !nodeGroup) return;
     const container = d3.select("#graph-container");
-    const width = container.node().clientWidth || window.innerWidth - 360;
-    const height = container.node().clientHeight || window.innerHeight;
+    const width = container.node().clientWidth || Math.max(320, window.innerWidth - 360);
+    const height = container.node().clientHeight || Math.max(320, window.innerHeight);
 
-    const { connectedBooks, connectedReferences } = prepareGraphData(allBooks, allReferences);
+    const { connectedBooks, connectedReferences, authorLinks, sharedIds } = prepareGraphData(
+      allBooks,
+      allReferences
+    );
+    sharedNodeIds = sharedIds;
     const oldById = new Map((nodes || []).map((n) => [String(n.id), n]));
     const desiredIds = new Set(connectedBooks.map((b) => String(b.id)));
 
@@ -1422,7 +1673,13 @@
       .map((ref) => ({
         source: String(ref.source),
         target: String(ref.target),
+        type: "ref",
       }))
+      .concat(
+        showAuthorLinks
+          ? authorLinks.map((l) => ({ source: l.source, target: l.target, type: "author" }))
+          : []
+      )
       .filter((l) => l.source !== l.target && desiredIds.has(l.source) && desiredIds.has(l.target));
 
     // Layer toggle with nothing to add/remove: refresh styles only — don't jolt the layout
@@ -1488,7 +1745,7 @@
               if (s?.isStarting && t?.isStarting) return 70;
               return s?.isStarting || t?.isStarting ? 85 : 110;
             })
-            .strength(0.55)
+            .strength(linkStrength)
         )
         .force("charge", d3.forceManyBody().strength((d) => (d.isStarting ? -240 : -160)))
         .force("center", d3.forceCenter(width / 2, height / 2))
@@ -1506,7 +1763,7 @@
           if (s?.isStarting && t?.isStarting) return 70;
           return s?.isStarting || t?.isStarting ? 85 : 110;
         });
-        linkForce.strength(0.55);
+        linkForce.strength(linkStrength);
       }
       simulation.force(
         "charge",
@@ -1529,7 +1786,8 @@
         (enter) =>
           enter
             .append("line")
-            .attr("stroke", "#6d7c75")
+            .attr("stroke", linkStroke)
+            .attr("stroke-dasharray", linkDash)
             .attr("stroke-width", 0)
             .attr("stroke-opacity", 0)
             .each(function (d) {
@@ -1537,8 +1795,8 @@
             }),
         (update) =>
           update
-            .attr("stroke", "#6d7c75")
-            .attr("stroke-dasharray", null)
+            .attr("stroke", linkStroke)
+            .attr("stroke-dasharray", linkDash)
             .attr("stroke-width", 1.6)
             .attr("stroke-opacity", 0.55)
             .each((d) => {
@@ -2505,6 +2763,20 @@
     $("search-results")?.addEventListener("click", onSearchPick);
     $("process-dismiss")?.addEventListener("click", hideProcessBanner);
     $("focus-mode")?.addEventListener("click", clearFocusMode);
+    $("open-insights")?.addEventListener("click", openInsightsPanel);
+    const authorToggle = $("layer-author");
+    if (authorToggle) {
+      authorToggle.checked = showAuthorLinks;
+      authorToggle.addEventListener("change", () => {
+        showAuthorLinks = authorToggle.checked;
+        try {
+          localStorage.setItem("bib.authorLinks", showAuthorLinks ? "on" : "off");
+        } catch (e) {
+          /* private mode */
+        }
+        syncGraph();
+      });
+    }
     $("reset-view")?.addEventListener("click", () => {
       deselectNode();
       closeDetailPanel();
@@ -2532,6 +2804,19 @@
       if (runBtn) runBtn.hidden = false;
       const quickAdd = $("open-upload");
       if (quickAdd) quickAdd.hidden = false;
+      // Say plainly when extraction will run without Claude's judgement
+      fetch("/api/health")
+        .then((r) => r.json())
+        .then((health) => {
+          const hint = $("judge-hint");
+          if (!hint || !health.judge) return;
+          hint.hidden = false;
+          hint.textContent = health.judge.available
+            ? `The Judge is on (${health.judge.model}): mentions are checked in context.`
+            : "The Judge is off: no Claude credentials, so matching is by title only. Set ANTHROPIC_API_KEY and restart for accurate links.";
+          hint.classList.toggle("is-off", !health.judge.available);
+        })
+        .catch(() => {});
     } else {
       notify(
         "Explore-only site",

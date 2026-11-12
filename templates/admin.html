@@ -29,7 +29,7 @@
 
         <section id="login-panel" class="admin-card">
             <h2>Admin login</h2>
-            <p class="admin-hint">Default token is <code>{{ default_hint }}</code> (override with <code>ADMIN_TOKEN</code> env var).</p>
+            <p class="admin-hint">Enter the token set in the <code>ADMIN_TOKEN</code> environment variable. On this machine no token is needed when it is unset.</p>
             <form id="login-form" class="admin-form-row">
                 <label class="sr-only" for="admin-token">Token</label>
                 <input type="password" id="admin-token" placeholder="Admin token" autocomplete="current-password" required>

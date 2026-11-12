@@ -1,0 +1,446 @@
+"""
+Offline tests for the extraction pipeline, corrections and the write guard.
+
+Run from the project folder:
+
+    .venv\\Scripts\\python -m unittest discover -s tests -v
+
+No network, no spaCy model and no Claude credentials are needed: Open Library
+and the Judge are replaced with fakes, and each test works in a temp folder.
+"""
+
+import json
+import os
+import sqlite3
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
+
+PROJECT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT))
+
+import judge  # noqa: E402
+import process_books as pb  # noqa: E402
+
+# A tiny catalogue standing in for Open Library: (title, author, first year)
+CATALOGUE = [
+    ("Lean In", "Sheryl Sandberg", 2013),
+    ("Atlas Shrugged", "Ayn Rand", 1957),
+    ("Atlas Shrugged", "Anne Williams", 2009),
+    ("Pop Goes the Weasel", "James Patterson", 1999),
+    ("Beautiful Child", "Torey L. Hayden", 2002),
+    ("A Christmas Carol", "Charles Dickens", 1843),
+    ("Great Expectations", "Charles Dickens", 1861),
+]
+
+
+def fake_lookup(title, author=None, max_year=None):
+    """Mimics lookup_open_library's contract against CATALOGUE."""
+    for cat_title, cat_author, year in CATALOGUE:
+        if pb.title_similarity(title, cat_title) < 0.72:
+            continue
+        if author and not pb.author_matches(author, cat_author):
+            continue
+        if max_year and year > max_year + 1:
+            continue
+        return {
+            "title": cat_title,
+            "author": cat_author,
+            "open_library_id": f"/works/{pb.normalize_title(cat_title)}-{pb.normalize_title(cat_author)}",
+            "match_score": 1.0,
+            "cover_id": None,
+            "first_publish_year": year,
+        }
+    return None
+
+
+def fake_judge(verdicts_by_title, source_year=None):
+    """Build a judge callable answering from a {raw title: verdict} table."""
+
+    def run(source_title, source_author, mentions, progress_callback=None):
+        out = {}
+        for i, mention in enumerate(mentions):
+            verdict = verdicts_by_title.get(mention["title"])
+            if verdict is not None:
+                out[i] = {"index": i, "reason": "test", **verdict}
+        return {"source_year": source_year, "verdicts": out}
+
+    return run
+
+
+def book(title, author):
+    return {"is_reference": True, "kind": "book", "canonical_title": title, "author": author}
+
+
+NOT_A_WORK = {"is_reference": False, "kind": "other", "canonical_title": "", "author": ""}
+
+
+class TempProject(unittest.TestCase):
+    """Each test gets an empty database in its own folder."""
+
+    def setUp(self):
+        self._cwd = os.getcwd()
+        self._tmp = tempfile.TemporaryDirectory()
+        os.chdir(self._tmp.name)
+        pb.init_database(quiet=True)
+        self.conn = sqlite3.connect("database.db")
+        self.cur = self.conn.cursor()
+        patches = [
+            mock.patch.object(pb, "lookup_open_library", side_effect=fake_lookup),
+            mock.patch.object(pb, "ensure_cover_for_book", return_value=False),
+        ]
+        for p in patches:
+            p.start()
+            self.addCleanup(p.stop)
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified) VALUES (?, ?, ?, 1)",
+            ("Careless People", "Sarah Wynn-Williams", "/works/source"),
+        )
+        self.source_id = self.cur.lastrowid
+        self.conn.commit()
+
+    def tearDown(self):
+        self.conn.close()
+        os.chdir(self._cwd)
+        self._tmp.cleanup()
+
+    def store(self, mentions, judge_fn):
+        return pb._store_references(
+            mentions, self.source_id, self.cur, self.conn, quiet=True, judge=judge_fn
+        )
+
+    def links(self):
+        self.cur.execute(
+            """
+            SELECT b.title, b.author, b.kind, IFNULL(r.confirmed, 0)
+            FROM book_references r JOIN books b ON b.id = r.referenced_book_id
+            WHERE r.source_book_id = ? ORDER BY b.title
+            """,
+            (self.source_id,),
+        )
+        return self.cur.fetchall()
+
+    def skipped(self):
+        self.cur.execute(
+            "SELECT raw_title, reason FROM skipped_mentions WHERE source_book_id = ? ORDER BY raw_title",
+            (self.source_id,),
+        )
+        return dict(self.cur.fetchall())
+
+
+class HelperTests(unittest.TestCase):
+    def test_author_matches(self):
+        self.assertTrue(pb.author_matches("Sun Tzu", ["孙武 (Sun Tzu)"]))
+        self.assertTrue(pb.author_matches("Charles Dickens", "Dickens, Charles"))
+        self.assertTrue(pb.author_matches("Dickens", ["Charles Dickens"]))
+        self.assertTrue(pb.author_matches("Edward Hyde Clarendon", ["Edward Hyde, 1st Earl of Clarendon"]))
+        self.assertFalse(pb.author_matches("Ayn Rand", ["Anne Williams"]))
+        self.assertFalse(pb.author_matches("Lady Gaga", ["Judi James"]))
+        self.assertFalse(pb.author_matches("", ["Anyone"]))
+        self.assertFalse(pb.author_matches("Ayn Rand", [None, ""]))
+
+    def test_clean_context_decodes_entities(self):
+        self.assertEqual(
+            pb.clean_context("rhymes.&#13; Her favorite &amp;amp; best\r\n one"),
+            "rhymes. Her favorite & best one",
+        )
+
+    def test_file_metadata_cleanup(self):
+        self.assertEqual(pb.normalize_author_name("Wynn-Williams, Sarah"), "Sarah Wynn-Williams")
+        self.assertEqual(pb.normalize_author_name("Dennis E. Taylor"), "Dennis E. Taylor")
+        self.assertEqual(
+            pb.clean_metadata_title("We Are Legion (We Are Bob) (Bobiverse Book 1)"),
+            "We Are Legion (We Are Bob)",
+        )
+        self.assertEqual(
+            pb.clean_metadata_title("SpecOps (Expeditionary Force Book 2)"), "SpecOps"
+        )
+
+
+class JudgedExtractionTests(TempProject):
+    def test_junk_is_dropped_with_the_judges_reason(self):
+        self.store(
+            [{"title": "Introduction", "context": "Introduction This book began"}],
+            fake_judge({"Introduction": NOT_A_WORK}),
+        )
+        self.assertEqual(self.links(), [])
+        self.assertTrue(self.skipped()["Introduction"].startswith("Judge:"))
+
+    def test_judged_book_bypasses_the_plausibility_filter(self):
+        # "Lean In" used to be rejected as "Not a plausible book title"
+        self.store(
+            [{"title": "Lean In", "context": "after Sheryl published Lean In"}],
+            fake_judge({"Lean In": book("Lean In", "Sheryl Sandberg")}),
+        )
+        self.assertEqual(self.links(), [("Lean In", "Sheryl Sandberg", "book", 0)])
+
+    def test_author_picks_the_right_work_among_same_titles(self):
+        self.store(
+            [{"title": "Atlas Shrugged", "context": "quoting Atlas Shrugged at him"}],
+            fake_judge({"Atlas Shrugged": book("Atlas Shrugged", "Ayn Rand")}),
+        )
+        self.assertEqual(self.links(), [("Atlas Shrugged", "Ayn Rand", "book", 0)])
+
+    def test_existing_wrong_author_row_is_not_reused_or_overwritten(self):
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified) VALUES (?, ?, ?, 1)",
+            ("Atlas Shrugged", "Anne Williams", "/works/wrong"),
+        )
+        self.conn.commit()
+        self.store(
+            [{"title": "Atlas Shrugged", "context": "quoting Atlas Shrugged at him"}],
+            fake_judge({"Atlas Shrugged": book("Atlas Shrugged", "Ayn Rand")}),
+        )
+        self.assertEqual(self.links(), [("Atlas Shrugged", "Ayn Rand", "book", 0)])
+        self.cur.execute("SELECT author FROM books WHERE open_library_id = '/works/wrong'")
+        self.assertEqual(self.cur.fetchone()[0], "Anne Williams")
+
+    def test_work_newer_than_the_source_is_rejected(self):
+        # To Kill a Mockingbird (1960) cannot mention Beautiful Child (2002)
+        self.store(
+            [{"title": "Beautiful Child", "context": "a beautiful child she was"}],
+            fake_judge({"Beautiful Child": book("Beautiful Child", "Torey Hayden")}, source_year=1960),
+        )
+        self.assertEqual(self.links(), [])
+        self.assertIn("no catalogue match", self.skipped()["Beautiful Child"])
+
+    def test_tune_is_not_filed_as_a_novel(self):
+        music = {
+            "title": "Pop Goes the Weasel",
+            "author": "Traditional",
+            "open_library_id": "music_pop-goes-the-weasel",
+            "match_score": 1.0,
+            "cover_id": None,
+        }
+        with mock.patch("mention_kinds.lookup_by_kind", return_value=music) as lookup:
+            self.store(
+                [{"title": "Pop Goes the Weasel", "context": "the music changed to Pop Goes the Weasel"}],
+                fake_judge(
+                    {
+                        "Pop Goes the Weasel": {
+                            "is_reference": True,
+                            "kind": "music",
+                            "canonical_title": "Pop Goes the Weasel",
+                            "author": "",
+                        }
+                    }
+                ),
+            )
+        lookup.assert_called_once_with("music", "Pop Goes the Weasel")
+        self.assertEqual(self.links(), [("Pop Goes the Weasel", "Traditional", "music", 0)])
+
+    def test_without_the_judge_the_old_matching_still_works(self):
+        result = self.store(
+            [{"title": "A Christmas Carol", "context": "read A Christmas Carol aloud"}],
+            lambda *args, **kwargs: None,
+        )
+        self.assertFalse(result["judged"])
+        self.assertEqual(self.links(), [("A Christmas Carol", "Charles Dickens", "book", 0)])
+
+    def test_quotes_are_stored_clean(self):
+        self.store(
+            [{"title": "Lean In", "context": "published&#13; Lean In &amp; more"}],
+            fake_judge({"Lean In": book("Lean In", "Sheryl Sandberg")}),
+        )
+        self.cur.execute("SELECT context, raw_title FROM book_references")
+        self.assertEqual(self.cur.fetchone(), ("published Lean In & more", "Lean In"))
+
+
+class CorrectionTests(TempProject):
+    MENTION = [{"title": "Lean In", "context": "after Sheryl published Lean In"}]
+    JUDGE = staticmethod(fake_judge({"Lean In": book("Lean In", "Sheryl Sandberg")}))
+
+    def override(self, raw_key, action, target_id=None):
+        self.cur.execute(
+            "INSERT INTO reference_overrides (source_book_id, raw_key, action, target_book_id) VALUES (?, ?, ?, ?)",
+            (self.source_id, raw_key, action, target_id),
+        )
+        self.conn.commit()
+
+    def test_rejection_survives_re_extraction(self):
+        self.override(pb.override_key("Lean In"), "reject")
+        self.store(self.MENTION, self.JUDGE)
+        self.assertEqual(self.links(), [])
+        self.assertEqual(self.skipped()["Lean In"], "Rejected by you")
+
+    def test_rejecting_a_target_blocks_it_whatever_the_wording(self):
+        self.store(self.MENTION, self.JUDGE)
+        self.cur.execute("SELECT referenced_book_id FROM book_references")
+        target_id = self.cur.fetchone()[0]
+        self.cur.execute("DELETE FROM book_references")
+        self.override(f"#{target_id}", "reject")
+        self.store([{"title": "Lean In!", "context": "her book, Lean In!"}],
+                   fake_judge({"Lean In!": book("Lean In", "Sheryl Sandberg")}))
+        self.assertEqual(self.links(), [])
+
+    def test_manual_link_is_replayed_and_stays_confirmed(self):
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified) VALUES (?, ?, ?, 1)",
+            ("Great Expectations", "Charles Dickens", "/works/ge"),
+        )
+        target_id = self.cur.lastrowid
+        self.override(pb.override_key("Expectations"), "link", target_id)
+        # The Judge is never consulted for a mention a person already decided
+        boom = mock.Mock(side_effect=AssertionError("judge should not be called"))
+        self.store([{"title": "Expectations", "context": "like Pip in Expectations"}], boom)
+        self.assertEqual(self.links(), [("Great Expectations", "Charles Dickens", "book", 1)])
+
+
+class JudgeClientTests(unittest.TestCase):
+    """judge.judge_mentions against a fake Anthropic client."""
+
+    def make_client(self, responder):
+        calls = []
+
+        def create(**kwargs):
+            calls.append(kwargs)
+            return responder(kwargs, len(calls))
+
+        client = SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(create=create)))
+        return client, calls
+
+    @staticmethod
+    def reply(payload, stop_reason="end_turn"):
+        return SimpleNamespace(
+            stop_reason=stop_reason,
+            content=[SimpleNamespace(type="text", text=json.dumps(payload))],
+        )
+
+    def test_batches_and_keeps_only_valid_verdicts(self):
+        mentions = [{"title": f"Title {i}", "context": "ctx"} for i in range(judge.BATCH_SIZE + 5)]
+
+        def responder(kwargs, call_number):
+            start = 0 if call_number == 1 else judge.BATCH_SIZE
+            count = judge.BATCH_SIZE if call_number == 1 else 5
+            verdicts = [
+                {"index": start + i, "is_reference": True, "kind": "book",
+                 "canonical_title": f"Title {start + i}", "author": "", "reason": "ok"}
+                for i in range(count)
+            ]
+            # an index from outside this batch must be ignored
+            verdicts.append({"index": 9999, "is_reference": True, "kind": "book",
+                             "canonical_title": "x", "author": "", "reason": "stray"})
+            return self.reply({"source_year": 2025, "verdicts": verdicts})
+
+        client, calls = self.make_client(responder)
+        result = judge.judge_mentions("Careless People", "Sarah Wynn-Williams", mentions, client=client)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(sorted(result["verdicts"]), list(range(judge.BATCH_SIZE + 5)))
+        self.assertEqual(result["source_year"], 2025)
+        self.assertIn("Careless People by Sarah Wynn-Williams", calls[0]["messages"][0]["content"])
+        self.assertEqual(calls[0]["output_config"]["format"]["type"], "json_schema")
+
+    def test_a_refused_first_batch_means_fall_back(self):
+        client, _calls = self.make_client(lambda kwargs, n: self.reply({}, stop_reason="refusal"))
+        self.assertIsNone(
+            judge.judge_mentions("Book", "Author", [{"title": "X", "context": "c"}], client=client)
+        )
+
+    def test_no_credentials_means_fall_back(self):
+        with mock.patch.object(judge, "_get_client", return_value=None):
+            self.assertIsNone(judge.judge_mentions("Book", "Author", [{"title": "X"}]))
+
+
+class WriteGuardTests(unittest.TestCase):
+    """The server only accepts changes from its own pages on this machine."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls._cwd = os.getcwd()
+        cls._tmp = tempfile.TemporaryDirectory()
+        os.chdir(cls._tmp.name)
+        os.environ.pop("ADMIN_TOKEN", None)
+        sys.modules.pop("app", None)
+        import app as app_module
+
+        cls.app_module = app_module
+        cls.client = app_module.app.test_client()
+
+    @classmethod
+    def tearDownClass(cls):
+        os.chdir(cls._cwd)
+        sys.modules.pop("app", None)
+        try:
+            cls._tmp.cleanup()
+        except OSError:
+            pass
+
+    def post(self, remote="127.0.0.1", origin=None):
+        headers = {"Origin": origin} if origin else {}
+        return self.client.post(
+            "/api/review/link",
+            json={"source_id": 9001, "target_id": 9002, "action": "confirm"},
+            headers=headers,
+            environ_overrides={"REMOTE_ADDR": remote},
+        )
+
+    def test_local_write_passes_the_guard(self):
+        self.assertEqual(self.post().status_code, 404)  # guard passed; link does not exist
+
+    def test_same_origin_write_passes_the_guard(self):
+        self.assertEqual(self.post(origin="http://localhost").status_code, 404)
+
+    def test_other_website_cannot_write(self):
+        self.assertEqual(self.post(origin="https://evil.example").status_code, 403)
+
+    def test_other_machine_cannot_write_without_a_token(self):
+        self.assertEqual(self.post(remote="192.168.1.20").status_code, 401)
+
+    def test_other_machine_can_still_read(self):
+        response = self.client.get("/api/health", environ_overrides={"REMOTE_ADDR": "192.168.1.20"})
+        self.assertEqual(response.status_code, 200)
+
+    def test_no_default_admin_token(self):
+        self.assertIsNone(self.app_module.ADMIN_TOKEN)
+        response = self.client.post(
+            "/api/admin/login",
+            json={"token": "books-admin"},
+            environ_overrides={"REMOTE_ADDR": "192.168.1.20"},
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_review_flow_confirm_reject_restore(self):
+        conn = sqlite3.connect("database.db")
+        cur = conn.cursor()
+        cur.execute("INSERT INTO books (title, author, open_library_id, verified) VALUES ('Src', 'A', 's1', 1)")
+        source_id = cur.lastrowid
+        cur.execute("INSERT INTO books (title, author, open_library_id, verified) VALUES ('Tgt', 'B', 't1', 1)")
+        target_id = cur.lastrowid
+        cur.execute(
+            "INSERT INTO book_references (source_book_id, referenced_book_id, context, raw_title) VALUES (?, ?, 'q', 'Tgt')",
+            (source_id, target_id),
+        )
+        conn.commit()
+
+        def act(action):
+            return self.client.post(
+                "/api/review/link",
+                json={"source_id": source_id, "target_id": target_id, "action": action,
+                      "raw_title": "Tgt", "context": "q"},
+            )
+
+        queue = self.client.get("/api/review/queue").get_json()
+        self.assertEqual([l["title"] for l in queue["links"]], ["Tgt"])
+
+        self.assertEqual(act("reject").status_code, 200)
+        self.assertEqual(cur.execute("SELECT COUNT(*) FROM book_references").fetchone()[0], 0)
+        self.assertEqual(
+            sorted(r[0] for r in cur.execute("SELECT raw_key FROM reference_overrides")),
+            sorted([f"#{target_id}", "tgt"]),
+        )
+
+        self.assertEqual(act("restore").status_code, 200)
+        self.assertEqual(cur.execute("SELECT COUNT(*) FROM book_references").fetchone()[0], 1)
+        self.assertEqual(cur.execute("SELECT COUNT(*) FROM reference_overrides").fetchone()[0], 0)
+
+        self.assertEqual(act("confirm").status_code, 200)
+        self.assertEqual(cur.execute("SELECT confirmed FROM book_references").fetchone()[0], 1)
+        self.assertEqual(self.client.get("/api/review/queue").get_json()["links"], [])
+        conn.close()
+
+
+if __name__ == "__main__":
+    unittest.main()

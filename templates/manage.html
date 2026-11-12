@@ -32,7 +32,7 @@
 
         <section id="login-panel" class="admin-card">
             <h2>Unlock manage</h2>
-            <p class="admin-hint">Same token as catalog admin. Default is <code>{{ default_hint }}</code> (set <code>ADMIN_TOKEN</code> to change).</p>
+            <p class="admin-hint">Same token as catalog admin: the value of <code>ADMIN_TOKEN</code>. On this machine no token is needed when it is unset.</p>
             <form id="login-form" class="admin-form-row">
                 <label class="sr-only" for="admin-token">Token</label>
                 <input type="password" id="admin-token" placeholder="Admin token" autocomplete="current-password" required>

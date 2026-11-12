@@ -2,6 +2,7 @@ Flask>=2.3.0
 spacy>=3.7.0
 ebooklib>=0.18
 requests>=2.31.0
+anthropic>=2.8.0
 
 # After installing requirements, also install the spaCy model:
 #   python -m spacy download en_core_web_trf

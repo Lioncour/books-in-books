@@ -18,7 +18,7 @@ GitHub Pages cannot run Python, so uploads never happen on the public site.
    ```powershell
    python app.py
    ```
-   Open [http://localhost:5000/manage](http://localhost:5000/manage) (token default: `books-admin`).
+   Open [http://localhost:5000/manage](http://localhost:5000/manage) (no token needed on your own machine).
 
 2. Export the public site:
    - Click **Export docs/ for Pages** on the manage page, **or**

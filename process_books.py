@@ -6,6 +6,7 @@ Importable by the Flask app for web-driven processing.
 """
 
 import hashlib
+import html
 import json
 import re
 import sqlite3
@@ -79,6 +80,7 @@ MEDIA_TITLE_BLOCKLIST = {
     "ghostbusters",
 }
 NLP_CHUNK_CHARS = 90000
+CONTEXT_CHARS = 160
 
 
 def init_database(quiet: bool = False):
@@ -133,6 +135,12 @@ def init_database(quiet: bool = False):
     ref_cols = {row[1] for row in cursor.fetchall()}
     if "context" not in ref_cols:
         cursor.execute("ALTER TABLE book_references ADD COLUMN context TEXT")
+    if "raw_title" not in ref_cols:
+        # The wording found in the text, before it was matched to a work
+        cursor.execute("ALTER TABLE book_references ADD COLUMN raw_title TEXT")
+    if "confirmed" not in ref_cols:
+        # 1 = a person confirmed this link in the review queue; survives re-extraction
+        cursor.execute("ALTER TABLE book_references ADD COLUMN confirmed INTEGER DEFAULT 0")
 
     cursor.execute(
         """
@@ -143,6 +151,39 @@ def init_database(quiet: bool = False):
             reason TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (source_book_id) REFERENCES books (id)
+        )
+        """
+    )
+
+    # Quotes saved by earlier versions still hold HTML entities (&#13;, &amp;)
+    cursor.execute(
+        "SELECT rowid, context FROM book_references WHERE context LIKE '%&%;%'"
+    )
+    for rowid, context in cursor.fetchall():
+        cursor.execute(
+            "UPDATE book_references SET context = ? WHERE rowid = ?",
+            (clean_context(context), rowid),
+        )
+
+    cursor.execute("PRAGMA table_info(skipped_mentions)")
+    skip_cols = {row[1] for row in cursor.fetchall()}
+    for col in ("context", "suggested_title", "suggested_author"):
+        if col not in skip_cols:
+            cursor.execute(f"ALTER TABLE skipped_mentions ADD COLUMN {col} TEXT")
+
+    # A person's corrections, replayed on every re-extraction.
+    # raw_key is the normalized wording from the text, or "#<book id>" to reject
+    # one specific target for this source whatever the wording.
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS reference_overrides (
+            id INTEGER PRIMARY KEY,
+            source_book_id INTEGER NOT NULL,
+            raw_key TEXT NOT NULL,
+            action TEXT NOT NULL CHECK (action IN ('reject', 'link')),
+            target_book_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (source_book_id, raw_key)
         )
         """
     )
@@ -166,9 +207,22 @@ def init_database(quiet: bool = False):
         """
     )
 
+    cursor.execute("PRAGMA table_info(processed_files)")
+    if "book_id" not in {row[1] for row in cursor.fetchall()}:
+        # Which library row this file is; replaces guessing from the filename
+        cursor.execute("ALTER TABLE processed_files ADD COLUMN book_id INTEGER")
+
     merged = deduplicate_books(cursor, conn, quiet=quiet)
     if merged and not quiet:
         print(f"Merged {merged} duplicate book row(s)")
+
+    try:
+        repaired = repair_owned_books(cursor, conn)
+        if repaired and not quiet:
+            print(f"Corrected title/author on {repaired} library book(s) from file metadata")
+    except Exception as e:
+        if not quiet:
+            print(f"Library metadata repair skipped: {e}")
 
     conn.commit()
     conn.close()
@@ -220,6 +274,16 @@ def _remap_book_id(cursor, old_id: int, new_id: int):
         """,
         (new_id, old_id),
     )
+    # Keep people's corrections and file ownership pointing at the surviving row
+    for statement in (
+        "UPDATE OR IGNORE reference_overrides SET source_book_id = ? WHERE source_book_id = ?",
+        "UPDATE reference_overrides SET target_book_id = ? WHERE target_book_id = ?",
+        "UPDATE processed_files SET book_id = ? WHERE book_id = ?",
+    ):
+        try:
+            cursor.execute(statement, (new_id, old_id))
+        except sqlite3.OperationalError:
+            pass  # table/column not created yet on a very old database
     cursor.execute("DELETE FROM books WHERE id = ?", (old_id,))
 
 
@@ -422,6 +486,61 @@ def token_coverage(query: str, candidate: str) -> float:
     return len(q & c) / len(q)
 
 
+def clean_text(text: str) -> str:
+    """Decode HTML entities left over from EPUB markup and tidy whitespace."""
+    if not text:
+        return ""
+    # Some EPUBs are double-escaped (&amp;#13;), so unescape twice.
+    text = html.unescape(html.unescape(text))
+    return text.replace("\r", " ").replace("\xa0", " ")
+
+
+def clean_context(text: Optional[str]) -> Optional[str]:
+    """Quote shown beside a reference: entities decoded, whitespace collapsed."""
+    if not text:
+        return text
+    return re.sub(r"\s+", " ", clean_text(text)).strip()
+
+
+_AUTHOR_NOISE = {
+    "de", "da", "di", "du", "van", "von", "der", "den", "la", "le",
+    "of", "the", "and", "jr", "sr", "st",
+}
+
+
+def author_tokens(name: Optional[str]) -> set:
+    """Significant lowercase name tokens (initials and particles dropped)."""
+    if not name:
+        return set()
+    text = re.sub(r"[^\w\s]", " ", name.lower())
+    return {t for t in text.split() if len(t) > 1 and t not in _AUTHOR_NOISE}
+
+
+def author_matches(hint: Optional[str], candidates) -> bool:
+    """
+    True when any candidate author plausibly is the hinted author.
+    The surname must agree (or the names share enough tokens), so "Sun Tzu"
+    matches "孙武 (Sun Tzu)" and "Dickens" matches "Charles Dickens".
+    """
+    want = author_tokens(hint)
+    if not want:
+        return False
+    if isinstance(candidates, str) or candidates is None:
+        candidates = [candidates]
+    words = re.sub(r"[^\w\s]", " ", (hint or "").lower()).split()
+    surname = words[-1] if words else ""
+    for cand in candidates:
+        have = author_tokens(cand)
+        if not have:
+            continue
+        if len(surname) > 1 and surname in have:
+            return True
+        shared = want & have
+        if shared and (len(shared) >= 2 or len(want) == 1 or len(have) == 1):
+            return True
+    return False
+
+
 def is_plausible_title_query(title: str) -> bool:
     """Reject tiny / junk spaCy hits before calling Open Library."""
     normalized = normalize_title(title)
@@ -506,22 +625,97 @@ def lookup_google_books(title: str) -> Optional[Dict]:
     return None
 
 
-def lookup_open_library(title: str) -> Optional[Dict]:
+def _ol_doc_to_match(doc: Dict, score: float) -> Dict:
+    author_names = doc.get("author_name") or []
+    cover_ids = doc.get("cover_i")
+    title = doc.get("title") or ""
+    return {
+        "title": title,
+        "author": author_names[0] if author_names else "Unknown",
+        "open_library_id": doc.get("key") or f"ol_{normalize_title(title)}",
+        "match_score": round(score, 3),
+        "cover_id": str(cover_ids) if cover_ids is not None else None,
+        "first_publish_year": doc.get("first_publish_year"),
+    }
+
+
+def _ol_search(params: Dict) -> List[Dict]:
+    response = requests.get(
+        "https://openlibrary.org/search.json",
+        params={**params, "limit": 10},
+        timeout=30,
+    )
+    response.raise_for_status()
+    return response.json().get("docs") or []
+
+
+def _too_new(doc: Dict, max_year: Optional[int]) -> bool:
+    """A work can't be mentioned by a book published before it existed."""
+    if not max_year:
+        return False
+    year = doc.get("first_publish_year")
+    return isinstance(year, int) and year > max_year + 1
+
+
+def _lookup_open_library_by_author(
+    title: str, author: str, max_year: Optional[int]
+) -> Optional[Dict]:
+    """
+    Author-corroborated lookup. Because the author has to agree, the title may
+    match more loosely than in a title-only search ("Clarendon's Rebellion" vs
+    "The History of the Rebellion and Civil Wars in England").
+    """
+    best = None
+    best_score = 0.0
+    for params in ({"title": title, "author": author}, {"q": f"{title} {author}"}):
+        for doc in _ol_search(params):
+            candidate_title = doc.get("title") or ""
+            if not candidate_title or _too_new(doc, max_year):
+                continue
+            if not author_matches(author, doc.get("author_name") or []):
+                continue
+            score = max(
+                title_similarity(title, candidate_title),
+                0.9 * token_coverage(title, candidate_title),
+                0.9 * token_coverage(candidate_title, title),
+            )
+            if score < 0.5:
+                continue
+            # Prefer the widely published work when titles tie (not a study guide)
+            rank = score + min(doc.get("edition_count") or 0, 50) / 5000.0
+            if rank > best_score:
+                best_score = rank
+                best = _ol_doc_to_match(doc, min(1.0, score))
+        if best:
+            break
+    return best
+
+
+def lookup_open_library(
+    title: str, author: Optional[str] = None, max_year: Optional[int] = None
+) -> Optional[Dict]:
     """
     Search Open Library and return the best verified match, or None.
-    Result keys: title, author, open_library_id, match_score
+    Result keys: title, author, open_library_id, match_score, cover_id,
+    first_publish_year.
+
+    author: when given (the Judge's reading of the passage), only works by that
+            author are accepted. There is no silent fallback to a same-titled
+            work by someone else: that was the main source of wrong links.
+    max_year: reject works first published after this year.
     """
+    if author and author.strip() and author.strip().lower() != "unknown":
+        try:
+            return _lookup_open_library_by_author(title, author.strip(), max_year)
+        except Exception as e:
+            print(f"Open Library lookup failed for '{title}' by {author}: {e}")
+            return None
+
     if not is_plausible_title_query(title):
         return None
 
     try:
-        response = requests.get(
-            "https://openlibrary.org/search.json",
-            params={"title": title, "limit": 8},
-            timeout=30,
-        )
-        response.raise_for_status()
-        docs = response.json().get("docs") or []
+        docs = _ol_search({"title": title})
 
         def pick_best(candidates):
             query_words = normalize_title(title).split()
@@ -530,7 +724,7 @@ def lookup_open_library(title: str) -> Optional[Dict]:
             local_score = 0.0
             for doc in candidates:
                 candidate_title = doc.get("title") or ""
-                if not candidate_title:
+                if not candidate_title or _too_new(doc, max_year):
                     continue
                 score = title_similarity(title, candidate_title)
                 coverage = token_coverage(title, candidate_title)
@@ -538,39 +732,16 @@ def lookup_open_library(title: str) -> Optional[Dict]:
                     continue
                 if short_query and score < 0.92:
                     continue
-                has_author = bool(doc.get("author_name"))
-                if has_author:
+                if doc.get("author_name"):
                     score = min(1.0, score + 0.02)
                 if score > local_score:
                     local_score = score
-                    author_name = (
-                        doc.get("author_name", ["Unknown"])[0]
-                        if doc.get("author_name")
-                        else "Unknown"
-                    )
-                    cover_id = None
-                    cover_ids = doc.get("cover_i")
-                    if cover_ids is not None:
-                        cover_id = str(cover_ids)
-                    local_best = {
-                        "title": candidate_title,
-                        "author": author_name,
-                        "open_library_id": doc.get("key")
-                        or f"ol_{normalize_title(candidate_title)}",
-                        "match_score": round(score, 3),
-                        "cover_id": cover_id,
-                    }
+                    local_best = _ol_doc_to_match(doc, score)
             return local_best
 
         best = pick_best(docs)
         if not best:
-            response = requests.get(
-                "https://openlibrary.org/search.json",
-                params={"q": title, "limit": 8},
-                timeout=30,
-            )
-            response.raise_for_status()
-            best = pick_best(response.json().get("docs") or [])
+            best = pick_best(_ol_search({"q": title}))
     except Exception as e:
         print(f"Open Library lookup failed for '{title}': {e}")
         return None
@@ -619,7 +790,9 @@ def _find_local_book(title: str, cursor, verified_only: bool = False) -> Optiona
     return None
 
 
-def _upsert_verified_match(cursor, conn, match: Dict, kind: str = "book") -> Optional[int]:
+def _upsert_verified_match(
+    cursor, conn, match: Dict, kind: str = "book", strict_author: bool = False
+) -> Optional[int]:
     """Insert or update a verified work from a domain lookup match dict."""
     kind = kind or match.get("kind") or "book"
     cover_url = match.get("cover_url")
@@ -652,10 +825,14 @@ def _upsert_verified_match(cursor, conn, match: Dict, kind: str = "book") -> Opt
         return existing[0]
 
     cursor.execute(
-        "SELECT id FROM books WHERE LOWER(TRIM(title)) = LOWER(TRIM(?)) AND IFNULL(kind, 'book') = ?",
+        "SELECT id, author FROM books WHERE LOWER(TRIM(title)) = LOWER(TRIM(?)) AND IFNULL(kind, 'book') = ?",
         (match["title"], kind),
     )
     same_title = cursor.fetchone()
+    # With a known author, a same-titled row by someone else is a different work:
+    # leave it alone and file this one separately.
+    if same_title and strict_author and not author_matches(match.get("author"), same_title[1]):
+        same_title = None
     if same_title:
         cursor.execute(
             """
@@ -713,9 +890,15 @@ def get_or_create_book(
     require_verified: bool = False,
     kind: str = "book",
     context: Optional[str] = None,
+    author: Optional[str] = None,
+    max_year: Optional[int] = None,
 ) -> Optional[int]:
     """
     Get or create a work via local cache then domain lookup.
+
+    author / max_year: hints from the Judge. With an author, local rows and Open
+    Library hits must be by that author; max_year rejects works newer than the
+    book that mentions them.
 
     kind: book (Open Library), movie, music, cocktail.
     Owned library books should call with require_verified=False, kind='book'.
@@ -725,17 +908,24 @@ def get_or_create_book(
         kind = "book"
 
     # Prefer local match of the same kind
+    author_hint = (author or "").strip()
+    if author_hint.lower() in ("unknown", "anonymous", "traditional"):
+        author_hint = ""
+    use_author = bool(author_hint) and kind == "book"
+
     cursor.execute(
         """
-        SELECT id, title, verified, kind FROM books
+        SELECT id, title, verified, kind, author FROM books
         WHERE IFNULL(kind, 'book') = ?
         """,
         (kind,),
     )
     best_id = None
     best_score = 0.0
-    for book_id, existing_title, verified, _k in cursor.fetchall():
+    for book_id, existing_title, verified, _k, existing_author in cursor.fetchall():
         if require_verified and not verified:
+            continue
+        if use_author and not author_matches(author_hint, existing_author):
             continue
         score = title_similarity(title, existing_title)
         if score > best_score:
@@ -768,19 +958,24 @@ def get_or_create_book(
         return cursor.lastrowid
 
     # —— Books (Open Library path) ——
-    local_id = _find_local_book(title, cursor, verified_only=require_verified)
-    if local_id is not None:
-        return local_id
+    if not use_author:
+        local_id = _find_local_book(title, cursor, verified_only=require_verified)
+        if local_id is not None:
+            return local_id
 
-    if not require_verified:
-        local_any = _find_local_book(title, cursor, verified_only=False)
-        if local_any is not None:
-            return local_any
+        if not require_verified:
+            local_any = _find_local_book(title, cursor, verified_only=False)
+            if local_any is not None:
+                return local_any
 
-    match = lookup_open_library(title)
+    match = lookup_open_library(
+        title, author=author_hint if use_author else None, max_year=max_year
+    )
     if match:
         match["kind"] = "book"
-        return _upsert_verified_match(cursor, conn, match, kind="book")
+        return _upsert_verified_match(
+            cursor, conn, match, kind="book", strict_author=use_author
+        )
 
     if require_verified:
         return None
@@ -796,10 +991,86 @@ def get_or_create_book(
         INSERT INTO books (title, author, open_library_id, verified, match_score, kind)
         VALUES (?, ?, ?, 0, NULL, 'book')
         """,
-        (title, "Unknown", manual_id),
+        (title, author_hint or "Unknown", manual_id),
     )
     conn.commit()
     return cursor.lastrowid
+
+
+def override_key(raw_title: Optional[str]) -> str:
+    """Key a person's correction by the wording found in the text."""
+    return normalize_title(raw_title or "") or (raw_title or "").strip().lower()
+
+
+def _load_overrides(cursor, source_book_id: int) -> Dict[str, tuple]:
+    cursor.execute(
+        "SELECT raw_key, action, target_book_id FROM reference_overrides WHERE source_book_id = ?",
+        (source_book_id,),
+    )
+    return {row[0]: (row[1], row[2]) for row in cursor.fetchall()}
+
+
+def _record_skip(
+    cursor,
+    source_book_id: int,
+    raw_title: str,
+    reason: str,
+    context: Optional[str] = None,
+    suggested_title: Optional[str] = None,
+    suggested_author: Optional[str] = None,
+):
+    cursor.execute(
+        """
+        INSERT INTO skipped_mentions
+            (source_book_id, raw_title, reason, context, suggested_title, suggested_author)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            source_book_id,
+            raw_title,
+            reason,
+            clean_context(context),
+            suggested_title or None,
+            suggested_author or None,
+        ),
+    )
+
+
+def _link_reference(
+    cursor,
+    source_book_id: int,
+    referenced_book_id: int,
+    context: Optional[str],
+    raw_title: Optional[str],
+    confirmed: bool = False,
+) -> bool:
+    """Insert the edge if new. Returns True when a row was added."""
+    context = clean_context(context)
+    cursor.execute(
+        "SELECT 1 FROM book_references WHERE source_book_id = ? AND referenced_book_id = ?",
+        (source_book_id, referenced_book_id),
+    )
+    if cursor.fetchone():
+        cursor.execute(
+            """
+            UPDATE book_references
+            SET context = COALESCE(context, ?),
+                raw_title = COALESCE(raw_title, ?),
+                confirmed = MAX(IFNULL(confirmed, 0), ?)
+            WHERE source_book_id = ? AND referenced_book_id = ?
+            """,
+            (context, raw_title, 1 if confirmed else 0, source_book_id, referenced_book_id),
+        )
+        return False
+    cursor.execute(
+        """
+        INSERT INTO book_references
+            (source_book_id, referenced_book_id, context, raw_title, confirmed)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (source_book_id, referenced_book_id, context, raw_title, 1 if confirmed else 0),
+    )
+    return True
 
 
 def _store_references(
@@ -809,8 +1080,19 @@ def _store_references(
     conn,
     quiet=False,
     progress_callback=None,
+    judge=None,
 ):
-    """references_found: iterable of str titles OR dicts with title/context."""
+    """
+    references_found: iterable of str titles OR dicts with title/context.
+
+    Order of authority for each mention:
+      1. a person's correction (reference_overrides),
+      2. the Judge's verdict (is it a work, which kind, by whom),
+      3. the older keyword heuristics, when the Judge is off or didn't answer.
+
+    judge: callable(source_title, source_author, mentions, progress_callback)
+           returning judge.judge_mentions' result; defaults to the real Judge.
+    """
     from mention_kinds import classify_kind
 
     added = 0
@@ -823,17 +1105,94 @@ def _store_references(
             items.append(item)
         else:
             items.append({"title": item, "context": None})
+    items = [i for i in items if (i.get("title") or "").strip()]
+
+    overrides = _load_overrides(cursor, source_book_id)
+
+    # —— The Judge reads every candidate in its passage (cocktails come from a
+    # curated lexicon and people's corrections are already decided) ——
+    to_judge = [
+        (pos, item)
+        for pos, item in enumerate(items)
+        if item.get("kind_hint") != "cocktail"
+        and override_key(item.get("title")) not in overrides
+    ]
+    verdicts: Dict[int, Dict] = {}
+    source_year = None
+    judged = False
+    if to_judge:
+        if judge is None:
+            from judge import judge_mentions as judge
+        cursor.execute("SELECT title, author FROM books WHERE id = ?", (source_book_id,))
+        row = cursor.fetchone() or ("", "")
+        try:
+            result = judge(
+                row[0] or "",
+                row[1] or "",
+                [item for _pos, item in to_judge],
+                progress_callback=progress_callback,
+            )
+        except Exception as e:
+            result = None
+            if not quiet:
+                print(f"  The Judge failed, using basic matching: {e}")
+        if result is not None:
+            judged = True
+            source_year = result.get("source_year")
+            for local_idx, verdict in (result.get("verdicts") or {}).items():
+                verdicts[to_judge[local_idx][0]] = verdict
+        elif progress_callback:
+            progress_callback(
+                {
+                    "phase": "open_library",
+                    "message": lucien_says(
+                        "The Judge is away (no Claude credentials) — using basic title matching"
+                    ),
+                    "agent": "lucien",
+                }
+            )
 
     total = len(items)
     for idx, item in enumerate(items, 1):
-        referenced_title = (item.get("title") or "").strip()
+        raw_title = clean_text(item.get("title") or "").strip()
         context = item.get("context")
-        if not referenced_title:
-            continue
         try:
-            kind = item.get("kind_hint") or classify_kind(referenced_title, context)
-            if kind not in ("book", "movie", "music", "cocktail"):
-                kind = classify_kind(referenced_title, context)
+            key = override_key(raw_title)
+            action, target_id = overrides.get(key, (None, None))
+            if action == "reject":
+                skipped += 1
+                _record_skip(cursor, source_book_id, raw_title, "Rejected by you", context)
+                continue
+            if action == "link" and target_id:
+                cursor.execute("SELECT 1 FROM books WHERE id = ?", (target_id,))
+                if cursor.fetchone() and target_id != source_book_id:
+                    if _link_reference(
+                        cursor, source_book_id, target_id, context, raw_title, confirmed=True
+                    ):
+                        added += 1
+                    continue
+
+            verdict = verdicts.get(idx - 1)
+            lookup_title = raw_title
+            author_hint = None
+            if verdict is not None:
+                if not verdict.get("is_reference") or verdict.get("kind") == "other":
+                    skipped += 1
+                    reason = (verdict.get("reason") or "not a reference to a work").strip()
+                    _record_skip(
+                        cursor, source_book_id, raw_title, f"Judge: {reason}", context
+                    )
+                    if not quiet:
+                        print(f"  Skipped (Judge: {reason}): {raw_title}")
+                    continue
+                kind = verdict["kind"]
+                lookup_title = (verdict.get("canonical_title") or "").strip() or raw_title
+                author_hint = (verdict.get("author") or "").strip() or None
+            else:
+                kind = item.get("kind_hint") or classify_kind(raw_title, context)
+                if kind not in ("book", "movie", "music", "cocktail"):
+                    kind = classify_kind(raw_title, context)
+
             agent_verb = {
                 "book": "Verifying",
                 "movie": "Checking film",
@@ -846,78 +1205,81 @@ def _store_references(
                     {
                         "phase": "open_library",
                         "message": lucien_says(
-                            f'{agent_verb} "{referenced_title}" ({idx}/{total})'
+                            f'{agent_verb} "{lookup_title}" ({idx}/{total})'
                         ),
                         "agent": "lucien",
                     }
                 )
 
-            if kind == "book":
-                reason = skip_reason_for_title(referenced_title)
+            # The plausibility filter guards the title-only path; the Judge has
+            # already vouched for judged mentions (it was dropping "Lean In").
+            if kind == "book" and verdict is None:
+                reason = skip_reason_for_title(raw_title)
                 if reason:
                     skipped += 1
-                    cursor.execute(
-                        "INSERT INTO skipped_mentions (source_book_id, raw_title, reason) VALUES (?, ?, ?)",
-                        (source_book_id, referenced_title, reason),
-                    )
+                    _record_skip(cursor, source_book_id, raw_title, reason, context)
                     if not quiet:
-                        print(f"  Skipped ({reason}): {referenced_title}")
+                        print(f"  Skipped ({reason}): {raw_title}")
                     continue
 
             referenced_book_id = get_or_create_book(
-                referenced_title,
+                lookup_title,
                 cursor,
                 conn,
                 require_verified=True,
                 kind=kind,
                 context=context,
+                author=author_hint,
+                max_year=source_year if kind == "book" else None,
             )
             if referenced_book_id is None:
                 skipped += 1
-                reason = {
-                    "book": "No strong Open Library / Google Books match",
-                    "movie": "No strong film match",
-                    "music": "No strong music match",
-                    "cocktail": "Not in cocktail lexicon",
-                }.get(kind, "No strong match")
-                cursor.execute(
-                    "INSERT INTO skipped_mentions (source_book_id, raw_title, reason) VALUES (?, ?, ?)",
-                    (source_book_id, referenced_title, reason),
+                if verdict is not None and kind == "book":
+                    by = f" by {author_hint}" if author_hint else ""
+                    reason = f"Judge says it is “{lookup_title}”{by}, but no catalogue match"
+                else:
+                    reason = {
+                        "book": "No strong Open Library / Google Books match",
+                        "movie": "No strong film match",
+                        "music": "No strong music match",
+                        "cocktail": "Not in cocktail lexicon",
+                    }.get(kind, "No strong match")
+                _record_skip(
+                    cursor,
+                    source_book_id,
+                    raw_title,
+                    reason,
+                    context,
+                    suggested_title=lookup_title if verdict is not None else None,
+                    suggested_author=author_hint,
                 )
                 if not quiet:
-                    print(f"  Skipped unverified ({kind}): {referenced_title}")
+                    print(f"  Skipped unverified ({kind}): {raw_title}")
                 continue
             if source_book_id == referenced_book_id:
+                continue
+            if overrides.get(f"#{referenced_book_id}", (None, None))[0] == "reject":
+                skipped += 1
+                _record_skip(cursor, source_book_id, raw_title, "Rejected by you", context)
                 continue
             try:
                 ensure_cover_for_book(referenced_book_id, cursor, conn)
             except Exception:
                 pass
-            cursor.execute(
-                "SELECT 1 FROM book_references WHERE source_book_id = ? AND referenced_book_id = ?",
-                (source_book_id, referenced_book_id),
-            )
-            if not cursor.fetchone():
-                cursor.execute(
-                    "INSERT INTO book_references (source_book_id, referenced_book_id, context) VALUES (?, ?, ?)",
-                    (source_book_id, referenced_book_id, context),
-                )
+            if _link_reference(cursor, source_book_id, referenced_book_id, context, raw_title):
                 added += 1
                 if not quiet:
-                    print(f"  Added verified {kind}: {referenced_title}")
-            elif context:
-                cursor.execute(
-                    "UPDATE book_references SET context = COALESCE(context, ?) WHERE source_book_id = ? AND referenced_book_id = ?",
-                    (context, source_book_id, referenced_book_id),
-                )
+                    print(f"  Added verified {kind}: {lookup_title}")
         except Exception as e:
             if not quiet:
-                print(f"  Error processing reference '{referenced_title}': {e}")
+                print(f"  Error processing reference '{raw_title}': {e}")
     conn.commit()
     if not quiet:
+        how = "judged by Claude" if judged else "basic matching"
         print(
-            f"  Found {len(items)} candidates; added {added} verified, skipped {skipped} unverified"
+            f"  Found {len(items)} candidates ({how}); added {added} verified, skipped {skipped}"
         )
+    return {"added": added, "skipped": skipped, "judged": judged}
 
 
 def extract_cocktail_mentions(text: str) -> List[Dict]:
@@ -1013,9 +1375,11 @@ def extract_work_of_art_mentions(text: str, progress_callback=None):
                 continue
             abs_start = offset + ent.start_char
             abs_end = offset + ent.end_char
-            ctx_start = max(0, abs_start - 60)
-            ctx_end = min(len(text), abs_end + 60)
-            context = text[ctx_start:ctx_end].replace("\n", " ").strip()
+            # Wide enough for the Judge (and a reader) to see how the title is used
+            ctx_start = max(0, abs_start - CONTEXT_CHARS)
+            ctx_end = min(len(text), abs_end + CONTEXT_CHARS)
+            context = re.sub(r"\s+", " ", text[ctx_start:ctx_end]).strip()
+            title = re.sub(r"\s+", " ", title)
             key = title.lower()
             if key not in mentions:
                 mentions[key] = {"title": title, "context": context}
@@ -1042,7 +1406,7 @@ def process_text_file(
                 }
             )
         with open(file_path, "r", encoding="utf-8") as f:
-            text = f.read()
+            text = clean_text(f.read())
         if progress_callback:
             progress_callback(
                 {
@@ -1106,7 +1470,7 @@ def process_epub_file(
         for item in book.get_items():
             if item.get_type() == ebooklib.ITEM_DOCUMENT:
                 text += item.get_content().decode("utf-8", errors="ignore") + "\n"
-        text = re.sub("<[^<]+?>", "", text)
+        text = clean_text(re.sub("<[^<]+?>", "", text))
         if progress_callback:
             progress_callback(
                 {
@@ -1231,6 +1595,135 @@ def extract_title_and_author(filename: str) -> tuple:
     return clean_filename_phrase(stem) or stem, "Unknown"
 
 
+def clean_metadata_title(title: str) -> str:
+    """Drop series tags such as "(Bobiverse Book 1)" from an EPUB title."""
+    title = re.sub(r"\s+", " ", title or "").strip()
+    title = re.sub(r"\s*\([^()]*\bbook\s*\d+[^()]*\)\s*$", "", title, flags=re.I)
+    return title.strip()
+
+
+def normalize_author_name(author: str) -> str:
+    """Turn "Wynn-Williams, Sarah" into "Sarah Wynn-Williams"."""
+    author = re.sub(r"\s+", " ", author or "").strip()
+    if author.count(",") == 1:
+        last, first = [part.strip() for part in author.split(",")]
+        if first and last and len(first.split()) <= 3:
+            return f"{first} {last}"
+    return author
+
+
+def read_epub_metadata(file_path: Path) -> tuple:
+    """(title, author) from the EPUB's own metadata; None for a missing field."""
+    if epub is None:
+        return None, None
+    try:
+        import warnings
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            book = epub.read_epub(str(file_path))
+        titles = [t[0] for t in book.get_metadata("DC", "title") if t and t[0]]
+        creators = [c[0] for c in book.get_metadata("DC", "creator") if c and c[0]]
+    except Exception:
+        return None, None
+    title = clean_metadata_title(titles[0]) if titles else None
+    author = normalize_author_name(creators[0]) if creators else None
+    if title and title.lower() in ("unknown", "untitled"):
+        title = None
+    if author and author.lower() in ("unknown", "anonymous"):
+        author = None
+    return title or None, author or None
+
+
+_IDENTITY_CACHE: Dict[tuple, tuple] = {}
+
+
+def file_title_and_author(file_path: Path) -> tuple:
+    """
+    Title and author of a library file. The EPUB's embedded metadata wins;
+    the filename is only a fallback (it gave "Wynn-Williams, Sarah" as a title).
+    """
+    file_path = Path(file_path)
+    try:
+        stat = file_path.stat()
+        cache_key = (str(file_path), stat.st_mtime_ns, stat.st_size)
+    except OSError:
+        return extract_title_and_author(file_path.name)
+    if cache_key in _IDENTITY_CACHE:
+        return _IDENTITY_CACHE[cache_key]
+
+    name_title, name_author = extract_title_and_author(file_path.name)
+    title, author = name_title, name_author
+    if file_path.suffix.lower() == ".epub":
+        meta_title, meta_author = read_epub_metadata(file_path)
+        title = meta_title or name_title
+        author = meta_author or name_author
+    _IDENTITY_CACHE[cache_key] = (title, author)
+    return title, author
+
+
+def repair_owned_books(cursor, conn, books_dir: Optional[Path] = None) -> int:
+    """
+    Tie each processed file to its library row and correct rows whose title or
+    author came from a misread filename. Local only (no network).
+    """
+    books_dir = books_dir or Path("books")
+    if not books_dir.exists():
+        return 0
+    repaired = 0
+    for file_path in list_book_files(books_dir):
+        title, author = file_title_and_author(file_path)
+        name_title, _name_author = extract_title_and_author(file_path.name)
+
+        cursor.execute(
+            "SELECT book_id FROM processed_files WHERE filename = ?", (file_path.name,)
+        )
+        processed = cursor.fetchone()
+        if not processed:
+            continue  # not extracted yet; process_single_file will file it
+        book_id = processed[0]
+        if book_id is not None:
+            cursor.execute("SELECT id FROM books WHERE id = ?", (book_id,))
+            if not cursor.fetchone():
+                book_id = None
+        if book_id is None:
+            for candidate in (title, name_title):
+                cursor.execute(
+                    "SELECT id FROM books WHERE LOWER(TRIM(title)) = LOWER(TRIM(?))",
+                    (candidate,),
+                )
+                found = cursor.fetchone()
+                if found:
+                    book_id = found[0]
+                    break
+        if book_id is None:
+            book_id = _find_local_book(title, cursor) or _find_local_book(name_title, cursor)
+        if book_id is None:
+            continue
+
+        cursor.execute(
+            "UPDATE processed_files SET book_id = ? WHERE filename = ?",
+            (book_id, file_path.name),
+        )
+        cursor.execute("SELECT title, author FROM books WHERE id = ?", (book_id,))
+        row_title, row_author = cursor.fetchone()
+        changed = False
+        if title_similarity(row_title or "", title) < MIN_VERIFY_SCORE:
+            cursor.execute(
+                "SELECT 1 FROM books WHERE LOWER(TRIM(title)) = LOWER(TRIM(?)) AND id != ?",
+                (title, book_id),
+            )
+            if not cursor.fetchone():
+                cursor.execute("UPDATE books SET title = ? WHERE id = ?", (title, book_id))
+                changed = True
+        if author and author != "Unknown" and not author_matches(author, row_author):
+            cursor.execute("UPDATE books SET author = ? WHERE id = ?", (author, book_id))
+            changed = True
+        repaired += 1 if changed else 0
+    conn.commit()
+    return repaired
+
+
 def get_file_hash(file_path: Path) -> str:
     """Calculate MD5 hash of file for change detection."""
     hash_md5 = hashlib.md5()
@@ -1252,14 +1745,16 @@ def is_file_processed(filename: str, file_hash: str, cursor) -> bool:
     return False
 
 
-def mark_file_processed(filename: str, file_hash: str, cursor, conn):
-    """Mark a file as processed."""
+def mark_file_processed(
+    filename: str, file_hash: str, cursor, conn, book_id: Optional[int] = None
+):
+    """Mark a file as processed and remember which library row it is."""
     cursor.execute(
         """
-        INSERT OR REPLACE INTO processed_files (filename, file_hash, processed_at)
-        VALUES (?, ?, CURRENT_TIMESTAMP)
+        INSERT OR REPLACE INTO processed_files (filename, file_hash, processed_at, book_id)
+        VALUES (?, ?, CURRENT_TIMESTAMP, ?)
         """,
-        (filename, file_hash),
+        (filename, file_hash, book_id),
     )
     conn.commit()
 
@@ -1296,11 +1791,20 @@ def process_single_file(
     if not force and is_file_processed(file_path.name, file_hash, cursor):
         return None
 
+    # Remember which row this file was before forgetting that it was processed
+    cursor.execute("SELECT book_id FROM processed_files WHERE filename = ?", (file_path.name,))
+    known = cursor.fetchone()
+    known_book_id = known[0] if known else None
+    if known_book_id is not None:
+        cursor.execute("SELECT 1 FROM books WHERE id = ?", (known_book_id,))
+        if not cursor.fetchone():
+            known_book_id = None
+
     if force:
         cursor.execute("DELETE FROM processed_files WHERE filename = ?", (file_path.name,))
         conn.commit()
 
-    title, author = extract_title_and_author(file_path.name)
+    title, author = file_title_and_author(file_path)
     if progress_callback:
         progress_callback(
             {
@@ -1310,7 +1814,13 @@ def process_single_file(
                 "agent": "borges",
             }
         )
-    source_book_id = get_or_create_book(title, cursor, conn, require_verified=False)
+    source_book_id = known_book_id or get_or_create_book(
+        title,
+        cursor,
+        conn,
+        require_verified=False,
+        author=author if author != "Unknown" else None,
+    )
     if source_book_id is None:
         raise RuntimeError(f"Could not create library book for '{title}'")
     if author != "Unknown":
@@ -1320,9 +1830,13 @@ def process_single_file(
         )
         conn.commit()
 
-    # Drop old outgoing refs before reprocess so results stay fresh
+    # Drop old outgoing refs before reprocess so results stay fresh.
+    # Links a person confirmed in the review queue are kept.
     if force:
-        cursor.execute("DELETE FROM book_references WHERE source_book_id = ?", (source_book_id,))
+        cursor.execute(
+            "DELETE FROM book_references WHERE source_book_id = ? AND IFNULL(confirmed, 0) = 0",
+            (source_book_id,),
+        )
         conn.commit()
 
     def file_progress(updates):
@@ -1362,7 +1876,7 @@ def process_single_file(
                 "agent": "lucien",
             }
         )
-    mark_file_processed(file_path.name, file_hash, cursor, conn)
+    mark_file_processed(file_path.name, file_hash, cursor, conn, book_id=source_book_id)
     # Fill cover art for owned books even when the row already existed
     ensure_cover_for_book(source_book_id, cursor, conn)
     return title
@@ -1725,10 +2239,15 @@ def main():
             "nlp",
             "open_library",
             "reading",
+            "judging",
         ):
             print(status.get("message", ""))
 
-    result = process_pending_files(progress_callback=on_progress, quiet=False)
+    # --force re-reads every book, e.g. after turning the Judge on
+    import sys
+
+    force = "--force" in sys.argv[1:]
+    result = process_pending_files(progress_callback=on_progress, quiet=False, force=force)
 
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()

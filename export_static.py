@@ -87,7 +87,7 @@ def create_static_index(docs_dir: Path):
     # Keep a cache-bust on main.js for Pages deploy
     html_content = html_content.replace(
         'src="static/main.js"',
-        'src="static/main.js?v=31"',
+        'src="static/main.js?v=34"',
     )
 
     # Explore-only: no local manage routes on Pages
@@ -101,10 +101,8 @@ def create_static_index(docs_dir: Path):
         'href="#"',
         html_content,
     )
-    html_content = html_content.replace(
-        'href="/verify"',
-        'href="#"',
-    )
+    for local_route in ('href="/verify"', 'href="/review"'):
+        html_content = html_content.replace(local_route, 'href="#"')
 
     # Mark body for explore-only chrome (CSS + JS)
     if "data-static" not in html_content:
