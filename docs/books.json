@@ -196,20 +196,6 @@
     "incoming_count": 1
   },
   {
-    "id": 22,
-    "title": "Battlestar Galactica",
-    "author": "Glen A. Larson",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL6811904W",
-    "kind": "movie",
-    "cover_id": "6682668",
-    "cover_url": "https://covers.openlibrary.org/b/id/6682668-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 0
-  },
-  {
     "id": 175,
     "title": "Beans, Beans, Beans",
     "author": "Lightnin’ Hopkins",
@@ -278,20 +264,6 @@
     "cover_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/William_Blackstone%2C_Commentaries_on_the_Laws_of_England_%281st_ed%2C_1765%2C_vol_I%2C_title_page%29.jpg/330px-William_Blackstone%2C_Commentaries_on_the_Laws_of_England_%281st_ed%2C_1765%2C_vol_I%2C_title_page%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 1
-  },
-  {
-    "id": 46,
-    "title": "Blade Runner",
-    "author": "1982 film by Ridley Scott",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "wikidata_Q184843",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": "https://upload.wikimedia.org/wikipedia/en/9/9f/Blade_Runner_%281982_poster%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
-    "outgoing_count": 0,
-    "incoming_count": 0
   },
   {
     "id": 113,
@@ -382,12 +354,12 @@
     "title": "Careless People",
     "author": "Sarah Wynn-Williams",
     "is_starting": true,
-    "verified": false,
-    "match_score": null,
-    "open_library_id": "manual_wynn williams sarah",
+    "verified": true,
+    "match_score": 1.0,
+    "open_library_id": "/works/OL42735465W",
     "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
+    "cover_id": "14852090",
+    "cover_url": "https://covers.openlibrary.org/b/id/14852090-M.jpg",
     "outgoing_count": 20,
     "incoming_count": 0
   },
@@ -404,20 +376,6 @@
     "cover_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Casa_finance_city_6_%28cropped%29.jpg/330px-Casa_finance_city_6_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 1
-  },
-  {
-    "id": 14,
-    "title": "Castaway",
-    "author": "Frances Murray",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL5096420W",
-    "kind": "book",
-    "cover_id": "7939931",
-    "cover_url": "https://covers.openlibrary.org/b/id/7939931-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 0
   },
   {
     "id": 172,
@@ -572,20 +530,6 @@
     "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
-  },
-  {
-    "id": 16,
-    "title": "Earthside",
-    "author": "Dennis E. Taylor",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL38050716W",
-    "kind": "book",
-    "cover_id": "14624850",
-    "cover_url": "https://covers.openlibrary.org/b/id/14624850-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 0
   },
   {
     "id": 146,
@@ -1070,10 +1014,10 @@
     "is_starting": true,
     "verified": true,
     "match_score": 1.0,
-    "open_library_id": "/works/OL6248207W",
+    "open_library_id": "/works/OL35230116W",
     "kind": "book",
-    "cover_id": "96934",
-    "cover_url": "https://covers.openlibrary.org/b/id/96934-M.jpg",
+    "cover_id": "14256190",
+    "cover_url": "https://covers.openlibrary.org/b/id/14256190-M.jpg",
     "outgoing_count": 18,
     "incoming_count": 0
   },
@@ -1104,20 +1048,6 @@
     "cover_url": "https://covers.openlibrary.org/b/id/34066-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
-  },
-  {
-    "id": 47,
-    "title": "Negroni",
-    "author": "Cocktail",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "cocktail_negroni",
-    "kind": "cocktail",
-    "cover_id": null,
-    "cover_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/C%C3%B3ctel_Negroni_Campari.jpg/330px-C%C3%B3ctel_Negroni_Campari.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "outgoing_count": 0,
-    "incoming_count": 0
   },
   {
     "id": 96,
@@ -1510,20 +1440,6 @@
     "cover_url": "https://covers.openlibrary.org/b/id/13322584-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
-  },
-  {
-    "id": 79,
-    "title": "Summary of Charlie Mackesy's the Boy, the Mole, the Fox and the Horse",
-    "author": "Irb Media",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 0.77,
-    "open_library_id": "/works/OL27913888W",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 0
   },
   {
     "id": 52,

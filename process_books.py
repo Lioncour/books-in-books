@@ -207,6 +207,18 @@ def init_database(quiet: bool = False):
         """
     )
 
+    # spaCy's candidates per exact file, so re-judging skips the slow NLP pass
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS candidate_cache (
+            file_hash TEXT PRIMARY KEY,
+            extractor_version INTEGER NOT NULL,
+            candidates TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
     cursor.execute("PRAGMA table_info(processed_files)")
     if "book_id" not in {row[1] for row in cursor.fetchall()}:
         # Which library row this file is; replaces guessing from the filename
@@ -223,6 +235,10 @@ def init_database(quiet: bool = False):
     except Exception as e:
         if not quiet:
             print(f"Library metadata repair skipped: {e}")
+
+    pruned = prune_orphan_works(cursor)
+    if pruned and not quiet:
+        print(f"Removed {pruned} work(s) no longer linked to anything")
 
     conn.commit()
     conn.close()
@@ -242,6 +258,27 @@ def _book_merge_score(row) -> tuple:
         1 if row["author"] and row["author"] != "Unknown" else 0,
         -int(row["id"]),
     )
+
+
+def prune_orphan_works(cursor) -> int:
+    """
+    Remove works that nothing points at any more (their links were rejected or
+    re-matched). Library books and anything a correction refers to are kept.
+    """
+    cursor.execute(
+        """
+        DELETE FROM books
+        WHERE id NOT IN (SELECT source_book_id FROM book_references)
+          AND id NOT IN (SELECT referenced_book_id FROM book_references)
+          AND id NOT IN (SELECT source_book_id FROM skipped_mentions)
+          AND id NOT IN (SELECT book_id FROM processed_files WHERE book_id IS NOT NULL)
+          AND id NOT IN (SELECT source_book_id FROM reference_overrides)
+          AND id NOT IN (
+              SELECT target_book_id FROM reference_overrides WHERE target_book_id IS NOT NULL
+          )
+        """
+    )
+    return cursor.rowcount
 
 
 def _remap_book_id(cursor, old_id: int, new_id: int):
@@ -1155,6 +1192,14 @@ def _store_references(
     total = len(items)
     for idx, item in enumerate(items, 1):
         raw_title = clean_text(item.get("title") or "").strip()
+        # Italic and quoted spans are a wide net (emphasis, ship names, foreign
+        # words). Without the Judge to rule on them they would only add noise.
+        if (
+            item.get("source") in ("markup", "quote")
+            and (idx - 1) not in verdicts
+            and override_key(raw_title) not in overrides
+        ):
+            continue
         context = item.get("context")
         try:
             key = override_key(raw_title)
@@ -1386,40 +1431,206 @@ def extract_work_of_art_mentions(text: str, progress_callback=None):
     return list(mentions.values())
 
 
-def process_text_file(
+# Bump when candidate finding changes, so cached candidates are rebuilt
+EXTRACTOR_VERSION = 2
+
+_EMPHASIS_RE = re.compile(r"<(i|em|cite)\b[^>]*>(.*?)</\1\s*>", re.I | re.S)
+_ITALIC_SPAN_RE = re.compile(
+    r"<span\b[^>]*class=[\"'][^\"']*(?:ital|booktitle|book-title)[^\"']*[\"'][^>]*>(.*?)</span\s*>",
+    re.I | re.S,
+)
+_QUOTED_RE = re.compile(r"[“\"]([A-Z0-9][^“”\"\n]{2,90})[”\"]")
+_SMALL_WORDS = {
+    "a", "an", "and", "as", "at", "but", "by", "de", "for", "from", "in", "into",
+    "la", "le", "nor", "of", "on", "or", "the", "to", "und", "van", "von", "with",
+}
+
+
+def _strip_tags(markup: str) -> str:
+    return re.sub(r"\s+", " ", clean_text(re.sub("<[^<]+?>", "", markup))).strip()
+
+
+def looks_like_a_title(text: str, min_words: int = 1) -> bool:
+    """
+    Cheap shape test for italic or quoted spans: capitalised like a title, short,
+    and not a sentence. It only has to be good enough to hand to the Judge.
+    """
+    text = (text or "").strip()
+    if not (3 <= len(text) <= 90) or not (text[0].isupper() or text[0].isdigit()):
+        return False
+    if text[-1] in ".,;:!?…—-":
+        return False
+    words = text.split()
+    if not (min_words <= len(words) <= 10):
+        return False
+    content = [w for w in words if w.strip("’'\"“”()").lower() not in _SMALL_WORDS]
+    if not content or not any(len(re.sub(r"\W", "", w)) >= 3 for w in content):
+        return False
+    capitalised = sum(1 for w in content if w.lstrip("’'\"“(")[:1].isupper())
+    return capitalised / len(content) >= 0.6
+
+
+def _context_for(text: str, needle: str) -> str:
+    at = text.find(needle)
+    if at == -1:
+        return needle
+    ctx_start = max(0, at - CONTEXT_CHARS)
+    ctx_end = min(len(text), at + len(needle) + CONTEXT_CHARS)
+    return re.sub(r"\s+", " ", text[ctx_start:ctx_end]).strip()
+
+
+def extract_markup_mentions(markup: str, text: str) -> List[Dict]:
+    """
+    Titles the publisher set in italics. spaCy misses many of these in running
+    prose ("she was reading <i>Middlemarch</i> again"); the markup does not.
+    """
+    mentions = {}
+    spans = [m.group(2) for m in _EMPHASIS_RE.finditer(markup)]
+    spans += [m.group(1) for m in _ITALIC_SPAN_RE.finditer(markup)]
+    for raw in spans:
+        title = _strip_tags(raw).strip(" .,;:")
+        if not looks_like_a_title(title):
+            continue
+        key = title.lower()
+        if key not in mentions:
+            mentions[key] = {
+                "title": title,
+                "context": _context_for(text, title),
+                "source": "markup",
+            }
+    return list(mentions.values())
+
+
+def extract_quoted_mentions(text: str) -> List[Dict]:
+    """Short Title Case phrases in quotation marks (essays, poems, songs, articles)."""
+    mentions = {}
+    for match in _QUOTED_RE.finditer(text or ""):
+        title = re.sub(r"\s+", " ", match.group(1)).strip()
+        if not looks_like_a_title(title, min_words=2):
+            continue
+        key = title.lower()
+        if key not in mentions:
+            ctx_start = max(0, match.start() - CONTEXT_CHARS)
+            ctx_end = min(len(text), match.end() + CONTEXT_CHARS)
+            mentions[key] = {
+                "title": title,
+                "context": re.sub(r"\s+", " ", text[ctx_start:ctx_end]).strip(),
+                "source": "quote",
+            }
+    return list(mentions.values())
+
+
+def read_book_file(file_path: Path) -> tuple:
+    """Return (plain text, raw markup or '') for an EPUB or TXT file."""
+    if file_path.suffix.lower() == ".epub":
+        if epub is None or ebooklib is None:
+            raise RuntimeError("ebooklib is not installed. Run: pip install ebooklib")
+        import warnings
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            book = epub.read_epub(str(file_path))
+        markup = ""
+        for item in book.get_items():
+            if item.get_type() == ebooklib.ITEM_DOCUMENT:
+                markup += item.get_content().decode("utf-8", errors="ignore") + "\n"
+        return clean_text(re.sub("<[^<]+?>", "", markup)), markup
+    with open(file_path, "r", encoding="utf-8") as f:
+        return clean_text(f.read()), ""
+
+
+def find_candidates(file_path: Path, progress_callback=None) -> List[Dict]:
+    """Every candidate mention in a file: spaCy, italics, quoted titles, cocktails."""
+    if progress_callback:
+        progress_callback(
+            {
+                "phase": "reading",
+                "message": borges_says(f"Opening {file_path.name}"),
+                "agent": "borges",
+            }
+        )
+    text, markup = read_book_file(file_path)
+    if progress_callback:
+        progress_callback(
+            {
+                "phase": "loading_model",
+                "message": borges_says("Waking up his reading mind…"),
+                "agent": "borges",
+            }
+        )
+    get_nlp()
+    # spaCy's finds come first so they keep their wording when two sources agree
+    return merge_mention_lists(
+        extract_work_of_art_mentions(text, progress_callback=progress_callback),
+        extract_markup_mentions(markup, text) if markup else [],
+        extract_quoted_mentions(text),
+        extract_cocktail_mentions(text),
+    )
+
+
+def cached_candidates(file_hash: Optional[str], cursor) -> Optional[List[Dict]]:
+    if not file_hash:
+        return None
+    try:
+        cursor.execute(
+            "SELECT candidates FROM candidate_cache WHERE file_hash = ? AND extractor_version = ?",
+            (file_hash, EXTRACTOR_VERSION),
+        )
+    except sqlite3.OperationalError:
+        return None
+    row = cursor.fetchone()
+    if not row:
+        return None
+    try:
+        return json.loads(row[0])
+    except (TypeError, ValueError):
+        return None
+
+
+def store_candidates(file_hash: Optional[str], candidates: List[Dict], cursor, conn):
+    if not file_hash:
+        return
+    cursor.execute(
+        """
+        INSERT OR REPLACE INTO candidate_cache (file_hash, extractor_version, candidates)
+        VALUES (?, ?, ?)
+        """,
+        (file_hash, EXTRACTOR_VERSION, json.dumps(candidates, ensure_ascii=False)),
+    )
+    conn.commit()
+
+
+def process_book_file(
     file_path: Path,
     source_book_id: int,
     cursor,
     conn,
     quiet=False,
     progress_callback=None,
+    file_hash: Optional[str] = None,
 ):
+    """
+    Find candidates (or reuse the cached ones for this exact file), then let
+    corrections, the Judge and Lucien decide what becomes a link. With a cache
+    hit the slow spaCy pass is skipped, so re-judging a book takes seconds.
+    """
     if not quiet:
         print(f"Processing: {file_path.name}")
     try:
-        if progress_callback:
+        mentions = cached_candidates(file_hash, cursor)
+        if mentions is None:
+            mentions = find_candidates(file_path, progress_callback=progress_callback)
+            store_candidates(file_hash, mentions, cursor, conn)
+        elif progress_callback:
             progress_callback(
                 {
                     "phase": "reading",
-                    "message": borges_says(f"Opening {file_path.name}"),
+                    "message": borges_says(
+                        f"Already read {file_path.name}: reusing his notes"
+                    ),
                     "agent": "borges",
                 }
             )
-        with open(file_path, "r", encoding="utf-8") as f:
-            text = clean_text(f.read())
-        if progress_callback:
-            progress_callback(
-                {
-                    "phase": "loading_model",
-                    "message": borges_says("Waking up his reading mind…"),
-                    "agent": "borges",
-                }
-            )
-        get_nlp()
-        mentions = merge_mention_lists(
-            extract_work_of_art_mentions(text, progress_callback=progress_callback),
-            extract_cocktail_mentions(text),
-        )
         if progress_callback:
             progress_callback(
                 {
@@ -1430,7 +1641,7 @@ def process_text_file(
                     "agent": "lucien",
                 }
             )
-        _store_references(
+        return _store_references(
             mentions,
             source_book_id,
             cursor,
@@ -1444,68 +1655,9 @@ def process_text_file(
         raise
 
 
-def process_epub_file(
-    file_path: Path,
-    source_book_id: int,
-    cursor,
-    conn,
-    quiet=False,
-    progress_callback=None,
-):
-    if epub is None or ebooklib is None:
-        raise RuntimeError("ebooklib is not installed. Run: pip install ebooklib")
-    if not quiet:
-        print(f"Processing EPUB: {file_path.name}")
-    try:
-        if progress_callback:
-            progress_callback(
-                {
-                    "phase": "reading",
-                    "message": borges_says(f"Opening {file_path.name}"),
-                    "agent": "borges",
-                }
-            )
-        book = epub.read_epub(str(file_path))
-        text = ""
-        for item in book.get_items():
-            if item.get_type() == ebooklib.ITEM_DOCUMENT:
-                text += item.get_content().decode("utf-8", errors="ignore") + "\n"
-        text = clean_text(re.sub("<[^<]+?>", "", text))
-        if progress_callback:
-            progress_callback(
-                {
-                    "phase": "loading_model",
-                    "message": borges_says("Waking up his reading mind…"),
-                    "agent": "borges",
-                }
-            )
-        get_nlp()
-        mentions = merge_mention_lists(
-            extract_work_of_art_mentions(text, progress_callback=progress_callback),
-            extract_cocktail_mentions(text),
-        )
-        if progress_callback:
-            progress_callback(
-                {
-                    "phase": "open_library",
-                    "message": lucien_says(
-                        f"Checking {len(mentions)} title(s) against the shelves…"
-                    ),
-                    "agent": "lucien",
-                }
-            )
-        _store_references(
-            mentions,
-            source_book_id,
-            cursor,
-            conn,
-            quiet=quiet,
-            progress_callback=progress_callback,
-        )
-    except Exception as e:
-        if not quiet:
-            print(f"Error processing EPUB file {file_path}: {e}")
-        raise
+# Kept for callers that still use the per-format names
+process_text_file = process_book_file
+process_epub_file = process_book_file
 
 
 def clean_filename_phrase(text: str) -> str:
@@ -1724,6 +1876,69 @@ def repair_owned_books(cursor, conn, books_dir: Optional[Path] = None) -> int:
     return repaired
 
 
+def refresh_owned_record(book_id: int, title: str, author: str, cursor, conn) -> bool:
+    """
+    Point a library book at the catalogue record for its real title and author.
+    The first match was made on the title alone, so Zweig's "Montaigne" was
+    filed under Montaigne's own Essais (wrong cover, wrong work).
+    Returns True when the record changed.
+    """
+    if not author or author == "Unknown":
+        return False
+    cursor.execute("SELECT open_library_id, author FROM books WHERE id = ?", (book_id,))
+    row = cursor.fetchone()
+    if not row:
+        return False
+    match = lookup_open_library(title, author=author)
+    if not match or match["open_library_id"] == row[0]:
+        return False
+
+    # Another row may already be that work (it was mentioned by another book):
+    # fold it into the library row so the two become one node.
+    cursor.execute(
+        "SELECT id FROM books WHERE open_library_id = ? AND id != ?",
+        (match["open_library_id"], book_id),
+    )
+    other = cursor.fetchone()
+    if other:
+        _remap_book_id(cursor, other[0], book_id)
+    cursor.execute(
+        """
+        UPDATE books
+        SET open_library_id = ?, cover_id = ?, cover_url = NULL,
+            verified = 1, match_score = ?
+        WHERE id = ?
+        """,
+        (match["open_library_id"], match.get("cover_id"), match["match_score"], book_id),
+    )
+    conn.commit()
+    return True
+
+
+def refresh_library_records(quiet: bool = False) -> int:
+    """Re-resolve every library book by title and author. Needs the network."""
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT DISTINCT b.id, b.title, b.author FROM books b
+        JOIN processed_files p ON p.book_id = b.id
+        """
+    )
+    changed = 0
+    for book_id, title, author in cursor.fetchall():
+        try:
+            if refresh_owned_record(book_id, title, author, cursor, conn):
+                changed += 1
+                if not quiet:
+                    print(f"  Re-filed: {title} by {author}")
+        except Exception as e:
+            if not quiet:
+                print(f"  Could not re-file {title}: {e}")
+    conn.close()
+    return changed
+
+
 def get_file_hash(file_path: Path) -> str:
     """Calculate MD5 hash of file for change detection."""
     hash_md5 = hashlib.md5()
@@ -1829,6 +2044,10 @@ def process_single_file(
             (author, source_book_id),
         )
         conn.commit()
+        try:
+            refresh_owned_record(source_book_id, title, author, cursor, conn)
+        except Exception:
+            pass  # offline: keep the record we have
 
     # Drop old outgoing refs before reprocess so results stay fresh.
     # Links a person confirmed in the review queue are kept.
@@ -1846,26 +2065,17 @@ def process_single_file(
             progress_callback(payload)
 
     suffix = file_path.suffix.lower()
-    if suffix == ".txt":
-        process_text_file(
-            file_path,
-            source_book_id,
-            cursor,
-            conn,
-            quiet=quiet,
-            progress_callback=file_progress,
-        )
-    elif suffix == ".epub":
-        process_epub_file(
-            file_path,
-            source_book_id,
-            cursor,
-            conn,
-            quiet=quiet,
-            progress_callback=file_progress,
-        )
-    else:
+    if suffix not in (".txt", ".epub"):
         raise ValueError(f"Unsupported file type: {suffix}")
+    process_book_file(
+        file_path,
+        source_book_id,
+        cursor,
+        conn,
+        quiet=quiet,
+        progress_callback=file_progress,
+        file_hash=file_hash,
+    )
 
     if progress_callback:
         progress_callback(
@@ -2244,8 +2454,13 @@ def main():
             print(status.get("message", ""))
 
     # --force re-reads every book, e.g. after turning the Judge on
+    # --fix-library re-files library books under their real title and author
     import sys
 
+    if "--fix-library" in sys.argv[1:]:
+        init_database(quiet=True)
+        print(f"Re-filed {refresh_library_records()} library book(s)")
+        return
     force = "--force" in sys.argv[1:]
     result = process_pending_files(progress_callback=on_progress, quiet=False, force=force)
 

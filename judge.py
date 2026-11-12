@@ -23,10 +23,13 @@ VALID_KINDS = ("book", "movie", "music", "cocktail", "other")
 
 SYSTEM_PROMPT = """You help build a map of which books mention which other works.
 
-A named-entity tagger has scanned one book and produced candidate titles, each \
-with the passage it was found in. The tagger is noisy: it flags chapter headings, \
-prizes, newspapers, organisations, slogans, fragments of sentences and the book's \
-own front matter. Your job is to judge each candidate from its passage.
+One book has been scanned for candidate titles, each given with the passage it \
+was found in. Candidates come from a named-entity tagger, from text the publisher \
+set in italics, and from short capitalised phrases in quotation marks. All three \
+are noisy: they pick up chapter headings, prizes, newspapers, organisations, \
+slogans, fragments of sentences, the book's own front matter, and (from italics \
+and quotes) emphasised words, foreign phrases, ship names, character names and \
+signatures. Your job is to judge each candidate from its passage.
 
 For every candidate decide:
 

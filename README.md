@@ -78,10 +78,12 @@ books in books/
 ├── process_books.py       # NLP extraction + Open Library matching
 ├── judge.py               # Claude judges each candidate mention in context
 ├── tests/                 # Offline tests
+├── eval_extraction.py     # Precision / recall against eval/gold/
+├── eval/gold/             # Hand-checked gold sets
 ├── export_static.py       # Build docs/ for GitHub Pages
 ├── requirements.txt
 ├── books/                 # Your EPUB/TXT files
-├── templates/             # index, manage, admin, verify
+├── templates/             # index, manage, admin, review
 ├── static/                # CSS, JS, brand mark, favicon
 └── docs/                  # Static export (GitHub Pages)
 ```
@@ -100,7 +102,6 @@ books in books/
 | GET | `/api/network/export` | Portable `{books, references}` JSON |
 | POST | `/api/network/import` | Merge a network export into the DB |
 | GET | `/api/health` | spaCy / books dir / database checks |
-| GET | `/verify` | Compare stored links with a fresh scan |
 | GET | `/review` | Review queue UI |
 | GET | `/api/review/queue` | Links awaiting a decision + dropped mentions |
 | POST | `/api/review/link` | Confirm, reject or restore a link |
@@ -108,7 +109,7 @@ books in books/
 
 ## How extraction works
 
-**Borges** (spaCy) reads the EPUB/TXT and flags candidate titles. He is fast and noisy.  
+**Borges** (spaCy) reads the EPUB/TXT and flags candidate titles. He also collects everything the publisher set in italics and short Title Case phrases in quotation marks, which catches titles spaCy misses in running prose. He is fast and noisy.  
 **The Judge** (Claude) reads each candidate in its passage and decides whether it really refers to a work, what kind it is, its catalogue title and who wrote it.  
 **Lucien** looks that title up *with the author* (Open Library / film / music / cocktail lexicon) and files what is real.
 
@@ -154,7 +155,24 @@ The **Connections** button on the graph lists works mentioned by more than one o
 .\.venv\Scripts\python -m unittest discover -s tests -v
 ```
 
-They run offline: no network, spaCy model or Claude key needed.
+They run offline: no network, spaCy model or Claude key needed. GitHub Actions runs them on every push.
+
+## Measuring accuracy
+
+```powershell
+.\.venv\Scripts\python eval_extraction.py --details
+```
+
+This compares the links in the database with hand-checked gold sets in `eval/gold/` and reports precision (links that point at the right work) and recall (real mentions that got a link). Run it before and after changing the Judge's prompt or model, or the matching rules. One gold set ships as a draft, for *84, Charing Cross Road*; correct it and add more for your own books.
+
+## Useful commands
+
+| Command | What it does |
+|---------|--------------|
+| `python process_books.py` | Read any new or changed books |
+| `python process_books.py --force` | Re-judge every book. Candidates are cached per file, so this skips the slow spaCy pass |
+| `python process_books.py --fix-library` | Re-file library books under their real title and author (fixes wrong covers) |
+| `python eval_extraction.py` | Precision and recall against the gold sets |
 
 Duplicate rows with the same Open Library id or compatible title/author are merged on startup.
 
@@ -167,7 +185,7 @@ Duplicate rows with the same Open Library id or compatible title/author are merg
 Status is restored from `process_status.json`; click Extract again if needed.
 
 **No nodes for a mention**  
-It may have failed Open Library verification — check the detail panel’s skipped list or `/verify`.
+It may have failed Open Library verification — check **Dropped mentions** on `/review`, where you can link it by hand.
 
 **Database reset**  
 Delete `database.db` and re-run processing (files in `books/` are kept).

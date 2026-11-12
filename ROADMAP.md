@@ -10,20 +10,26 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 24 offline tests for matching, corrections, the Judge client and the write guard.
+- **Tests.** 36 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
+- **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
+- **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
+- **Library records.** Owned books are re-filed under their real title and author (`--fix-library`), which fixed the record and cover for *Montaigne* and *Careless People*.
+- **Housekeeping.** Works nothing links to are pruned, an identical upload is refused, and the old `/verify` page is retired.
 
 ## Next: do these first
 
 ### 1. Re-read the library with the Judge on
-Nothing in the database has been judged yet. Set `ANTHROPIC_API_KEY`, run `python process_books.py --force`, then walk `/review`. Expect the link count to drop and the wrong ones (tunes filed as novels, wrong authors) to go. This is the single step that turns the work above into a better graph.
+Nothing in the database has been judged yet. Set `ANTHROPIC_API_KEY`, run `python process_books.py --force`, then walk `/review`. Expect the link count to drop and the wrong ones (tunes filed as novels, wrong authors) to go. This is the single step that turns the work above into a better graph. The first forced run still does the spaCy pass once, because the candidate finder changed; after that it is cached.
 
-### 2. Measure extraction quality
-Build a small gold set: for two or three books, the list of works they really mention. Add a script that reports precision and recall against it. Without this, changes to the prompt, the model or the matching thresholds are guesses. Use it to compare models too: `BOOKS_JUDGE_MODEL=claude-haiku-5-5` is far cheaper and may be good enough.
+### 2. Measure, then tune
+Run `python eval_extraction.py --details` before and after step 1 and write the numbers down. Then:
+- Correct the draft gold set for *84, Charing Cross Road* and add one for a novel and one for non-fiction, since they fail in different ways.
+- Compare models: `BOOKS_JUDGE_MODEL=claude-haiku-5-5` is far cheaper and may be good enough.
+- Look at the "Missed" list. Each entry is either a candidate nobody flagged or a lookup that failed, and they need different fixes.
 
-### 3. Find mentions spaCy misses
-The Judge can only rule on what Borges flags. spaCy misses titles in running prose ("she was reading Middlemarch again") and catches almost nothing in non-English text. Two options, in order of cost:
-- Add cheap pattern candidates: italic and quoted spans from the EPUB markup, which the current tag-stripping throws away.
-- Let Claude read each chapter directly and list the works it mentions, then keep spaCy only as a cross-check. More accurate, and the cost is a few cents per book with a small model. The Message Batches API halves it.
+### 3. Let Claude read the chapters
+Italics and quotes widen the net, but a title in plain roman type that spaCy does not tag is still invisible, and EPUBs that mark italics with their own CSS class names are not covered (*Careless People* yields none). Having Claude read each chapter and list the works it mentions removes the dependence on candidates altogether. Keep spaCy as a cross-check. The cost is a few cents per book with a small model, and the Message Batches API halves it.
 
 ### 4. Make the graph connect
 Ten books give ten starbursts. Three things create real links:
@@ -36,8 +42,8 @@ Ten books give ten starbursts. Three things create real links:
 ### 5. Add a book by title, no file needed
 The stated long-term direction. The catalogue tables and admin page exist. What is missing is a public shelf view: search a title, see what it mentions, add it to "my shelf". Needs the catalogue to be populated, which the Judge now makes trustworthy enough to do in bulk from public-domain texts (Project Gutenberg).
 
-### 6. Better covers and records for owned books
-Owned books keep the Open Library record they were first matched to, which is sometimes the wrong work (Zweig's *Montaigne* points at Montaigne's *Essais*). Re-resolve owned books by title and author, and let the manage page edit title, author and cover by hand.
+### 6. Edit library books by hand
+Owned books are now re-filed by title and author automatically. What is left is a way to correct one by hand on the manage page: title, author, cover, and which catalogue record it is.
 
 ### 7. Graph usability
 - Search that highlights and zooms to a node.
@@ -53,15 +59,13 @@ The Judge already reads the passage. Have it also say *how* the work is mentione
 ### 9. Split the big files
 `app.py` (about 1,900 lines), `process_books.py` (about 2,200) and `static/main.js` (about 2,800) each do several jobs. Split along the seams that now exist: text reading, candidate finding, judging, catalogue lookup, storage; and on the front end graph, panels, upload and processing. Do it with the tests green before and after.
 
-### 10. Stop re-running spaCy for nothing
-A re-read repeats the slow transformer pass even when only the judging or matching changed. Cache the candidates per file hash so a re-judge takes seconds. Cache Open Library answers too.
+### 10. Cache catalogue lookups
+Candidates are cached now. Open Library answers are not, so a re-judge still makes one request per mention. Cache them by title and author with an expiry.
 
-### 11. Packaging and CI
-- Run the tests in GitHub Actions on every push.
+### 11. Packaging
 - Pin dependency versions; the spaCy transformer model alone is about 500 MB, so consider the small model as an option now that the Judge does the quality work.
 - A proper WSGI server (waitress) for anyone who exposes it beyond their own machine.
 
 ### 12. Housekeeping
-- `/verify` overlaps with `/review` and re-runs spaCy on every book when opened; retire it or fold it in.
-- Orphaned works (no link in or out after rejections) stay in the database; prune them on startup.
-- Refuse an upload whose content is identical to a book already in the library.
+- `process_text_file` and `process_epub_file` are now aliases of `process_book_file`; remove them once nothing imports the old names.
+- The gold set script has no tests of its own.

@@ -648,6 +648,15 @@ def api_upload():
         saved = []
         rejected = []
 
+        # Content hashes of the library, to refuse a second copy of the same file
+        from process_books import get_file_hash
+
+        existing_hashes = {
+            get_file_hash(path): path.name
+            for path in BOOKS_DIR.glob("*")
+            if path.suffix.lower() in ALLOWED_EXTENSIONS
+        }
+
         for file in files:
             if not file or not file.filename:
                 continue
@@ -678,6 +687,17 @@ def api_upload():
             except Exception as save_err:
                 rejected.append({"filename": original, "reason": str(save_err)})
                 continue
+            digest = get_file_hash(dest)
+            if digest and digest in existing_hashes:
+                dest.unlink(missing_ok=True)
+                rejected.append(
+                    {
+                        "filename": original,
+                        "reason": f"Already in your library as “{existing_hashes[digest]}”",
+                    }
+                )
+                continue
+            existing_hashes[digest] = dest.name
             saved.append({"filename": dest.name, "path": str(dest)})
 
         if not saved:
@@ -1111,145 +1131,6 @@ def api_network_import():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-@app.route("/verify")
-def verify_page():
-    """Serve the verification page."""
-    return render_template("verify.html")
-
-
-@app.route("/api/verify")
-def api_verify():
-    """Run verification and return results."""
-    try:
-        import spacy
-        from collections import defaultdict
-
-        try:
-            from ebooklib import epub
-            import ebooklib
-        except ImportError:
-            return jsonify({"error": "ebooklib not installed"}), 500
-
-        try:
-            nlp = spacy.load("en_core_web_trf")
-        except OSError:
-            return jsonify(
-                {
-                    "error": "spaCy model not found. Run: python -m spacy download en_core_web_trf"
-                }
-            ), 500
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        if not BOOKS_DIR.exists():
-            return jsonify({"error": "Books directory not found"}), 404
-
-        files = list(BOOKS_DIR.glob("*.txt")) + list(BOOKS_DIR.glob("*.epub"))
-        if not files:
-            return jsonify({"error": "No book files found"}), 404
-
-        results = []
-
-        for file_path in files:
-            title, author = parse_filename_parts(file_path.stem)
-            cursor.execute(
-                "SELECT id FROM books WHERE LOWER(TRIM(title)) = LOWER(TRIM(?))",
-                (title,),
-            )
-            result = cursor.fetchone()
-            if not result:
-                continue
-
-            source_book_id = result[0]
-            cursor.execute(
-                """
-                SELECT b.id, b.title, b.author
-                FROM book_references br
-                JOIN books b ON br.referenced_book_id = b.id
-                WHERE br.source_book_id = ?
-                ORDER BY b.title
-                """,
-                (source_book_id,),
-            )
-            db_references = cursor.fetchall()
-            db_references_list = [
-                {"id": r["id"], "title": r["title"], "author": r["author"]}
-                for r in db_references
-            ]
-            db_titles = {r["title"].lower().strip() for r in db_references}
-
-            try:
-                if file_path.suffix.lower() == ".epub":
-                    book = epub.read_epub(str(file_path))
-                    text = ""
-                    for item in book.get_items():
-                        if item.get_type() == ebooklib.ITEM_DOCUMENT:
-                            text += item.get_content().decode("utf-8", errors="ignore") + "\n"
-                    text = re.sub("<[^<]+?>", "", text)
-                else:
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        text = f.read()
-
-                doc = nlp(text)
-                references_found = []
-                for ent in doc.ents:
-                    if ent.label_ == "WORK_OF_ART":
-                        referenced_title = ent.text.strip()
-                        if referenced_title and len(referenced_title) > 2:
-                            start = max(0, ent.start_char - 50)
-                            end = min(len(text), ent.end_char + 50)
-                            context = text[start:end].replace("\n", " ").strip()
-                            references_found.append(
-                                {"title": referenced_title, "context": context}
-                            )
-
-                refs_by_title = defaultdict(list)
-                for ref in references_found:
-                    refs_by_title[ref["title"]].append(ref["context"])
-
-                found_references_list = []
-                for ref_title, contexts in sorted(refs_by_title.items()):
-                    found_references_list.append(
-                        {
-                            "title": ref_title,
-                            "count": len(contexts),
-                            "contexts": contexts[:3],
-                        }
-                    )
-
-                found_titles = {t.lower().strip() for t in refs_by_title.keys()}
-                matches = db_titles & found_titles
-                only_in_db = list(db_titles - found_titles)
-                only_in_text = [
-                    t for t in refs_by_title.keys() if t.lower().strip() not in db_titles
-                ]
-
-                results.append(
-                    {
-                        "title": title,
-                        "author": author,
-                        "db_references_count": len(db_references),
-                        "found_references_count": len(found_references_list),
-                        "matches": len(matches),
-                        "db_references": db_references_list,
-                        "found_references": found_references_list,
-                        "matched_titles": list(matches),
-                        "only_in_database": only_in_db[:10],
-                        "only_in_text": only_in_text[:10],
-                    }
-                )
-            except Exception as e:
-                results.append({"title": title, "author": author, "error": str(e)})
-
-        conn.close()
-        return jsonify({"books": results, "total_books": len(results)})
-    except Exception as e:
-        import traceback
-
-        return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
 
 
 # —— Review queue: fast accept / reject, remembered across re-extraction ——

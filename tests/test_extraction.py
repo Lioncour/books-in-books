@@ -289,6 +289,107 @@ class CorrectionTests(TempProject):
         self.assertEqual(self.links(), [("Great Expectations", "Charles Dickens", "book", 1)])
 
 
+class CandidateTests(unittest.TestCase):
+    MARKUP = (
+        "<p>She was reading <i>Middlemarch</i> again, and <em>never</em> finished "
+        "<i>The Mill on the Floss</i>. <cite>Diary of a Provincial Lady</cite> came next. "
+        "<i>Really, though.</i> <span class=\"italic\">Daniel Deronda</span></p>"
+    )
+
+    def test_italic_titles_are_found_and_emphasis_is_not(self):
+        text = pb._strip_tags(self.MARKUP)
+        titles = [m["title"] for m in pb.extract_markup_mentions(self.MARKUP, text)]
+        self.assertEqual(
+            titles,
+            ["Middlemarch", "The Mill on the Floss", "Diary of a Provincial Lady", "Daniel Deronda"],
+        )
+
+    def test_markup_mentions_carry_their_passage(self):
+        text = pb._strip_tags(self.MARKUP)
+        mention = pb.extract_markup_mentions(self.MARKUP, text)[0]
+        self.assertEqual(mention["source"], "markup")
+        self.assertIn("She was reading Middlemarch again", mention["context"])
+
+    def test_quoted_titles_but_not_dialogue(self):
+        text = (
+            'He sang “I Want It That Way” badly. “Come here,” she said. '
+            '“What do you want?” Then the essay “On Going a Journey” was read. “Yes”'
+        )
+        titles = [m["title"] for m in pb.extract_quoted_mentions(text)]
+        self.assertEqual(titles, ["I Want It That Way", "On Going a Journey"])
+
+    def test_title_shape(self):
+        self.assertTrue(pb.looks_like_a_title("The History of the Rebellion"))
+        self.assertTrue(pb.looks_like_a_title("Emma"))
+        self.assertFalse(pb.looks_like_a_title("never"))
+        self.assertFalse(pb.looks_like_a_title("It was a long time ago."))
+        self.assertFalse(pb.looks_like_a_title("She went out and did not come back that night at all"))
+
+
+class PipelineHousekeepingTests(TempProject):
+    def test_italic_candidates_are_ignored_without_the_judge(self):
+        mentions = [
+            {"title": "A Christmas Carol", "context": "read A Christmas Carol aloud"},
+            {"title": "Great Expectations", "context": "Great Expectations", "source": "markup"},
+        ]
+        self.store(mentions, lambda *args, **kwargs: None)
+        self.assertEqual([l[0] for l in self.links()], ["A Christmas Carol"])
+        self.assertEqual(self.skipped(), {})
+
+    def test_italic_candidates_are_used_with_the_judge(self):
+        self.store(
+            [{"title": "Great Expectations", "context": "Pip in Great Expectations", "source": "markup"}],
+            fake_judge({"Great Expectations": book("Great Expectations", "Charles Dickens")}),
+        )
+        self.assertEqual([l[0] for l in self.links()], ["Great Expectations"])
+
+    def test_candidates_are_cached_per_file_and_version(self):
+        candidates = [{"title": "Lean In", "context": "c"}]
+        self.assertIsNone(pb.cached_candidates("abc", self.cur))
+        pb.store_candidates("abc", candidates, self.cur, self.conn)
+        self.assertEqual(pb.cached_candidates("abc", self.cur), candidates)
+        with mock.patch.object(pb, "EXTRACTOR_VERSION", pb.EXTRACTOR_VERSION + 1):
+            self.assertIsNone(pb.cached_candidates("abc", self.cur))
+
+    def test_cached_candidates_skip_the_slow_reading_pass(self):
+        pb.store_candidates("abc", [{"title": "Lean In", "context": "c"}], self.cur, self.conn)
+        with mock.patch.object(pb, "find_candidates", side_effect=AssertionError("re-read")):
+            with mock.patch("judge.judge_mentions", return_value=None):
+                pb.process_book_file(
+                    Path("whatever.epub"), self.source_id, self.cur, self.conn,
+                    quiet=True, file_hash="abc",
+                )
+
+    def test_orphan_works_are_pruned_but_library_books_stay(self):
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified) VALUES ('Orphan', 'X', 'o1', 1)"
+        )
+        self.cur.execute(
+            "INSERT INTO processed_files (filename, file_hash, book_id) VALUES ('f.epub', 'h', ?)",
+            (self.source_id,),
+        )
+        self.assertEqual(pb.prune_orphan_works(self.cur), 1)
+        self.cur.execute("SELECT title FROM books")
+        self.assertEqual([r[0] for r in self.cur.fetchall()], ["Careless People"])
+
+    def test_library_book_is_refiled_under_its_real_author(self):
+        # "Montaigne" matched Montaigne's Essais; the file says Stefan Zweig wrote it
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified, cover_id) VALUES (?, ?, ?, 1, '111')",
+            ("Montaigne", "Stefan Zweig", "/works/essais"),
+        )
+        book_id = self.cur.lastrowid
+        right = {
+            "title": "Montaigne", "author": "Stefan Zweig", "open_library_id": "/works/zweig",
+            "match_score": 1.0, "cover_id": "222", "first_publish_year": 1960,
+        }
+        with mock.patch.object(pb, "lookup_open_library", return_value=right):
+            self.assertTrue(pb.refresh_owned_record(book_id, "Montaigne", "Stefan Zweig", self.cur, self.conn))
+            self.assertFalse(pb.refresh_owned_record(book_id, "Montaigne", "Stefan Zweig", self.cur, self.conn))
+        self.cur.execute("SELECT open_library_id, cover_id FROM books WHERE id = ?", (book_id,))
+        self.assertEqual(self.cur.fetchone(), ("/works/zweig", "222"))
+
+
 class JudgeClientTests(unittest.TestCase):
     """judge.judge_mentions against a fake Anthropic client."""
 
@@ -401,6 +502,25 @@ class WriteGuardTests(unittest.TestCase):
             environ_overrides={"REMOTE_ADDR": "192.168.1.20"},
         )
         self.assertEqual(response.status_code, 401)
+
+    def test_identical_upload_is_refused(self):
+        import io
+
+        def upload(name):
+            return self.client.post(
+                "/api/upload",
+                data={"files": (io.BytesIO(b"the same book text"), name)},
+                content_type="multipart/form-data",
+            )
+
+        self.assertEqual(upload("First Copy.txt").status_code, 200)
+        second = upload("Second Copy.txt")
+        self.assertEqual(second.status_code, 400)
+        self.assertIn("Already in your library", second.get_json()["error"])
+        self.assertEqual(sorted(p.name for p in Path("books").glob("*.txt")), ["First Copy.txt"])
+
+    def test_old_verify_page_is_gone(self):
+        self.assertEqual(self.client.get("/verify").status_code, 404)
 
     def test_review_flow_confirm_reject_restore(self):
         conn = sqlite3.connect("database.db")
