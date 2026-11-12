@@ -249,15 +249,8 @@ class JudgedExtractionTests(TempProject):
             )
         self.assertEqual(self.links(), [("Messiah", "George Frideric Handel", "music", 0)])
 
-    def test_tune_is_not_filed_as_a_novel(self):
-        music = {
-            "title": "Pop Goes the Weasel",
-            "author": "Traditional",
-            "open_library_id": "music_pop-goes-the-weasel",
-            "match_score": 1.0,
-            "cover_id": None,
-        }
-        with mock.patch("mention_kinds.lookup_by_kind", return_value=music) as lookup:
+    def test_tune_is_not_filed_as_a_novel_or_given_a_random_performer(self):
+        with mock.patch("mention_kinds.lookup_by_kind", side_effect=AssertionError("performer lookup")):
             self.store(
                 [{"title": "Pop Goes the Weasel", "context": "the music changed to Pop Goes the Weasel"}],
                 fake_judge(
@@ -271,7 +264,6 @@ class JudgedExtractionTests(TempProject):
                     }
                 ),
             )
-        lookup.assert_called_once_with("music", "Pop Goes the Weasel")
         self.assertEqual(self.links(), [("Pop Goes the Weasel", "Traditional", "music", 0)])
 
     def test_without_the_judge_the_old_matching_still_works(self):

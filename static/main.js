@@ -113,7 +113,7 @@
     const tokens = text.split(/\s+/).filter((t) => t.length > 1);
     if (!tokens.length) return "";
     const key = tokens.sort().join(" ");
-    const generic = ["unknown", "anonymous", "various", "cocktail", "movie", "music"];
+    const generic = ["unknown", "anonymous", "various", "cocktail", "movie", "music", "traditional", "film tv"];
     return generic.includes(key) ? "" : key;
   }
 

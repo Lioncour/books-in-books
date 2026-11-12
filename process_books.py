@@ -933,7 +933,7 @@ def _file_from_judge(cursor, conn, title: str, author: str, kind: str) -> int:
     existing = cursor.fetchone()
     if existing:
         return existing[0]
-    label = author or {"movie": "Film / TV", "music": "Music"}.get(kind, "Unknown")
+    label = author or {"movie": "Film / TV", "music": "Traditional"}.get(kind, "Unknown")
     cursor.execute(
         """
         INSERT INTO books (title, author, open_library_id, verified, match_score, kind)
@@ -1100,8 +1100,10 @@ def get_or_create_book(
         from mention_kinds import lookup_by_kind
 
         # A recording search answers "Messiah" with whoever recorded something
-        # called that. When the Judge names the composer, keep the Judge's answer.
-        if judged and kind == "music" and author_hint:
+        # called that. For judged music keep the Judge's answer: the composer
+        # when it named one, otherwise no creator at all (a traditional tune
+        # does not belong to the first band that recorded it).
+        if judged and kind == "music":
             return _file_from_judge(cursor, conn, title, author_hint, kind)
         match = lookup_by_kind(kind, title)
         if match:
