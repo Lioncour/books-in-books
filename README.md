@@ -16,6 +16,8 @@ Owned books sit in the sidebar with covers; referenced titles appear as linked n
 
 ## Quick start (Windows)
 
+The short way: `.\start.ps1` creates the environment on first run, installs the small spaCy model and starts the app (`-Full` for the large model). By hand:
+
 ```powershell
 cd "books in books"
 python -m venv .venv
@@ -77,6 +79,8 @@ books in books/
 ├── app.py                 # Flask server + APIs
 ├── process_books.py       # NLP extraction + Open Library matching
 ├── judge.py               # Claude judges each candidate mention in context
+├── reader.py              # Optional: Claude reads the book and lists the works it mentions
+├── start.ps1              # First-run setup and start (Windows)
 ├── tests/                 # Offline tests
 ├── eval_extraction.py     # Precision / recall against eval/gold/
 ├── eval/gold/             # Hand-checked gold sets
@@ -130,6 +134,9 @@ The sidebar says whether the Judge is on. Without credentials the app still work
 | `ANTHROPIC_API_KEY` | unset | Credentials for the Judge |
 | `BOOKS_JUDGE_MODEL` | `claude-opus-5-5` | Model used to judge mentions |
 | `BOOKS_JUDGE` | on | `off` disables the Judge |
+| `BOOKS_READER` | off | `on` lets Claude read the whole book (see below) |
+| `BOOKS_READER_MODEL` | `claude-opus-5-5` | Model used by the Reader |
+| `BOOKS_SPACY_MODEL` | `en_core_web_trf` | spaCy model; `en_core_web_sm` is 12 MB and is used automatically if the configured one is missing |
 | `HOST` / `PORT` | `127.0.0.1` / `5000` | Where the server listens |
 | `ADMIN_TOKEN` | unset | Required for changes from another machine |
 
@@ -141,6 +148,12 @@ The graph **defaults to books only**. Use **Also show → Movies / Music / Drink
 4. Lucien verifies per domain, by title and author  
 5. Dropped mentions are logged with the reason and can be rescued on `/review`  
 6. SQLite stores works with a `kind` field (`book|movie|music|cocktail`)  
+
+### The Reader (optional)
+
+Borges, italics and quotation marks only find titles that look like titles. A work named in plain prose is invisible to them. With `BOOKS_READER=on`, Claude reads the book itself, part by part, and lists every work it refers to with the sentence it found it in. An entry whose sentence is not really in the text is discarded, and the rest go straight to the catalogue lookup.
+
+It is off by default because it sends the whole book to the API, which costs more than judging a few hundred short candidates. Turn it on for one book, compare `eval_extraction.py` before and after, and keep it on if the recall is worth it. `BOOKS_READER_MODEL=claude-haiku-5-5` is much cheaper. Results are cached per file and model.
 
 ## Reviewing and correcting
 
@@ -157,6 +170,8 @@ The **Connections** button on the graph lists works mentioned by more than one o
 ```
 
 They run offline: no network, spaCy model or Claude key needed. GitHub Actions runs them on every push.
+
+One extra file, `tests/test_live_judge.py`, checks the real Judge against five passages this library got wrong. It is skipped unless you set `BOOKS_LIVE_TESTS=1` and have Claude credentials.
 
 ## Measuring accuracy
 

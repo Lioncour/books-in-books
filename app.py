@@ -906,8 +906,13 @@ def api_health():
     }
     try:
         from judge import judge_status
+        from reader import reader_enabled, reader_model
 
         info["judge"] = judge_status()
+        info["reader"] = {
+            "enabled": reader_enabled(),
+            "model": reader_model() if reader_enabled() else None,
+        }
     except Exception as e:
         info["judge"]["reason"] = str(e)
     try:
@@ -924,9 +929,12 @@ def api_health():
 
         info["spacy"] = True
         try:
-            spacy.load("en_core_web_trf")
+            from process_books import get_nlp, spacy_model_name
+
+            get_nlp()
             info["spacy_model"] = True
-        except OSError:
+            info["spacy_model_name"] = spacy_model_name()
+        except (OSError, RuntimeError):
             info["ok"] = False
     except ImportError:
         info["ok"] = False

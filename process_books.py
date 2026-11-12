@@ -8,6 +8,7 @@ Importable by the Flask app for web-driven processing.
 import hashlib
 import html
 import json
+import os
 import re
 import sqlite3
 from pathlib import Path
@@ -37,21 +38,45 @@ def lucien_says(text: str) -> str:
     return f"{LUCIEN}: {text}"
 
 
+DEFAULT_SPACY_MODEL = "en_core_web_trf"
+SMALL_SPACY_MODEL = "en_core_web_sm"
+_nlp_model_name: Optional[str] = None
+
+
+def spacy_model_name() -> str:
+    """The model in use, or the one that will be tried first."""
+    return _nlp_model_name or os.environ.get("BOOKS_SPACY_MODEL", DEFAULT_SPACY_MODEL)
+
+
 def get_nlp():
-    """Lazy-load spaCy model so importing this module does not require it immediately."""
-    global nlp
+    """
+    Lazy-load spaCy so importing this module does not require it.
+
+    BOOKS_SPACY_MODEL picks the model. The transformer model is the most
+    accurate and about 500 MB; with the Judge doing the quality work, the
+    12 MB small model is a reasonable choice, and it is used automatically
+    when the configured model is not installed.
+    """
+    global nlp, _nlp_model_name
     if nlp is not None:
         return nlp
     try:
         import spacy
-        nlp = spacy.load("en_core_web_trf")
-        return nlp
-    except OSError as e:
-        raise RuntimeError(
-            "spaCy model not found. Run: python -m spacy download en_core_web_trf"
-        ) from e
     except ImportError as e:
         raise RuntimeError("spaCy is not installed. Run: pip install spacy") from e
+
+    wanted = os.environ.get("BOOKS_SPACY_MODEL", DEFAULT_SPACY_MODEL)
+    for name in dict.fromkeys([wanted, SMALL_SPACY_MODEL]):
+        try:
+            nlp = spacy.load(name)
+            _nlp_model_name = name
+            return nlp
+        except OSError:
+            continue
+    raise RuntimeError(
+        f"No spaCy model found. Run: python -m spacy download {wanted}"
+        f" (or the small one: python -m spacy download {SMALL_SPACY_MODEL})"
+    )
 
 
 TITLE_STOPWORDS = {"the", "a", "an", "of", "and", "or", "in", "on", "to", "for"}
@@ -1225,15 +1250,19 @@ def _store_references(
 
     # —— The Judge reads every candidate in its passage (cocktails come from a
     # curated lexicon and people's corrections are already decided) ——
+    verdicts: Dict[int, Dict] = {}
+    for pos, item in enumerate(items):
+        if isinstance(item.get("verdict"), dict):
+            verdicts[pos] = item["verdict"]  # the Reader already ruled on these
     to_judge = [
         (pos, item)
         for pos, item in enumerate(items)
         if item.get("kind_hint") != "cocktail"
+        and pos not in verdicts
         and override_key(item.get("title")) not in overrides
     ]
-    verdicts: Dict[int, Dict] = {}
     source_year = None
-    judged = False
+    judged = bool(verdicts)
     if to_judge:
         if judge is None:
             from judge import judge_mentions as judge
@@ -1684,6 +1713,39 @@ def store_candidates(file_hash: Optional[str], candidates: List[Dict], cursor, c
     conn.commit()
 
 
+def add_reader_mentions(
+    mentions: List[Dict],
+    file_path: Path,
+    source_book_id: int,
+    file_hash: Optional[str],
+    cursor,
+    conn,
+    progress_callback=None,
+) -> List[Dict]:
+    """
+    When the Reader is switched on (BOOKS_READER=on), let Claude read the book
+    and put its finds ahead of the pattern-based candidates. They arrive with a
+    verdict, so they skip the Judge. Cached per file and model like the rest.
+    """
+    import reader
+
+    if not reader.reader_enabled():
+        return mentions
+    cache_key = f"reader:{reader.reader_model()}:{file_hash}" if file_hash else None
+    found = cached_candidates(cache_key, cursor)
+    if found is None:
+        cursor.execute("SELECT title, author FROM books WHERE id = ?", (source_book_id,))
+        row = cursor.fetchone() or ("", "")
+        text, _markup = read_book_file(file_path)
+        found = reader.read_for_mentions(
+            row[0] or "", row[1] or "", text, progress_callback=progress_callback
+        )
+        if found is None:
+            return mentions  # no credentials, or it failed: carry on without it
+        store_candidates(cache_key, found, cursor, conn)
+    return merge_mention_lists(found, mentions)
+
+
 def process_book_file(
     file_path: Path,
     source_book_id: int,
@@ -1701,10 +1763,14 @@ def process_book_file(
     if not quiet:
         print(f"Processing: {file_path.name}")
     try:
-        mentions = cached_candidates(file_hash, cursor)
+        # Candidates depend on the spaCy model, so the cache is keyed by both
+        cache_key = f"{spacy_model_name()}:{file_hash}" if file_hash else None
+        mentions = cached_candidates(cache_key, cursor)
         if mentions is None:
             mentions = find_candidates(file_path, progress_callback=progress_callback)
-            store_candidates(file_hash, mentions, cursor, conn)
+            # the small model may have stepped in, so key by what was really used
+            cache_key = f"{spacy_model_name()}:{file_hash}" if file_hash else None
+            store_candidates(cache_key, mentions, cursor, conn)
         elif progress_callback:
             progress_callback(
                 {
@@ -1715,6 +1781,9 @@ def process_book_file(
                     "agent": "borges",
                 }
             )
+        mentions = add_reader_mentions(
+            mentions, file_path, source_book_id, file_hash, cursor, conn, progress_callback
+        )
         if progress_callback:
             progress_callback(
                 {

@@ -10,7 +10,7 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 42 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 49 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
@@ -20,12 +20,19 @@ Items are ordered by how much they improve the result for the effort.
 - **Manner of mention.** The Judge also says how a work is used (read, quoted, discussed, recommended, criticised, comparison). It is stored on the link and shown as a tag. Empty until the library is re-read with the Judge on.
 - **Edit by hand.** A library book's title and author can be corrected on `/manage`; the edit is kept and the book is re-filed in the catalogue.
 - **Graph.** A "Connections only" filter, and node positions remembered between visits.
-- **Packaging.** Dependency ranges are pinned and the app serves through waitress when it is installed.
+- **Packaging.** Dependency ranges are pinned, the app serves through waitress when it is installed, `start.ps1` sets everything up on first run, and the small spaCy model is an option (and the fallback).
+- **The Reader.** Optional (`BOOKS_READER=on`): Claude reads the book itself and lists the works it mentions, each backed by a sentence that is checked against the text. Built and tested against a stand-in for the API; not yet run for real.
+- **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
 ## Next: do these first
 
 ### 1. Re-read the library with the Judge on
-Nothing in the database has been judged yet. Set `ANTHROPIC_API_KEY`, run `python process_books.py --force`, then walk `/review`. Expect the link count to drop and the wrong ones (tunes filed as novels, wrong authors) to go. This is the single step that turns the work above into a better graph. The first forced run still does the spaCy pass once, because the candidate finder changed; after that it is cached.
+Nothing in the database has been judged yet. Set `ANTHROPIC_API_KEY`, then:
+1. `python -m unittest tests.test_live_judge -v` with `BOOKS_LIVE_TESTS=1`: a one-minute check that the Judge behaves.
+2. `python eval_extraction.py --details` and note the baseline (58% / 52% for *84, Charing Cross Road*).
+3. `python process_books.py --force`, then the eval again, then walk `/review`.
+
+Expect the link count to drop and the wrong ones (tunes filed as novels, wrong authors) to go. This is the single step that turns the work above into a better graph.
 
 ### 2. Measure, then tune
 Run `python eval_extraction.py --details` before and after step 1 and write the numbers down. Then:
@@ -33,8 +40,8 @@ Run `python eval_extraction.py --details` before and after step 1 and write the 
 - Compare models: `BOOKS_JUDGE_MODEL=claude-haiku-5-5` is far cheaper and may be good enough.
 - Look at the "Missed" list. Each entry is either a candidate nobody flagged or a lookup that failed, and they need different fixes.
 
-### 3. Let Claude read the chapters
-Italics and quotes widen the net, but a title in plain roman type that spaCy does not tag is still invisible, and EPUBs that mark italics with their own CSS class names are not covered (*Careless People* yields none). Having Claude read each chapter and list the works it mentions removes the dependence on candidates altogether. Keep spaCy as a cross-check. The cost is a few cents per book with a small model, and the Message Batches API halves it.
+### 3. Try the Reader, and decide
+The Reader is built but unmeasured. Run one book with `BOOKS_READER=on` and compare the eval numbers and the cost against the Judge alone. Then decide whether it becomes the default, stays optional, or runs on a cheaper model. If it is kept, sending the parts through the Message Batches API halves the price.
 
 ### 4. Make the graph connect
 Ten books give ten starbursts. Three things create real links:
@@ -57,10 +64,6 @@ The stated long-term direction. The catalogue tables and admin page exist. What 
 ### 7. Split the big files
 `app.py` (about 1,900 lines), `process_books.py` (about 2,200) and `static/main.js` (about 2,800) each do several jobs. Split along the seams that now exist: text reading, candidate finding, judging, catalogue lookup, storage; and on the front end graph, panels, upload and processing. Do it with the tests green before and after.
 
-### 8. Packaging
-- Offer spaCy's small model as an option now that the Judge does the quality work; the transformer model alone is about 500 MB.
-- A one-command start script for Windows that creates the venv and installs everything.
-
-### 9. Housekeeping
-- The judging prompt and schema have no live test yet; add one behind a flag once a key is available.
+### 8. Housekeeping
 - `process_books.py` still holds matching, storage, file reading and the command line in one file (see item 7).
+- EPUBs that mark italics with their own CSS class names yield no italic candidates (*Careless People*); read the stylesheet to find which classes are italic.

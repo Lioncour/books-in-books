@@ -352,7 +352,9 @@ class PipelineHousekeepingTests(TempProject):
             self.assertIsNone(pb.cached_candidates("abc", self.cur))
 
     def test_cached_candidates_skip_the_slow_reading_pass(self):
-        pb.store_candidates("abc", [{"title": "Lean In", "context": "c"}], self.cur, self.conn)
+        pb.store_candidates(
+            f"{pb.spacy_model_name()}:abc", [{"title": "Lean In", "context": "c"}], self.cur, self.conn
+        )
         with mock.patch.object(pb, "find_candidates", side_effect=AssertionError("re-read")):
             with mock.patch("judge.judge_mentions", return_value=None):
                 pb.process_book_file(
@@ -466,6 +468,126 @@ class EvalScriptTests(TempProject):
         self.assertEqual(result["precision"], round(1 / 3, 3))
         self.assertEqual(result["recall"], round(1 / 3, 3))
         self.assertEqual(sorted(result["missed"]), ["Persuasion", "Selected Essays"])
+
+
+class ReaderTests(TempProject):
+    """reader.read_for_mentions against a fake streaming client."""
+
+    TEXT = (
+        "She was reading Middlemarch again that winter, slowly. "
+        "Her brother hummed the old carol and poured a drink. "
+        "Nobody mentioned the war."
+    )
+
+    def make_client(self, works):
+        calls = []
+
+        class Stream:
+            def __enter__(self_inner):
+                return self_inner
+
+            def __exit__(self_inner, *exc):
+                return False
+
+            def get_final_message(self_inner):
+                return SimpleNamespace(
+                    stop_reason="end_turn",
+                    content=[SimpleNamespace(type="text", text=json.dumps({"works": works}))],
+                )
+
+        def stream(**kwargs):
+            calls.append(kwargs)
+            return Stream()
+
+        return SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(stream=stream))), calls
+
+    def work(self, title, quote, author="George Eliot", kind="book", manner="read"):
+        return {"title": title, "author": author, "kind": kind, "manner": manner, "quote": quote}
+
+    def test_finds_carry_a_verdict_and_their_passage(self):
+        import reader
+
+        client, calls = self.make_client(
+            [self.work("Middlemarch", "She was reading Middlemarch again that winter, slowly.")]
+        )
+        found = reader.read_for_mentions("A Novel", "Someone", self.TEXT, client=client)
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0]["source"], "reader")
+        self.assertEqual(found[0]["verdict"]["author"], "George Eliot")
+        self.assertEqual(found[0]["verdict"]["manner"], "read")
+        self.assertIn("Book: A Novel by Someone", calls[0]["messages"][0]["content"])
+
+    def test_a_work_without_a_real_quote_is_discarded(self):
+        import reader
+
+        client, _ = self.make_client(
+            [
+                self.work("Middlemarch", "She was reading Middlemarch again that winter, slowly."),
+                self.work("War and Peace", "He had always loved War and Peace above all others.", "Leo Tolstoy"),
+            ]
+        )
+        found = reader.read_for_mentions("A Novel", "Someone", self.TEXT, client=client)
+        self.assertEqual([m["title"] for m in found], ["Middlemarch"])
+
+    def test_long_text_is_read_in_parts(self):
+        import reader
+
+        client, calls = self.make_client([])
+        text = "A paragraph of plain prose.\n" * 4000
+        reader.read_for_mentions("A Novel", "Someone", text, client=client)
+        self.assertGreater(len(calls), 1)
+        self.assertTrue(all(len(c["messages"][0]["content"]) < reader.CHUNK_CHARS + 200 for c in calls))
+
+    def test_reader_finds_skip_the_judge_and_become_links(self):
+        mention = {
+            "title": "Great Expectations",
+            "context": "Pip, as in Great Expectations",
+            "source": "reader",
+            "verdict": dict(book("Great Expectations", "Charles Dickens"), manner="compared"),
+        }
+        boom = mock.Mock(side_effect=AssertionError("judge should not be called"))
+        result = self.store([mention], boom)
+        self.assertTrue(result["judged"])
+        self.assertEqual(self.links(), [("Great Expectations", "Charles Dickens", "book", 0)])
+        self.cur.execute("SELECT manner FROM book_references")
+        self.assertEqual(self.cur.fetchone()[0], "compared")
+
+    def test_reader_is_off_unless_switched_on(self):
+        import reader
+
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("BOOKS_READER", None)
+            self.assertFalse(reader.reader_enabled())
+            with mock.patch.object(reader, "read_for_mentions", side_effect=AssertionError("called")):
+                out = pb.add_reader_mentions(
+                    [{"title": "X"}], Path("b.txt"), self.source_id, "h", self.cur, self.conn
+                )
+            self.assertEqual(out, [{"title": "X"}])
+        with mock.patch.dict(os.environ, {"BOOKS_READER": "on"}):
+            self.assertTrue(reader.reader_enabled())
+
+    def test_reader_results_are_cached_per_file_and_model(self):
+        import reader
+
+        Path("b.txt").write_text(self.TEXT, encoding="utf-8")
+        finds = [{"title": "Middlemarch", "context": "q", "source": "reader", "verdict": book("Middlemarch", "George Eliot")}]
+        with mock.patch.dict(os.environ, {"BOOKS_READER": "on"}):
+            with mock.patch.object(reader, "read_for_mentions", return_value=finds) as read:
+                first = pb.add_reader_mentions([], Path("b.txt"), self.source_id, "h", self.cur, self.conn)
+                second = pb.add_reader_mentions([], Path("b.txt"), self.source_id, "h", self.cur, self.conn)
+        self.assertEqual(read.call_count, 1)
+        self.assertEqual(first, second)
+
+
+class SpacyModelTests(unittest.TestCase):
+    def test_small_model_steps_in_when_the_configured_one_is_missing(self):
+        fake_spacy = SimpleNamespace(
+            load=mock.Mock(side_effect=lambda name: (_ for _ in ()).throw(OSError())
+                           if name != pb.SMALL_SPACY_MODEL else "small-model")
+        )
+        with mock.patch.dict(sys.modules, {"spacy": fake_spacy}),                 mock.patch.object(pb, "nlp", None), mock.patch.object(pb, "_nlp_model_name", None):
+            self.assertEqual(pb.get_nlp(), "small-model")
+            self.assertEqual(pb.spacy_model_name(), pb.SMALL_SPACY_MODEL)
 
 
 class JudgeClientTests(unittest.TestCase):
