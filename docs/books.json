@@ -52,7 +52,7 @@
     "kind": "book",
     "cover_id": "95718",
     "cover_url": "https://covers.openlibrary.org/b/id/95718-M.jpg",
-    "outgoing_count": 65,
+    "outgoing_count": 60,
     "incoming_count": 0
   },
   {
@@ -84,34 +84,6 @@
     "incoming_count": 1
   },
   {
-    "id": 265,
-    "title": "A Consideration upon Cicero",
-    "author": "Michel de Montaigne",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_consideration upon cicero_michel_montaigne",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 263,
-    "title": "A Custom of the Isle of Cea",
-    "author": "Michel de Montaigne",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_custom isle cea_michel_montaigne",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 325,
     "title": "A Nightmare on Elm Street",
     "author": "1984 film directed by Wes Craven",
@@ -136,20 +108,6 @@
     "kind": "book",
     "cover_id": "13301713",
     "cover_url": "https://covers.openlibrary.org/b/id/13301713-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 242,
-    "title": "A Whole New World",
-    "author": "Alan Menken",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_music_whole new world_alan_menken",
-    "kind": "music",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -220,20 +178,6 @@
     "kind": "book",
     "cover_id": "6715695",
     "cover_url": "https://covers.openlibrary.org/b/id/6715695-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 205,
-    "title": "Aesop and Rhodope",
-    "author": "Walter Savage Landor",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_aesop rhodope_landor_savage_walter",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -556,7 +500,7 @@
     "kind": "book",
     "cover_id": "26230",
     "cover_url": "https://covers.openlibrary.org/b/id/26230-M.jpg",
-    "outgoing_count": 43,
+    "outgoing_count": 41,
     "incoming_count": 0
   },
   {
@@ -570,20 +514,6 @@
     "kind": "book",
     "cover_id": "248248",
     "cover_url": "https://covers.openlibrary.org/b/id/248248-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 224,
-    "title": "Best friends for Frances",
-    "author": "Russell Hoban",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL74288W",
-    "kind": "book",
-    "cover_id": "50741",
-    "cover_url": "https://covers.openlibrary.org/b/id/50741-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -686,34 +616,6 @@
     "incoming_count": 1
   },
   {
-    "id": 536,
-    "title": "Book of Daniel",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "/works/OL55238W",
-    "kind": "book",
-    "cover_id": "8269274",
-    "cover_url": "https://covers.openlibrary.org/b/id/8269274-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 474,
-    "title": "Book of Proverbs",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "/works/OL1819678W",
-    "kind": "book",
-    "cover_id": "572137",
-    "cover_url": "https://covers.openlibrary.org/b/id/572137-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 168,
     "title": "Boy, the Mole, the Fox and the Horse",
     "author": "Charlie Mackesy",
@@ -726,20 +628,6 @@
     "cover_url": "https://covers.openlibrary.org/b/id/10523448-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 0
-  },
-  {
-    "id": 34,
-    "title": "Bread and jam for Frances",
-    "author": "Russell Hoban",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL74290W",
-    "kind": "book",
-    "cover_id": "23710",
-    "cover_url": "https://covers.openlibrary.org/b/id/23710-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
   },
   {
     "id": 475,
@@ -822,7 +710,7 @@
     "kind": "book",
     "cover_id": "14852090",
     "cover_url": "https://covers.openlibrary.org/b/id/14852090-M.jpg",
-    "outgoing_count": 33,
+    "outgoing_count": 32,
     "incoming_count": 0
   },
   {
@@ -990,20 +878,6 @@
     "kind": "book",
     "cover_id": "8537396",
     "cover_url": "https://covers.openlibrary.org/b/id/8537396-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 560,
-    "title": "Considération sur Cicéron",
-    "author": "Michel de Montaigne",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_considération sur cicéron_michel_montaigne",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1554,20 +1428,6 @@
     "incoming_count": 1
   },
   {
-    "id": 548,
-    "title": "Genesis",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_genesis",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 229,
     "title": "Ghost Girl",
     "author": "Torey L Hayden",
@@ -1606,20 +1466,6 @@
     "kind": "book",
     "cover_id": null,
     "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 484,
-    "title": "Gospel of Matthew",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "/works/OL1800314W",
-    "kind": "book",
-    "cover_id": "10717455",
-    "cover_url": "https://covers.openlibrary.org/b/id/10717455-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2128,20 +1974,6 @@
     "incoming_count": 1
   },
   {
-    "id": 380,
-    "title": "La Cérémonie de l’entrevue des rois",
-    "author": "Michel de Montaigne",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_la cérémonie de l entrevue des rois_michel_montaigne",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 235,
     "title": "Lean In",
     "author": "Sheryl Sandberg",
@@ -2404,7 +2236,7 @@
     "kind": "book",
     "cover_id": "14256190",
     "cover_url": "https://covers.openlibrary.org/b/id/14256190-M.jpg",
-    "outgoing_count": 43,
+    "outgoing_count": 36,
     "incoming_count": 0
   },
   {
@@ -2436,20 +2268,6 @@
     "incoming_count": 1
   },
   {
-    "id": 456,
-    "title": "New Testament",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "/works/OL18316W",
-    "kind": "book",
-    "cover_id": "125943",
-    "cover_url": "https://covers.openlibrary.org/b/id/125943-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 431,
     "title": "Nineteen Eighty-Four",
     "author": "George Orwell",
@@ -2460,20 +2278,6 @@
     "kind": "book",
     "cover_id": "9267242",
     "cover_url": "https://covers.openlibrary.org/b/id/9267242-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 396,
-    "title": "Ninety-Nine Bottles of Beer",
-    "author": "Traditional",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_music_ninety nine bottles beer",
-    "kind": "music",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2520,20 +2324,6 @@
     "incoming_count": 1
   },
   {
-    "id": 525,
-    "title": "Of the Ceremony of the Interview of Princes",
-    "author": "Michel de Montaigne",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_ceremony interview princes_michel_montaigne",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 399,
     "title": "Oklahoma!",
     "author": "Rodgers and Hammerstein",
@@ -2556,20 +2346,6 @@
     "match_score": 1.0,
     "open_library_id": "cocktail_old fashioned",
     "kind": "cocktail",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 485,
-    "title": "Old Testament",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_old testament",
-    "kind": "book",
     "cover_id": null,
     "cover_url": null,
     "outgoing_count": 0,
@@ -2982,20 +2758,6 @@
     "incoming_count": 1
   },
   {
-    "id": 492,
-    "title": "Sermon XV",
-    "author": "John Donne",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_sermon xv_donne_john",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 213,
     "title": "Sermons",
     "author": "John Donne",
@@ -3146,7 +2908,7 @@
     "kind": "book",
     "cover_id": "9344864",
     "cover_url": "https://covers.openlibrary.org/b/id/9344864-M.jpg",
-    "outgoing_count": 28,
+    "outgoing_count": 26,
     "incoming_count": 1
   },
   {
@@ -3427,7 +3189,7 @@
     "cover_id": null,
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/330px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
-    "incoming_count": 5
+    "incoming_count": 7
   },
   {
     "id": 101,
@@ -3486,20 +3248,6 @@
     "incoming_count": 1
   },
   {
-    "id": 275,
-    "title": "The Essays",
-    "author": "Montaigne, Michel de",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL6248187W",
-    "kind": "book",
-    "cover_id": "104153",
-    "cover_url": "https://covers.openlibrary.org/b/id/104153-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 99,
     "title": "The Essays of Elia",
     "author": "Charles Lamb",
@@ -3511,7 +3259,7 @@
     "cover_id": "8876245",
     "cover_url": "https://covers.openlibrary.org/b/id/8876245-M.jpg",
     "outgoing_count": 0,
-    "incoming_count": 1
+    "incoming_count": 2
   },
   {
     "id": 458,
@@ -3566,20 +3314,6 @@
     "kind": "book",
     "cover_id": "2638032",
     "cover_url": "https://covers.openlibrary.org/b/id/2638032-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 529,
-    "title": "The Gospel of John",
-    "author": "Anonymous",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_book_gospel john",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3934,20 +3668,6 @@
     "incoming_count": 1
   },
   {
-    "id": 145,
-    "title": "The Struggle With The Daemon",
-    "author": "Stefan Zweig",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL17442314W",
-    "kind": "book",
-    "cover_id": "7586911",
-    "cover_url": "https://covers.openlibrary.org/b/id/7586911-M.jpg",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 370,
     "title": "The Tempest",
     "author": "William Shakespeare",
@@ -3972,20 +3692,6 @@
     "kind": "movie",
     "cover_id": null,
     "cover_url": "https://upload.wikimedia.org/wikipedia/en/6/6d/The_Terminator.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 293,
-    "title": "The Way to Eden",
-    "author": "Film / TV",
-    "is_starting": false,
-    "verified": true,
-    "match_score": null,
-    "open_library_id": "judge_movie_way eden",
-    "kind": "movie",
-    "cover_id": null,
-    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -4186,20 +3892,6 @@
     "incoming_count": 1
   },
   {
-    "id": 400,
-    "title": "The old benchers of the Inner Temple",
-    "author": "Charles Lamb",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL44802W",
-    "kind": "book",
-    "cover_id": null,
-    "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
     "id": 270,
     "title": "The parrots",
     "author": "Filippo Bologna",
@@ -4210,20 +3902,6 @@
     "kind": "book",
     "cover_id": null,
     "cover_url": null,
-    "outgoing_count": 0,
-    "incoming_count": 1
-  },
-  {
-    "id": 568,
-    "title": "The pilgrims' way",
-    "author": "Arthur Quiller-Couch",
-    "is_starting": false,
-    "verified": true,
-    "match_score": 1.0,
-    "open_library_id": "/works/OL3863963W",
-    "kind": "book",
-    "cover_id": "5555168",
-    "cover_url": "https://covers.openlibrary.org/b/id/5555168-M.jpg",
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -4294,7 +3972,7 @@
     "kind": "book",
     "cover_id": "14351077",
     "cover_url": "https://covers.openlibrary.org/b/id/14351077-M.jpg",
-    "outgoing_count": 31,
+    "outgoing_count": 28,
     "incoming_count": 0
   },
   {
@@ -4518,7 +4196,7 @@
     "kind": "book",
     "cover_id": "8421582",
     "cover_url": "https://covers.openlibrary.org/b/id/8421582-M.jpg",
-    "outgoing_count": 50,
+    "outgoing_count": 49,
     "incoming_count": 0
   },
   {

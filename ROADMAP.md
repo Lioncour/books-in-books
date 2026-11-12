@@ -10,7 +10,7 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 101 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 105 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
@@ -41,6 +41,7 @@ Items are ordered by how much they improve the result for the effort.
 - **A book no longer links to its own film or stage version**, which the second reading picked up from a jacket text.
 - **Claude Code as a provider.** `BOOKS_PROVIDER=claude-code` runs the `claude` program on the machine instead of an API, so the work is drawn from a Claude subscription. Run for real on one book: the Reader found 13 of 15 gold works in *Small Things Like These*, the same as a single reading through Bedrock. Two things had to be fixed first: started from inside a Claude Code session the program borrowed that session's login, and an API key in the environment overrode the subscription. `process_books.py --check` asks one small question to show the provider answers; `eval/reader_check.py` scores one reading against a gold set. A long book works too: *Columbus Day* (950,000 characters, 24 parts) took 65 seconds and found 37 of 41 gold works, in line with single readings through Bedrock (38 and 39). The Auditor passed all 14 links of *Small Things Like These* through it. The library now runs on Claude Code; the links themselves were made through Bedrock and have not been re-read.
 - **Versions of one work are one node.** A film and its sequels, a film and the book or comic behind it, a volume and its series, and two catalogue records of one title are merged after each read (*Star Wars* and its episodes, *Iron Man* the film and the comic, the *Harry Potter* films and the series, both *Wizard of Oz*). Different works that share a title stay apart: two authors' *Essays*, a song and a novel. Nine records merged in this library; 21 works are now shared by several books, and precision and recall are unchanged on all five gold sets.
+- **The Cataloguer folds parts into wholes.** Claude is shown the list of mentioned works once and names the ones that belong inside another: Genesis, Proverbs, Daniel and two Gospels into the Bible, six Montaigne essays and the English title into *Essais*, a sermon into Donne's *Sermons*, a song into *Aladdin*, an episode into *Star Trek*. 24 folded, all read and found right. The Bible now joins seven of the ten books. What was folded is remembered, so the measurement still counts a part as found through its whole; precision and recall are unchanged on all five gold sets. It only asks again when new works have appeared.
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
@@ -50,10 +51,10 @@ Items are ordered by how much they improve the result for the effort.
 Haiku 5.5 and Sonnet 5.5 were both tried as the Reader and both found clearly fewer mentions, so a smaller model is not the answer. The Message Batches API halves the price of the same model. Results are cached per file and model, so this only matters for new books.
 
 ### 2. Make the graph connect
-Ten books now share 21 works (the Bible in five of them, then The Simpsons, Star Wars, Spider-Man, The Wizard of Oz, Hamlet, Winnie-the-Pooh, Star Trek and others), up from two. Two things would create more real links:
+Ten books now share 22 works (the Bible in seven of them, then The Simpsons, Star Wars, Spider-Man, The Wizard of Oz, Hamlet, Winnie-the-Pooh, Star Trek and others), up from two. Two things would create more real links:
 - **More books.** The network effect needs a larger library; batch upload already works.
 - **Second-hop links from the catalogue.** For a mentioned book you do not own, pull its own mentions from the shared catalogue, so two of your books connect through a third.
-- **Parts of a whole.** The Gospel of Matthew and the Book of Daniel are separate nodes from the Bible; a single Sherlock Holmes story is separate from the collection. Folding parts into wholes needs knowledge the titles do not carry, so it is a question for Claude, not for a rule.
+- **Show what a node contains.** The parts folded into a work are stored but not shown; the detail panel could list them ("includes: Genesis, Gospel of Matthew").
 
 ## Then: product
 

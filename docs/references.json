@@ -1,15 +1,15 @@
 [
   {
     "source": 1,
-    "target": 310,
-    "context": "opened a book and mystified the first grade with a long narrative about a toadfrog that lived in a hall.",
-    "manner": "read"
+    "target": 99,
+    "context": "Lawyers, I suppose, were children once.",
+    "manner": "quoted"
   },
   {
     "source": 1,
-    "target": 400,
-    "context": "Lawyers, I suppose, were children once.",
-    "manner": "quoted"
+    "target": 310,
+    "context": "opened a book and mystified the first grade with a long narrative about a toadfrog that lived in a hall.",
+    "manner": "read"
   },
   {
     "source": 1,
@@ -139,18 +139,6 @@
   },
   {
     "source": 1,
-    "target": 484,
-    "context": "“Let this cup pass from you, eh?”",
-    "manner": "quoted"
-  },
-  {
-    "source": 1,
-    "target": 485,
-    "context": "a whole yard. Look here. When it comes fall this dries up and the wind blows it all over Maycomb County!” Miss Maudie’s face likened such an occurrence unto an Old Testament pestilence. Her speech was crisp for a Maycomb County inhabitant. She called us by all our names, and when she grinned she revealed two minute gold prongs",
-    "manner": "passing"
-  },
-  {
-    "source": 1,
     "target": 521,
     "context": "Sherlock Holmes and Jem Finch would agree.",
     "manner": "compared"
@@ -175,12 +163,6 @@
   },
   {
     "source": 1,
-    "target": 536,
-    "context": "brought forth Eunice Ann saying she didn’t want to play Shadrach any more",
-    "manner": null
-  },
-  {
-    "source": 1,
     "target": 562,
     "context": "Dill bet Jem The Gray Ghost against two Tom Swifts",
     "manner": null
@@ -195,12 +177,6 @@
     "source": 3,
     "target": 28,
     "context": "I picked out Arnold Lobel’s Frog and Toad Are Friends, a longtime favorite of mine.",
-    "manner": "read"
-  },
-  {
-    "source": 3,
-    "target": 34,
-    "context": "It’s called Bread and Jam for Frances. That’s a funny one.",
     "manner": "read"
   },
   {
@@ -243,12 +219,6 @@
     "source": 3,
     "target": 223,
     "context": "Santa pulled over a little chair and sat down to read “The Night Before Christmas” to the children while they ate.",
-    "manner": "read"
-  },
-  {
-    "source": 3,
-    "target": 224,
-    "context": "On this day, it had taken almost seven minutes to choose Best Friends for Frances, so I settled down to read it.",
     "manner": "read"
   },
   {
@@ -385,7 +355,7 @@
   },
   {
     "source": 3,
-    "target": 474,
+    "target": 480,
     "context": "“Pride goeth before a fall.”",
     "manner": "quoted"
   },
@@ -489,12 +459,6 @@
     "source": 13,
     "target": 292,
     "context": "There was a movie out a number of years ago called Castaway.",
-    "manner": "discussed"
-  },
-  {
-    "source": 13,
-    "target": 293,
-    "context": "I thought back to the Star Trek episode, The Way to Eden, where the entire planet had turned out to be poisonous.",
     "manner": "discussed"
   },
   {
@@ -655,6 +619,12 @@
   },
   {
     "source": 13,
+    "target": 480,
+    "context": "a result of hubris not seen since the days of Babel",
+    "manner": null
+  },
+  {
+    "source": 13,
     "target": 499,
     "context": "The holotank showed the fusion signatures of Calvin, Goku, and Linus as they left the system.",
     "manner": "compared"
@@ -712,12 +682,6 @@
     "target": 547,
     "context": "The external comms array on its head was strangely reminiscent of a famous pair of antlers.",
     "manner": "compared"
-  },
-  {
-    "source": 13,
-    "target": 548,
-    "context": "a result of hubris not seen since the days of Babel",
-    "manner": null
   },
   {
     "source": 13,
@@ -1177,12 +1141,6 @@
   },
   {
     "source": 74,
-    "target": 396,
-    "context": "No one aboard is singing the Kristang version of 'Ninety Nine Bottles of Beer on the Wall',",
-    "manner": "passing"
-  },
-  {
-    "source": 74,
     "target": 397,
     "context": "The most famous usage of that phrase, of course, was by Claude Raines in the movie Casablanca, although that line is strangely misquoted very often.",
     "manner": "discussed"
@@ -1264,12 +1222,6 @@
     "target": 526,
     "context": "Chang actually enjoyed being called 'King Kong', that nickname had totally backfired on Skippy.",
     "manner": "compared"
-  },
-  {
-    "source": 74,
-    "target": 529,
-    "context": "The truth shall set you free.",
-    "manner": null
   },
   {
     "source": 74,
@@ -1453,12 +1405,6 @@
   },
   {
     "source": 80,
-    "target": 205,
-    "context": "I dramatized Landor’s “Aesop and Rhodope” for the “Hallmark Hall of Fame.”",
-    "manner": "discussed"
-  },
-  {
-    "source": 80,
     "target": 206,
     "context": "a trip recorded in her 1973 book The Duchess of Bloomsbury Street.",
     "manner": "discussed"
@@ -1621,12 +1567,6 @@
   },
   {
     "source": 80,
-    "target": 456,
-    "context": "please use the 70c toward the price of the New Testaments, both of which I want.",
-    "manner": "read"
-  },
-  {
-    "source": 80,
     "target": 457,
     "context": "she says it’s not worth reading so that killed my interest in the entire subject",
     "manner": null
@@ -1639,26 +1579,8 @@
   },
   {
     "source": 80,
-    "target": 492,
-    "context": "I will read the three standard passages from Sermon XV aloud",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 549,
-    "context": "also a Vulgate New Testament which I hope will be O.K.",
-    "manner": "read"
-  },
-  {
-    "source": 80,
     "target": 552,
     "context": "n your letter I will send it along. I am glad to say I have managed to dig out a few books for you from a private library that we have just bought. There is a Leigh Hunt which includes most of the essays you like, also a Vulgate New Testament which I hope will be O.K. I have also included a Dictionary to the Vulgate which you m",
-    "manner": "read"
-  },
-  {
-    "source": 80,
-    "target": 568,
-    "context": "ey were just two odd volumes with the covers detached and nobody in their right senses would have given us a shilling for them. The Quiller-Couch anthology, The Pilgrim’s Way, has been sent to you by Book Post. The balance due was $1.85 so your $2 more than covered it. We haven’t a copy of Pepys’ Diary in stock at the moment but sha",
     "manner": "read"
   },
   {
@@ -1720,12 +1642,6 @@
     "target": 240,
     "context": "they post things that could have been lifted from the pages of Atlas Shrugged",
     "manner": "compared"
-  },
-  {
-    "source": 123,
-    "target": 242,
-    "context": "interspersed with Adele and Disney—“A Whole New World” from Aladdin—",
-    "manner": "passing"
   },
   {
     "source": 123,
@@ -1873,12 +1789,6 @@
   },
   {
     "source": 143,
-    "target": 145,
-    "context": "whose unavoidable, self-destructive trajectories provided him with his trilogy The Struggle with the Daemon (1925)",
-    "manner": "quoted"
-  },
-  {
-    "source": 143,
     "target": 146,
     "context": "stumbled upon a “dusty old edition” of Montaigne’s famous Essais",
     "manner": "read"
@@ -1939,18 +1849,6 @@
   },
   {
     "source": 143,
-    "target": 263,
-    "context": "particularly through the essay ‘A Custom of the Isle of Cea’, whose principal theme is the question of a willed death",
-    "manner": "quoted"
-  },
-  {
-    "source": 143,
-    "target": 265,
-    "context": "or his ‘Considérations sur Cicéron’?",
-    "manner": "criticised"
-  },
-  {
-    "source": 143,
     "target": 266,
     "context": "the Aeneid by Virgil",
     "manner": "read"
@@ -2002,12 +1900,6 @@
     "target": 274,
     "context": "THE LAST DAYS",
     "manner": "recommended"
-  },
-  {
-    "source": 143,
-    "target": 275,
-    "context": "But one must also ask why the Seigneur de Montaigne decides, in 1580, to have printed in Bordeaux two volumes of these Essais.",
-    "manner": "passing"
   },
   {
     "source": 143,
@@ -2095,12 +1987,6 @@
   },
   {
     "source": 143,
-    "target": 380,
-    "context": "lity of meeting my own soul. Of what relevance to me, a young man of the new twentieth century, were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’ or his ‘Considérations sur Cicéron’? This Frenchman, already yellowed by time and lost in the riddles of his Latin quotations, seemed so scholarly and anachro",
-    "manner": "criticised"
-  },
-  {
-    "source": 143,
     "target": 466,
     "context": "one of his most successful books being an account of the exploits of Joseph Fouché, the ruthless enforcer in revolutionary France who took down Robespierre",
     "manner": "discussed"
@@ -2110,17 +1996,5 @@
     "target": 524,
     "context": "having just completed the study of Erasmus in which he used the great humanist and theologian as a template to espouse his own convictions",
     "manner": "passing"
-  },
-  {
-    "source": 143,
-    "target": 525,
-    "context": "were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’",
-    "manner": "criticised"
-  },
-  {
-    "source": 143,
-    "target": 560,
-    "context": "e to me, a young man of the new twentieth century, were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’ or his ‘Considérations sur Cicéron’? This Frenchman, already yellowed by time and lost in the riddles of his Latin quotations, seemed so scholarly and anachronistic. And even his wisdom, so gent",
-    "manner": "criticised"
   }
 ]

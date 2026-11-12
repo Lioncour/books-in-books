@@ -146,6 +146,10 @@ def init_database(quiet: bool = False):
         # 1 = title/author were set by hand on the manage page; never overwrite
         cursor.execute("ALTER TABLE books ADD COLUMN user_edited INTEGER DEFAULT 0")
 
+    if "parts_checked" not in columns:
+        # 1 = the Cataloguer has seen this work when looking for parts of wholes
+        cursor.execute("ALTER TABLE books ADD COLUMN parts_checked INTEGER DEFAULT 0")
+
     # Do not auto-retag franchise titles as movies — novels exist (e.g. Star Trek).
     # Kind is set at extraction time from context + domain lookup.
 
@@ -178,6 +182,17 @@ def init_database(quiet: bool = False):
     if "confirmed" not in ref_cols:
         # 1 = a person confirmed this link in the review queue; survives re-extraction
         cursor.execute("ALTER TABLE book_references ADD COLUMN confirmed INTEGER DEFAULT 0")
+
+    # Titles that were folded into a work: its parts, and its other names
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS work_aliases (
+            book_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            UNIQUE (book_id, title)
+        )
+        """
+    )
 
     cursor.execute(
         """
@@ -403,6 +418,85 @@ def _same_work(a: Dict, b: Dict) -> bool:
     )
 
 
+def _fold_work_into(cursor, other_id: int, keeper_id: int):
+    """Give one mentioned work's links to another and remove it."""
+    # Remember what was folded in, so the whole can still be found by its part's name
+    cursor.execute(
+        """
+        INSERT OR IGNORE INTO work_aliases (book_id, title)
+        SELECT ?, title FROM books WHERE id = ?
+        """,
+        (keeper_id, other_id),
+    )
+    cursor.execute(
+        "UPDATE OR IGNORE work_aliases SET book_id = ? WHERE book_id = ?", (keeper_id, other_id)
+    )
+    cursor.execute("DELETE FROM work_aliases WHERE book_id = ?", (other_id,))
+    # A book that mentions both keeps one link, not two
+    cursor.execute(
+        """
+        DELETE FROM book_references
+        WHERE referenced_book_id = ?
+          AND source_book_id IN (
+              SELECT source_book_id FROM book_references WHERE referenced_book_id = ?
+          )
+        """,
+        (other_id, keeper_id),
+    )
+    _remap_book_id(cursor, other_id, keeper_id)
+
+
+def merge_parts(cursor, conn, quiet: bool = True, finder=None) -> Optional[int]:
+    """
+    Fold parts into the wholes they belong to (a book of the Bible into the
+    Bible, a story into its collection), as named by the Cataloguer. Claude is
+    only asked when works have appeared that it has not seen. Books in the
+    library are never folded away. Returns None when Claude is unavailable.
+    """
+    import cataloguer
+
+    if finder is None:
+        if not cataloguer.cataloguer_enabled():
+            return 0
+        finder = cataloguer.find_parts
+    cursor.execute(
+        """
+        SELECT b.id, b.title, b.author, IFNULL(b.kind, 'book'), IFNULL(b.parts_checked, 0)
+        FROM books b
+        WHERE b.id IN (SELECT referenced_book_id FROM book_references)
+          AND b.id NOT IN (SELECT book_id FROM processed_files WHERE book_id IS NOT NULL)
+          AND b.id NOT IN (SELECT source_book_id FROM book_references)
+        ORDER BY b.title
+        """
+    )
+    rows = cursor.fetchall()
+    if not any(not checked for *_rest, checked in rows):
+        return 0
+    works = [{"id": i, "title": t, "author": a, "kind": k} for i, t, a, k, _ in rows]
+    pairs = finder(works)
+    if pairs is None:
+        return None
+    known = {w["id"]: w for w in works}
+    folded = 0
+    for pair in pairs:
+        part, whole = known.get(pair.get("part")), known.get(pair.get("whole"))
+        if not part or not whole or part["id"] == whole["id"]:
+            continue
+        cursor.execute("SELECT 1 FROM books WHERE id = ?", (whole["id"],))
+        if not cursor.fetchone():
+            continue  # the whole was itself folded away in this pass
+        _fold_work_into(cursor, part["id"], whole["id"])
+        folded += 1
+        if not quiet:
+            print(f"  '{part['title']}' is part of '{whole['title']}' ({pair.get('reason') or ''})")
+    cursor.execute(
+        f"UPDATE books SET parts_checked = 1 WHERE id IN ({','.join('?' * len(works))})",
+        [w["id"] for w in works],
+    )
+    conn.commit()
+    return folded
+
+
 def merge_versions(cursor, conn, quiet: bool = True) -> int:
     """
     Make versions of one work one node: the film and its sequels, the film and
@@ -452,18 +546,7 @@ def merge_versions(cursor, conn, quiet: bool = True) -> int:
         for other in records[1:]:
             if not _same_work(keeper, other):
                 continue
-            # A book that mentions both keeps one link, not two
-            cursor.execute(
-                """
-                DELETE FROM book_references
-                WHERE referenced_book_id = ?
-                  AND source_book_id IN (
-                      SELECT source_book_id FROM book_references WHERE referenced_book_id = ?
-                  )
-                """,
-                (other["id"], keeper["id"]),
-            )
-            _remap_book_id(cursor, other["id"], keeper["id"])
+            _fold_work_into(cursor, other["id"], keeper["id"])
             merged += 1
             if not quiet:
                 print(f"  Merged '{other['title']}' into '{keeper['title']}'")
@@ -3096,6 +3179,12 @@ def process_pending_files(
         versions = merge_versions(cursor, conn, quiet=quiet)
         if versions and not quiet:
             print(f"Merged {versions} version(s) of works already in the graph")
+        import judge as _judge
+
+        if _judge.judge_status()["available"]:
+            parts = merge_parts(cursor, conn, quiet=quiet)
+            if parts and not quiet:
+                print(f"Folded {parts} part(s) into the works they belong to")
     conn.close()
     final_status = "error" if result["errors"] and not result["books_processed"] else "done"
     if result["books_processed"]:
@@ -3170,6 +3259,16 @@ def main():
         init_database(quiet=True)
         conn = sqlite3.connect("database.db")
         print(f"Merged {merge_versions(conn.cursor(), conn, quiet=False)} version(s)")
+        conn.close()
+        return
+    if "--merge-parts" in sys.argv[1:]:
+        init_database(quiet=True)
+        conn = sqlite3.connect("database.db")
+        cur = conn.cursor()
+        if "--again" in sys.argv[1:]:
+            cur.execute("UPDATE books SET parts_checked = 0")
+        folded = merge_parts(cur, conn, quiet=False)
+        print("The Cataloguer did not answer" if folded is None else f"Folded {folded} part(s)")
         conn.close()
         return
     if "--rescue" in sys.argv[1:]:

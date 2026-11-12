@@ -956,6 +956,77 @@ class VersionTests(TempProject):
         )
         self.assertEqual(len(self.cur.fetchall()), 2)  # Harry Potter and Oz each join the two books
 
+    def test_a_part_is_folded_into_its_whole_and_claude_is_asked_once(self):
+        other = self.second_source()
+        bible = self.add("The Bible", "Anonymous", "book", [other])
+        matthew = self.add("Gospel of Matthew", "Anonymous", "book", [self.source_id])
+        emma = self.add("Emma", "Jane Austen", "book", [self.source_id])
+        self.conn.commit()
+        asked = []
+
+        def finder(works):
+            asked.append([w["title"] for w in works])
+            return [
+                {"part": matthew, "whole": bible, "reason": "a book of the Bible"},
+                {"part": emma, "whole": self.source_id, "reason": "nonsense: a library book"},
+                {"part": 99999, "whole": bible, "reason": "nonsense: not in the list"},
+            ]
+
+        self.assertEqual(pb.merge_parts(self.cur, self.conn, finder=finder), 1)
+        self.cur.execute(
+            "SELECT source_book_id FROM book_references WHERE referenced_book_id = ? ORDER BY 1", (bible,)
+        )
+        self.assertEqual([r[0] for r in self.cur.fetchall()], sorted([self.source_id, other]))
+        self.cur.execute("SELECT COUNT(*) FROM books WHERE id IN (?, ?)", (matthew, emma))
+        self.assertEqual(self.cur.fetchone()[0], 1)  # Matthew is gone, Emma stays
+        # nothing new has appeared, so Claude is not asked again
+        self.assertEqual(pb.merge_parts(self.cur, self.conn, finder=finder), 0)
+        self.assertEqual(len(asked), 1)
+
+    def test_the_cataloguer_drops_answers_that_do_not_fit_the_list(self):
+        import cataloguer
+
+        answer = {"parts": [
+            {"part": 1, "whole": 0, "reason": "a book of the Bible"},
+            {"part": 1, "whole": 2, "reason": "a second home for the same part"},
+            {"part": 2, "whole": 2, "reason": "itself"},
+            {"part": 0, "whole": 7, "reason": "not in the list"},
+            {"part": 3, "whole": 1, "reason": "its whole is being folded away"},
+        ]}
+        reply = SimpleNamespace(stop_reason="end_turn",
+                                content=[SimpleNamespace(type="text", text=json.dumps(answer))])
+        client = SimpleNamespace(messages=SimpleNamespace(create=lambda **kw: reply),
+                                 beta=SimpleNamespace(messages=SimpleNamespace(create=lambda **kw: reply)))
+        works = [{"id": 10 + n, "title": t, "author": "", "kind": "book"}
+                 for n, t in enumerate(["The Bible", "Genesis", "Emma", "In the Beginning"])]
+        self.assertEqual(
+            cataloguer.find_parts(works, client=client),
+            [{"part": 11, "whole": 10, "reason": "a book of the Bible"}],
+        )
+
+    def test_a_folded_part_still_counts_as_found(self):
+        import eval_extraction
+
+        bible = self.add("The Bible", "Anonymous", "book", [self.source_id])
+        matthew = self.add("Gospel of Matthew", "Anonymous", "book", [self.source_id])
+        self.conn.commit()
+        pb.merge_parts(self.cur, self.conn,
+                       finder=lambda works: [{"part": matthew, "whole": bible, "reason": ""}])
+        self.cur.execute("SELECT title, author FROM books WHERE id = ?", (self.source_id,))
+        title, author = self.cur.fetchone()
+        gold = {"source": {"title": title, "author": author},
+                "works": [{"title": "The Bible"}, {"title": "Gospel of Matthew"}, {"title": "Emma"}]}
+        result = eval_extraction.evaluate(gold, self.cur)
+        self.assertEqual(result["missed"], ["Emma"])
+
+    def test_no_answer_leaves_everything_for_next_time(self):
+        self.add("Emma", "Jane Austen", "book", [self.source_id])
+        self.add("Persuasion", "Jane Austen", "book", [self.source_id])
+        self.conn.commit()
+        self.assertIsNone(pb.merge_parts(self.cur, self.conn, finder=lambda works: None))
+        self.cur.execute("SELECT COUNT(*) FROM books WHERE parts_checked = 1")
+        self.assertEqual(self.cur.fetchone()[0], 0)
+
     def test_different_works_with_one_title_stay_apart(self):
         other = self.second_source()
         self.add("Essays", "Michel de Montaigne", "book", [self.source_id])

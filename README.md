@@ -175,6 +175,7 @@ Settings can live in the terminal or in a `.env` file in the project folder (git
 | `BOOKS_BEDROCK_API` | `mantle` | Bedrock only: `runtime` for the older InvokeModel endpoint |
 | `BOOKS_JUDGE_MODEL` | `claude-opus-5-5` | Model used to judge mentions (`anthropic.claude-opus-5-5` on Bedrock) |
 | `BOOKS_JUDGE` | on | `off` disables the Judge |
+| `BOOKS_CATALOGUER` | on | `off` stops Claude folding parts into wholes (a book of the Bible into the Bible) |
 | `BOOKS_READER` | off | `on` lets Claude read the whole book (see below) |
 | `BOOKS_READER_PASSES` | `1` | `2` reads each book a second time, cut at different places, and keeps what either reading found: a few points more recall for twice the price |
 | `BOOKS_READER_MODEL` | `claude-opus-5-5` | Model used by the Reader |
@@ -246,6 +247,7 @@ This compares the links in the database with hand-checked gold sets in `eval/gol
 | `python process_books.py --force` | Re-judge every book. Candidates are cached per file, so this skips the slow spaCy pass |
 | `python process_books.py --check` | Ask Claude one small question, to see that the chosen provider answers |
 | `python process_books.py --merge-versions` | Make versions of one work one node (runs by itself after each read) |
+| `python process_books.py --merge-parts` | Let the Cataloguer fold parts into their wholes (runs by itself after each judged read; `--again` asks about every work afresh) |
 | `python process_books.py --audit` | Let the Auditor check links it has not seen yet |
 | `python process_books.py --rescue` | Link works that were dropped only for lack of a catalogue record (after a rule change) |
 | `python process_books.py --fix-library` | Re-file library books under their real title and author (fixes wrong covers) |

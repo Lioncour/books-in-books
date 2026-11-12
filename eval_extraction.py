@@ -130,6 +130,25 @@ def evaluate(gold: Dict, cursor) -> Optional[Dict]:
             unlabelled.append(label)
 
     judged = len(correct) + len(wrong) + len(false_positive)
+    # A gold work that was folded into a larger one (a sermon into the Sermons,
+    # a book of the Bible into the Bible) is found when this book links the whole
+    try:
+        cursor.execute(
+            """
+            SELECT a.title FROM work_aliases a
+            JOIN book_references r ON r.referenced_book_id = a.book_id
+            WHERE r.source_book_id = ?
+            """,
+            (source_id,),
+        )
+        folded = [row[0] for row in cursor.fetchall()]
+    except Exception:
+        folded = []  # a database from before works were folded
+    for name in folded:
+        work = _best_work([name], works)
+        if work is not None:
+            found.add(work["title"])
+
     # An optional work is right when linked but not a miss when absent: things
     # the tool leaves out on purpose, such as newspaper headlines.
     required = [w for w in works if not w.get("optional")]
