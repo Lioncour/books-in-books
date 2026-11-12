@@ -39,8 +39,13 @@ def _own_environment(environ) -> Dict[str, str]:
     `claude` started from here would try to borrow its login and fail. Drop
     them, so the program uses the login it was given with /login.
     """
+    # An API key in the environment would make the program bill that key (or
+    # fail on a placeholder) instead of using the subscription login
+    environ = {
+        k: v for k, v in environ.items() if k not in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+    }
     if not environ.get("CLAUDECODE"):
-        return dict(environ)
+        return environ
     return {
         k: v
         for k, v in environ.items()

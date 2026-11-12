@@ -183,6 +183,8 @@ class ClaudeCodeTests(unittest.TestCase):
         self.assertEqual(claude_code._own_environment(inside), {"PATH": "p"})
         own = {"ANTHROPIC_BASE_URL": "u", "PATH": "p"}  # set by the person, not by a session
         self.assertEqual(claude_code._own_environment(own), own)
+        # an API key would switch the program away from the subscription login
+        self.assertEqual(claude_code._own_environment({"ANTHROPIC_API_KEY": "k", "PATH": "p"}), {"PATH": "p"})
 
     def test_an_expired_login_says_how_to_fix_it(self):
         import claude_code
