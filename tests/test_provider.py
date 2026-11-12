@@ -176,6 +176,14 @@ class ClaudeCodeTests(unittest.TestCase):
             ) as stream:
                 self.assertEqual(stream.get_final_message().content[0].text, '{"works": []}')
 
+    def test_a_surrounding_claude_code_session_is_not_inherited(self):
+        import claude_code
+
+        inside = {"CLAUDECODE": "1", "CLAUDE_CODE_SESSION_ID": "x", "ANTHROPIC_BASE_URL": "u", "PATH": "p"}
+        self.assertEqual(claude_code._own_environment(inside), {"PATH": "p"})
+        own = {"ANTHROPIC_BASE_URL": "u", "PATH": "p"}  # set by the person, not by a session
+        self.assertEqual(claude_code._own_environment(own), own)
+
     def test_an_expired_login_says_how_to_fix_it(self):
         import claude_code
 

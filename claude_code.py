@@ -32,6 +32,26 @@ def executable() -> Optional[str]:
     return os.environ.get("BOOKS_CLAUDE_CODE_PATH") or shutil.which("claude")
 
 
+def _own_environment(environ) -> Dict[str, str]:
+    """
+    When the app is started from inside a Claude Code session (its terminal, or
+    the desktop app), that session's own settings are in the environment and a
+    `claude` started from here would try to borrow its login and fail. Drop
+    them, so the program uses the login it was given with /login.
+    """
+    if not environ.get("CLAUDECODE"):
+        return dict(environ)
+    return {
+        k: v
+        for k, v in environ.items()
+        if not (
+            k == "CLAUDECODE"
+            or k.startswith(("CLAUDE_CODE_", "CLAUDE_AGENT_SDK_"))
+            or k == "ANTHROPIC_BASE_URL"
+        )
+    }
+
+
 def _system_text(system) -> str:
     if isinstance(system, str):
         return system
@@ -93,7 +113,7 @@ def ask(model: str, system, messages, output_config=None, **_ignored):
 
     # Run from an empty folder so no project instructions or settings leak in,
     # and without the markers of a surrounding Claude Code session.
-    env = {k: v for k, v in os.environ.items() if k not in ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT")}
+    env = _own_environment(os.environ)
     with tempfile.TemporaryDirectory() as folder:
         done = subprocess.run(
             command,
