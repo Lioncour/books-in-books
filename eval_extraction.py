@@ -30,6 +30,21 @@ from process_books import MIN_VERIFY_SCORE, author_matches, title_similarity
 GOLD_DIR = Path(__file__).resolve().parent / "eval" / "gold"
 
 
+# Creator labels the app uses when it knows the work but not (or not usefully)
+# who made it. They say nothing about whether the link is the right work.
+PLACEHOLDER_CREATORS = {"traditional", "anonymous", "unknown", "music", "film / tv", "cocktail", ""}
+
+
+def _creator_is_placeholder(author: Optional[str], kind: str) -> bool:
+    text = (author or "").strip().lower()
+    if text in PLACEHOLDER_CREATORS:
+        return True
+    # Film and TV records carry a description ("British television series"), not a person
+    return kind == "movie" and any(
+        word in text for word in ("film", "series", "television", "programme", "program", "show")
+    )
+
+
 def _titles(work: Dict) -> List[str]:
     return [work["title"]] + list(work.get("aliases") or [])
 
@@ -96,7 +111,11 @@ def evaluate(gold: Dict, cursor) -> Optional[Dict]:
         work = _best_work(names, works)
         if work is not None:
             authors = work.get("authors") or []
-            if not authors or any(author_matches(a, author) for a in authors):
+            if (
+                not authors
+                or _creator_is_placeholder(author, kind)
+                or any(author_matches(a, author) for a in authors)
+            ):
                 correct.append(label)
                 found.add(work["title"])
                 if work.get("kind", "book") != kind:

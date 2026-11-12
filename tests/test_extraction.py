@@ -144,6 +144,12 @@ class HelperTests(unittest.TestCase):
         self.assertFalse(pb.author_matches("", ["Anyone"]))
         self.assertFalse(pb.author_matches("Ayn Rand", [None, ""]))
 
+    def test_title_containment_is_by_whole_words(self):
+        self.assertLess(pb.title_similarity("If--", "Tom Swift"), 0.5)
+        self.assertLess(pb.title_similarity("Emma", "Dilemmas"), 0.5)
+        self.assertGreater(pb.title_similarity("Show Business", "Underfoot in Show Business"), 0.72)
+        self.assertGreater(pb.title_similarity("The Rover Boys", "The Rover Boys in Southern Waters"), 0.72)
+
     def test_clean_context_decodes_entities(self):
         self.assertEqual(
             pb.clean_context("rhymes.&#13; Her favorite &amp;amp; best\r\n one"),
@@ -200,15 +206,21 @@ class JudgedExtractionTests(TempProject):
         self.cur.execute("SELECT author FROM books WHERE open_library_id = '/works/wrong'")
         self.assertEqual(self.cur.fetchone()[0], "Anne Williams")
 
-    def test_title_only_match_newer_than_the_source_is_rejected(self):
+    def test_title_only_match_newer_than_the_source_is_not_used(self):
         # To Kill a Mockingbird (1960) cannot mention Beautiful Child (2002).
-        # With no author to pin the work down, the date check is the guard.
+        # With no author to pin the work down, the 2002 record must not be linked.
         self.store(
             [{"title": "Beautiful Child", "context": "a beautiful child she was"}],
             fake_judge({"Beautiful Child": book("Beautiful Child", "")}, source_year=1960),
         )
-        self.assertEqual(self.links(), [])
-        self.assertIn("no catalogue match", self.skipped()["Beautiful Child"])
+        self.assertNotIn("Torey L. Hayden", [l[1] for l in self.links()])
+
+    def test_anonymous_work_missing_from_the_catalogue_is_filed_on_the_judges_word(self):
+        self.store(
+            [{"title": "Proclamation of the Irish Republic", "context": "the epigraph, from the Proclamation"}],
+            fake_judge({"Proclamation of the Irish Republic": book("Proclamation of the Irish Republic", "")}),
+        )
+        self.assertEqual(self.links(), [("Proclamation of the Irish Republic", "Anonymous", "book", 0)])
 
     def test_later_work_named_with_its_author_is_kept(self):
         # An afterword in a later edition lists the author's later books
@@ -238,7 +250,10 @@ class JudgedExtractionTests(TempProject):
             [{"title": "The Complete Poetry & Selected Prose", "context": "The Complete Poetry & Selected Prose of"}],
             fake_judge({"The Complete Poetry & Selected Prose": book("The Complete Poetry and Selected Prose", "")}),
         )
-        self.assertEqual(self.links(), [])
+        # filed as its own anonymous work, never as Vallejo's book
+        self.assertEqual(
+            self.links(), [("The Complete Poetry and Selected Prose", "Anonymous", "book", 0)]
+        )
 
     def test_music_keeps_the_composer_the_judge_named(self):
         with mock.patch("mention_kinds.lookup_by_kind", side_effect=AssertionError("performer lookup")):
@@ -520,6 +535,33 @@ class EvalScriptTests(TempProject):
         self.assertEqual(result["recall"], round(1 / 3, 3))
         self.assertEqual(sorted(result["missed"]), ["Persuasion", "Selected Essays"])
 
+    def test_a_placeholder_creator_does_not_make_a_right_work_wrong(self):
+        import eval_extraction
+
+        for title, author, kind, olid in [("The Croppy Boy", "Traditional", "music", "c"),
+                                          ("All Creatures Great and Small", "British television series", "movie", "a"),
+                                          ("Jingle Bells", "A Random Band", "music", "j")]:
+            self.cur.execute(
+                "INSERT INTO books (title, author, open_library_id, verified, kind) VALUES (?, ?, ?, 1, ?)",
+                (title, author, olid, kind),
+            )
+            self.cur.execute(
+                "INSERT INTO book_references (source_book_id, referenced_book_id) VALUES (?, ?)",
+                (self.source_id, self.cur.lastrowid),
+            )
+        self.conn.commit()
+        gold = {
+            "source": {"title": "Careless People", "author": "Sarah Wynn-Williams"},
+            "works": [
+                {"title": "The Croppy Boy", "authors": ["William B. McBurney"], "kind": "music"},
+                {"title": "All Creatures Great and Small", "authors": ["James Herriot"], "kind": "movie"},
+                {"title": "Jingle Bells", "authors": ["James Lord Pierpont"], "kind": "music"},
+            ],
+        }
+        result = eval_extraction.evaluate(gold, self.cur)
+        self.assertEqual(result["correct"], 2)
+        self.assertEqual(len(result["wrong_work"]), 1)  # a named, wrong performer still counts as wrong
+
 
 class ReaderTests(TempProject):
     """reader.read_for_mentions against a fake streaming client."""
@@ -780,6 +822,29 @@ class AuditorTests(TempProject):
             summary = pb.audit_book(self.source_id, self.cur, self.conn)
         self.assertFalse(summary["ran"])
         self.assertEqual(self.audits(), [("Lean In", "Sheryl Sandberg", None)])
+
+
+class RescueTests(TempProject):
+    def test_works_dropped_for_lack_of_a_catalogue_record_are_linked(self):
+        pb._record_skip(self.cur, self.source_id, "the Proclamation",
+                        "Judge says it is “Proclamation of the Irish Republic”, but no catalogue match",
+                        "from the Proclamation", suggested_title="Proclamation of the Irish Republic")
+        pb._record_skip(self.cur, self.source_id, "Introduction", "Judge: a heading", "ctx")
+        self.conn.commit()
+        self.assertEqual(pb.rescue_dropped_works(quiet=True), 1)
+        self.assertEqual(self.links(), [("Proclamation of the Irish Republic", "Anonymous", "book", 0)])
+        self.assertEqual(list(self.skipped()), ["Introduction"])
+        self.cur.execute("SELECT audit FROM book_references")
+        self.assertIsNone(self.cur.fetchone()[0])  # left for the Auditor
+
+    def test_a_rejected_mention_is_not_rescued(self):
+        pb._record_skip(self.cur, self.source_id, "The Bible",
+                        "Judge says it is “The Bible”, but no catalogue match", "ctx",
+                        suggested_title="The Bible")
+        pb._save_override(self.cur, self.source_id, pb.override_key("The Bible"), "reject")
+        self.conn.commit()
+        self.assertEqual(pb.rescue_dropped_works(quiet=True), 0)
+        self.assertEqual(self.links(), [])
 
 
 class AuditorClientTests(unittest.TestCase):

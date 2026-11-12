@@ -119,11 +119,11 @@ books in books/
 **The Judge** (Claude) reads each candidate in its passage and decides whether it really refers to a work, what kind it is, its catalogue title and who wrote it.  
 **Lucien** looks that title up *with the author* (Open Library / film / music / cocktail lexicon) and files what is real.
 
-Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused. Measured on *84, Charing Cross Road*, precision went from 58% to 95% and recall from 52% to 83% with the Judge alone, and to 98% and 93% with the Reader on as well.
+Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused. Measured on *84, Charing Cross Road*, precision went from 58% to 95% and recall from 52% to 83% with the Judge alone, and to 98% and 93% with the Reader on as well. On two gold sets labelled independently from the full text, with the Reader and the Auditor on, precision is 100% and recall 93% (*Small Things Like These*) and 88% (*To Kill a Mockingbird*).
 
 How a judged mention is filed:
 - **With an author:** the catalogue is searched by title and author. If no catalogue has it, the work is filed on the Judge's word and marked "Identified by the Judge".
-- **Without an author:** only an identical title is accepted, and a work newer than the book mentioning it is refused.
+- **Without an author:** only an identical title is accepted from the catalogue, and a work newer than the book mentioning it is refused. Failing that, the work is filed on the Judge's word as anonymous; this is how the Bible, a proclamation or a commission's report get in. The Auditor checks these.
 - **Music:** the composer the Judge names is kept, instead of whoever recorded something with that title.
 
 ### Turning the Judge on
@@ -185,7 +185,7 @@ The graph **defaults to books only**. Use **Also show → Movies / Music / Drink
 
 Borges, italics and quotation marks only find titles that look like titles. A work named in plain prose is invisible to them. With `BOOKS_READER=on`, Claude reads the book itself, part by part, and lists every work it refers to with the sentence it found it in. An entry whose sentence is not really in the text is discarded, and the rest go straight to the catalogue lookup.
 
-It is off by default because it sends the whole book to the API, which costs more than judging a few hundred short candidates. On *84, Charing Cross Road* it took the links from 42 to 66, nearly all of them real. A short book takes a few minutes and a long novel a quarter of an hour. `BOOKS_READER_MODEL=claude-haiku-5-5` is much cheaper, but on that book it found fewer of the real mentions (80% against 95% for Opus 5.5). Results are cached per file and model.
+It is off by default because it sends the whole book to the API, which costs more than judging a few hundred short candidates. On *84, Charing Cross Road* it took the links from 42 to 66, nearly all of them real. A short book takes a few minutes and a long novel a quarter of an hour. `BOOKS_READER_MODEL=claude-haiku-5-5` is much cheaper, but on that book it found fewer of the real mentions (80% against 95% for Opus 5.5), and Sonnet 5.5 did no better than Haiku (79%). Results are cached per file and model.
 
 ### The Auditor
 
@@ -223,7 +223,7 @@ One extra file, `tests/test_live_judge.py`, checks the real Judge against five p
 .\.venv\Scripts\python eval_extraction.py --details
 ```
 
-This compares the links in the database with hand-checked gold sets in `eval/gold/` and reports precision (links that point at the right work) and recall (real mentions that got a link). Run it before and after changing the Judge's prompt or model, or the matching rules. One gold set ships as a draft, for *84, Charing Cross Road*; correct it and add more for your own books.
+This compares the links in the database with hand-checked gold sets in `eval/gold/` and reports precision (links that point at the right work) and recall (real mentions that got a link). Run it before and after changing the Judge's prompt or model, or the matching rules. Three gold sets ship. The one for *84, Charing Cross Road* was built partly from the tool's own output, so it flatters. The ones for *Small Things Like These* and *To Kill a Mockingbird* were labelled from the full text by a reader that never saw the links, and are the ones to trust.
 
 ## Useful commands
 
@@ -232,6 +232,7 @@ This compares the links in the database with hand-checked gold sets in `eval/gol
 | `python process_books.py` | Read any new or changed books |
 | `python process_books.py --force` | Re-judge every book. Candidates are cached per file, so this skips the slow spaCy pass |
 | `python process_books.py --audit` | Let the Auditor check links it has not seen yet |
+| `python process_books.py --rescue` | Link works that were dropped only for lack of a catalogue record (after a rule change) |
 | `python process_books.py --fix-library` | Re-file library books under their real title and author (fixes wrong covers) |
 | `python eval_extraction.py` | Precision and recall against the gold sets |
 

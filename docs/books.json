@@ -52,7 +52,7 @@
     "kind": "book",
     "cover_id": "95718",
     "cover_url": "https://covers.openlibrary.org/b/id/95718-M.jpg",
-    "outgoing_count": 62,
+    "outgoing_count": 63,
     "incoming_count": 0
   },
   {
@@ -766,7 +766,7 @@
     "kind": "book",
     "cover_id": "14852090",
     "cover_url": "https://covers.openlibrary.org/b/id/14852090-M.jpg",
-    "outgoing_count": 28,
+    "outgoing_count": 30,
     "incoming_count": 0
   },
   {
@@ -892,7 +892,7 @@
     "kind": "book",
     "cover_id": "10543524",
     "cover_url": "https://covers.openlibrary.org/b/id/10543524-M.jpg",
-    "outgoing_count": 34,
+    "outgoing_count": 36,
     "incoming_count": 0
   },
   {
@@ -931,6 +931,20 @@
     "verified": true,
     "match_score": null,
     "open_library_id": "judge_book_considérations sur cicéron_michel_montaigne",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 488,
+    "title": "Constitution of the United States",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_constitution united states",
     "kind": "book",
     "cover_id": null,
     "cover_url": null,
@@ -1134,6 +1148,20 @@
     "incoming_count": 1
   },
   {
+    "id": 483,
+    "title": "FM 3-0 Operations (US Army Field Manual)",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_fm 3 0 operations us army field manual",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 473,
     "title": "Farscape",
     "author": "Rockne S. O'Bannon",
@@ -1172,6 +1200,20 @@
     "kind": "book",
     "cover_id": "1065826",
     "cover_url": "https://covers.openlibrary.org/b/id/1065826-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 482,
+    "title": "Final Report of the Commission of Investigation into Mother and Baby Homes",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_final report commission investigation into mother baby homes",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -1365,6 +1407,20 @@
     "verified": true,
     "match_score": null,
     "open_library_id": "judge_book_goldilocks three bears",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 484,
+    "title": "Gospel of Matthew",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_gospel matthew",
     "kind": "book",
     "cover_id": null,
     "cover_url": null,
@@ -2254,6 +2310,20 @@
     "incoming_count": 1
   },
   {
+    "id": 485,
+    "title": "Old Testament",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_old testament",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
     "id": 414,
     "title": "On Jordan's Stormy Banks",
     "author": "Samuel Stennett",
@@ -2446,6 +2516,20 @@
     "kind": "book",
     "cover_id": "14348537",
     "cover_url": "https://covers.openlibrary.org/b/id/14348537-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 481,
+    "title": "Proclamation of the Irish Republic",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_proclamation irish republic",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -2684,7 +2768,7 @@
     "kind": "book",
     "cover_id": "10507091",
     "cover_url": "https://covers.openlibrary.org/b/id/10507091-M.jpg",
-    "outgoing_count": 11,
+    "outgoing_count": 14,
     "incoming_count": 0
   },
   {
@@ -2726,7 +2810,7 @@
     "kind": "book",
     "cover_id": "9344864",
     "cover_url": "https://covers.openlibrary.org/b/id/9344864-M.jpg",
-    "outgoing_count": 22,
+    "outgoing_count": 23,
     "incoming_count": 1
   },
   {
@@ -2982,6 +3066,20 @@
     "incoming_count": 1
   },
   {
+    "id": 480,
+    "title": "The Bible",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_bible",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
+    "outgoing_count": 0,
+    "incoming_count": 5
+  },
+  {
     "id": 101,
     "title": "The Canterbury Tales",
     "author": "Geoffrey Chaucer",
@@ -3174,6 +3272,20 @@
     "kind": "book",
     "cover_id": "873783",
     "cover_url": "https://covers.openlibrary.org/b/id/873783-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 487,
+    "title": "The Little Red Book (Facebook)",
+    "author": "Anonymous",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_little red book facebook",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 1
   },
@@ -3762,7 +3874,7 @@
     "kind": "book",
     "cover_id": "14351077",
     "cover_url": "https://covers.openlibrary.org/b/id/14351077-M.jpg",
-    "outgoing_count": 25,
+    "outgoing_count": 28,
     "incoming_count": 0
   },
   {
@@ -3986,7 +4098,7 @@
     "kind": "book",
     "cover_id": "8421582",
     "cover_url": "https://covers.openlibrary.org/b/id/8421582-M.jpg",
-    "outgoing_count": 36,
+    "outgoing_count": 37,
     "incoming_count": 0
   },
   {
@@ -4070,6 +4182,20 @@
     "kind": "book",
     "cover_id": "7944491",
     "cover_url": "https://covers.openlibrary.org/b/id/7944491-M.jpg",
+    "outgoing_count": 0,
+    "incoming_count": 1
+  },
+  {
+    "id": 489,
+    "title": "Zero Wing",
+    "author": "Toaplan",
+    "is_starting": false,
+    "verified": true,
+    "match_score": null,
+    "open_library_id": "judge_book_zero wing_toaplan",
+    "kind": "book",
+    "cover_id": null,
+    "cover_url": "https://upload.wikimedia.org/wikipedia/en/b/bb/Zero_Wing_arcade_flyer.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
     "outgoing_count": 0,
     "incoming_count": 1
   }

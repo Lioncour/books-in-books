@@ -549,7 +549,9 @@ def title_similarity(a: str, b: str) -> float:
         return 0.0
     jaccard = len(sa & sb) / len(sa | sb)
 
-    if na in nb or nb in na:
+    # One title contained in the other, as whole words: "if" is not inside
+    # "tom swift" just because the letters happen to be there.
+    if f" {na} " in f" {nb} " or f" {nb} " in f" {na} ":
         len_ratio = min(len(na), len(nb)) / max(len(na), len(nb))
         jaccard = max(jaccard, 0.65 + 0.35 * len_ratio)
 
@@ -1163,8 +1165,11 @@ def get_or_create_book(
         return _upsert_verified_match(
             cursor, conn, match, kind="book", strict_author=use_author
         )
-    if judged and use_author:
-        # Real, by the Judge's reading, but absent from the catalogue
+    if judged:
+        # Real, by the Judge's reading, but absent from the catalogue. That is
+        # the normal case for anonymous and official texts (a proclamation, a
+        # commission's report, the Bible), which have no author to search by.
+        # The Auditor checks these afterwards.
         return _file_from_judge(cursor, conn, title, author_hint, "book")
 
     if require_verified:
@@ -1726,6 +1731,40 @@ def audit_book(
             f"{summary['removed']} removed, {summary['unsure']} unsure"
         )
     return summary
+
+
+def rescue_dropped_works(quiet: bool = False) -> int:
+    """
+    Link mentions that were dropped only because no catalogue had the work,
+    although the Judge had identified it. They are filed on the Judge's word
+    and left unaudited, so the Auditor looks at each one next.
+    Used after the matching rules change, to avoid re-reading every book.
+    """
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT id, source_book_id, raw_title, context, suggested_title, suggested_author
+        FROM skipped_mentions
+        WHERE reason LIKE 'Judge says it is%no catalogue match' AND suggested_title IS NOT NULL
+        """
+    )
+    rescued = 0
+    for skip_id, source_id, raw_title, context, title, author in cursor.fetchall():
+        key = override_key(raw_title)
+        if _load_overrides(cursor, source_id).get(key, (None, None))[0] == "reject":
+            continue
+        target_id = _file_from_judge(cursor, conn, title, (author or "").strip(), "book")
+        if target_id == source_id:
+            continue
+        if _link_reference(cursor, source_id, target_id, context, raw_title):
+            rescued += 1
+            if not quiet:
+                print(f"  Rescued: {title}")
+        cursor.execute("DELETE FROM skipped_mentions WHERE id = ?", (skip_id,))
+    conn.commit()
+    conn.close()
+    return rescued
 
 
 def audit_library(quiet: bool = False) -> Dict:
@@ -2972,6 +3011,10 @@ def main():
     # --fix-library re-files library books under their real title and author
     import sys
 
+    if "--rescue" in sys.argv[1:]:
+        init_database(quiet=True)
+        print(f"Rescued {rescue_dropped_works()} dropped work(s); run --audit to check them")
+        return
     if "--audit" in sys.argv[1:]:
         init_database(quiet=True)
         totals = audit_library()

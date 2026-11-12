@@ -150,6 +150,24 @@
     "manner": "passing"
   },
   {
+    "source": 1,
+    "target": 480,
+    "context": "then copying out a chapter of the Bible beneath",
+    "manner": null
+  },
+  {
+    "source": 1,
+    "target": 484,
+    "context": "“Let this cup pass from you, eh?”",
+    "manner": null
+  },
+  {
+    "source": 1,
+    "target": 485,
+    "context": "a whole yard. Look here. When it comes fall this dries up and the wind blows it all over Maycomb County!” Miss Maudie’s face likened such an occurrence unto an Old Testament pestilence. Her speech was crisp for a Maycomb County inhabitant. She called us by all our names, and when she grinned she revealed two minute gold prongs",
+    "manner": null
+  },
+  {
     "source": 3,
     "target": 27,
     "context": "Given that most days my boys were intent on either killing one another or reenacting some version of Lord of the Flies",
@@ -576,6 +594,12 @@
     "manner": "passing"
   },
   {
+    "source": 13,
+    "target": 489,
+    "context": "“All their base are belong to us.”",
+    "manner": null
+  },
+  {
     "source": 48,
     "target": 17,
     "context": "I had pictured wormholes as a sort a Stargate thing, a big ring hanging in space, with a glowing center.",
@@ -780,6 +804,18 @@
     "manner": "passing"
   },
   {
+    "source": 48,
+    "target": 480,
+    "context": "What did the Bible say, something like ‘many who are first will be last, and the last, first’?",
+    "manner": null
+  },
+  {
+    "source": 48,
+    "target": 483,
+    "context": "the words of the US Army Field Manual popped into my head.",
+    "manner": null
+  },
+  {
     "source": 49,
     "target": 51,
     "context": "And from Mrs Wilson he’d been given A Christmas Carol, an old book with a hard, red cover and no pictures, which smelled of must.",
@@ -844,6 +880,24 @@
     "target": 467,
     "context": "closed his eyes and sang ‘The Croppy Boy’",
     "manner": "quoted"
+  },
+  {
+    "source": 49,
+    "target": 480,
+    "context": "both prayer books and the bible were left lying on the hallstand until the following Sunday or holy day",
+    "manner": null
+  },
+  {
+    "source": 49,
+    "target": 481,
+    "context": "Excerpt from ‘The Proclamation of the Irish Republic’, 1916",
+    "manner": null
+  },
+  {
+    "source": 49,
+    "target": 482,
+    "context": "Earlier this year, the Mother and Baby Home Commission Report found that nine thousand children died in just eighteen of the institutions investigated.",
+    "manner": null
   },
   {
     "source": 74,
@@ -976,6 +1030,12 @@
     "target": 471,
     "context": "I think you mean 'to infinity and beyond', Skippy.",
     "manner": "quoted"
+  },
+  {
+    "source": 74,
+    "target": 480,
+    "context": "so how about 'vengeance is mine, sayeth the Lord'?",
+    "manner": null
   },
   {
     "source": 80,
@@ -1350,6 +1410,12 @@
     "manner": "passing"
   },
   {
+    "source": 80,
+    "target": 480,
+    "context": "If you must clean your Grolier Bible, we should advise ordinary soap and water.",
+    "manner": null
+  },
+  {
     "source": 123,
     "target": 130,
     "context": "he remained bitter about Andrew Ross Sorkin’s account of his role in the book Too Big to Fail",
@@ -1516,6 +1582,18 @@
     "target": 479,
     "context": "in Seoul. The guys are dancing and goofing off. Mark is back at it again with the Backstreet Boys, interspersed with Adele and Disney—“A Whole New World” from Aladdin—and I perch at the back of the plane just trying to make myself as invisible as possible, not sure what the etiquette of this situation requires. I suppose I c",
     "manner": "passing"
+  },
+  {
+    "source": 123,
+    "target": 487,
+    "context": "As Mark declares in the Little Red Book every employee is handed when they’re hired,",
+    "manner": null
+  },
+  {
+    "source": 123,
+    "target": 488,
+    "context": "desperately trying to memorize the foundational texts and the more perfect union that US citizens strive for but sometimes fall short of.",
+    "manner": null
   },
   {
     "source": 143,

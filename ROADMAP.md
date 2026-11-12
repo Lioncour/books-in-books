@@ -10,7 +10,7 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 81 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 86 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
@@ -31,19 +31,22 @@ Items are ordered by how much they improve the result for the effort.
 - **Reader model compared.** On *84, Charing Cross Road*, Haiku 5.5 as the Reader reached 98% precision and 80% recall against 100% and 95% for Opus 5.5. The gold set leans towards Opus, since it was widened with Opus finds, but the gap is large enough to keep Opus.
 - **Italics from stylesheets.** EPUBs that put italics in a CSS class instead of `<i>` tags are now covered (*Careless People* went from 0 to 37 italic candidates).
 - **Reset layout** button for the remembered graph positions.
+- **Independent gold sets.** Two books were labelled from their full text by readers that never saw the links. Against those: precision 100% on both, recall 93% (*Small Things Like These*) and 88% (*To Kill a Mockingbird*). What is still missed is unnamed allusion ("a toadfrog that lived in a hall" for *The Wind in the Willows*) and a lower-case title in a "by the same author" list.
+- **What the independent measurement found.** Two bugs, both fixed: title comparison matched "If" inside "Tom Swift" (containment is now by whole words), and works with no author were dropped when no catalogue had the identical title. Those are now filed on the Judge's word; 13 came back across the library, and the Bible now connects five of the ten books.
+- **Sonnet 5.5 as the Reader** did no better than Haiku (79% recall on *84, Charing Cross Road*). Opus 5.5 stays.
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
 ## Next: do these first
 
-### 1. An independent gold set
-Every accuracy number so far comes from one book, and that gold set was partly built from the tools' own output. Label one novel (*Columbus Day*) and one non-fiction book (*Careless People*) from the text itself, by someone or something that has not seen the links. Until then the 100% and 95% are upper bounds, not measurements.
+### 1. Gold sets for the long books
+The independent gold sets cover a novella and one novel. The two books most likely to behave differently are still unmeasured: a long modern novel full of pop-culture allusion (*Columbus Day*) and non-fiction (*Careless People*). Label them the same way, from the full text without sight of the links.
 
 ### 2. Cut the Reader's price
-Haiku 5.5 as the Reader was tried and found fewer mentions, so the saving has to come from elsewhere: the Message Batches API halves the price of the same model, and Sonnet 5.5 is untested and sits between the two. Results are cached per file and model, so this only matters for new books.
+Haiku 5.5 and Sonnet 5.5 were both tried as the Reader and both found clearly fewer mentions, so a smaller model is not the answer. The Message Batches API halves the price of the same model. Results are cached per file and model, so this only matters for new books.
 
 ### 3. Make the graph connect
-Ten books now share nine works (Star Trek, The Simpsons, Hamlet, Winnie-the-Pooh and others), up from two. Three things would create more real links:
+Ten books now share ten works (the Bible in five of them, then The Simpsons, Star Trek, Star Wars, Hamlet and others), up from two. Three things would create more real links:
 - **More books.** The network effect needs a larger library; batch upload already works.
 - **Second-hop links from the catalogue.** For a mentioned book you do not own, pull its own mentions from the shared catalogue, so two of your books connect through a third.
 - **Normalise editions and series.** "Star Trek" the film and the novelisation, or two volumes of one series, should be able to count as one node.
