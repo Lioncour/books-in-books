@@ -25,7 +25,7 @@ import os
 import re
 from typing import Dict, List, Optional
 
-from judge import MANNERS, _get_client
+from judge import MANNERS, _get_client, message_api, resolve_model
 
 DEFAULT_MODEL = "claude-opus-5-5"
 CHUNK_CHARS = 40000
@@ -92,7 +92,7 @@ def reader_enabled() -> bool:
 
 
 def reader_model() -> str:
-    return os.environ.get("BOOKS_READER_MODEL", DEFAULT_MODEL)
+    return resolve_model(os.environ.get("BOOKS_READER_MODEL"), DEFAULT_MODEL)
 
 
 def split_into_chunks(text: str, size: int = CHUNK_CHARS) -> List[str]:
@@ -135,7 +135,8 @@ def _grounded(work: Dict, chunk_squashed: str) -> bool:
 
 def _call(client, source_title: str, source_author: str, chunk: str, part: int, parts: int) -> Dict:
     by = f" by {source_author}" if source_author and source_author != "Unknown" else ""
-    with client.beta.messages.stream(
+    api, extra = message_api(client)
+    with api.stream(
         model=reader_model(),
         max_tokens=32000,
         system=[{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
@@ -143,8 +144,7 @@ def _call(client, source_title: str, source_author: str, chunk: str, part: int, 
             "effort": "medium",
             "format": {"type": "json_schema", "schema": SCHEMA},
         },
-        betas=["server-side-fallback-2026-07-01"],
-        fallbacks="default",
+        **extra,
         messages=[
             {
                 "role": "user",

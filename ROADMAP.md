@@ -22,12 +22,13 @@ Items are ordered by how much they improve the result for the effort.
 - **Graph.** A "Connections only" filter, and node positions remembered between visits.
 - **Packaging.** Dependency ranges are pinned, the app serves through waitress when it is installed, `start.ps1` sets everything up on first run, and the small spaCy model is an option (and the fallback).
 - **The Reader.** Optional (`BOOKS_READER=on`): Claude reads the book itself and lists the works it mentions, each backed by a sentence that is checked against the text. Built and tested against a stand-in for the API; not yet run for real.
+- **Amazon Bedrock.** `BOOKS_PROVIDER=bedrock` reaches Claude through an AWS profile instead of an Anthropic API key, with settings in a local `.env`. Not yet run against AWS.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
 ## Next: do these first
 
 ### 1. Re-read the library with the Judge on
-Nothing in the database has been judged yet. Set `ANTHROPIC_API_KEY`, then:
+Nothing in the database has been judged yet. Set `ANTHROPIC_API_KEY`, or point the app at Amazon Bedrock in `.env`, then:
 1. `python -m unittest tests.test_live_judge -v` with `BOOKS_LIVE_TESTS=1`: a one-minute check that the Judge behaves.
 2. `python eval_extraction.py --details` and note the baseline (58% / 52% for *84, Charing Cross Road*).
 3. `python process_books.py --force`, then the eval again, then walk `/review`.

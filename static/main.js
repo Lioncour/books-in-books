@@ -2910,9 +2910,10 @@ ${mannerTag(r.manner)}
           const hint = $("judge-hint");
           if (!hint || !health.judge) return;
           hint.hidden = false;
+          const via = health.judge.provider === "bedrock" ? " via Amazon Bedrock" : "";
           hint.textContent = health.judge.available
-            ? `The Judge is on (${health.judge.model}): mentions are checked in context.`
-            : "The Judge is off: no Claude credentials, so matching is by title only. Set ANTHROPIC_API_KEY and restart for accurate links.";
+            ? `The Judge is on (${health.judge.model}${via}): mentions are checked in context.`
+            : `The Judge is off (${health.judge.reason || "no Claude credentials"}), so matching is by title only. See “Turning the Judge on” in the README.`;
           hint.classList.toggle("is-off", !health.judge.available);
         })
         .catch(() => {});

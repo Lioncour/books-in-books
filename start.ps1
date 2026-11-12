@@ -30,8 +30,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 $env:BOOKS_SPACY_MODEL = $model
 
-if (-not $env:ANTHROPIC_API_KEY) {
-    Write-Host "Note: ANTHROPIC_API_KEY is not set. The Judge is off and matching is by title only."
+if (-not $env:ANTHROPIC_API_KEY -and -not (Test-Path ".env")) {
+    Write-Host "Note: no Claude credentials found. The Judge is off and matching is by title only."
+    Write-Host "      Copy .env.example to .env and fill it in (API key or Amazon Bedrock)."
 }
 
 Write-Host "Starting Books in Books on http://localhost:5000 (Ctrl+C to stop)"

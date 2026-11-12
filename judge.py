@@ -9,6 +9,10 @@ tune called "Pop Goes the Weasel" no longer becomes a James Patterson novel.
 
 Without credentials (ANTHROPIC_API_KEY, or an `ant auth login` profile) the
 Judge is simply off and extraction falls back to the older title-only matching.
+
+Claude can also be reached through Amazon Bedrock (BOOKS_PROVIDER=bedrock),
+which bills the AWS account behind your AWS profile instead of an Anthropic
+API key. See README: "Using Amazon Bedrock".
 """
 
 from __future__ import annotations
@@ -18,6 +22,79 @@ import os
 from typing import Dict, List, Optional
 
 DEFAULT_MODEL = "claude-opus-5-5"
+BEDROCK_PREFIX = "anthropic."  # Bedrock's name for the same model
+
+
+def load_env_file(path: str = ".env") -> None:
+    """
+    Read KEY=VALUE lines from a local .env file (gitignored) into the
+    environment, without overriding anything already set. Lets the provider,
+    region and AWS profile live in one place instead of every terminal.
+    """
+    try:
+        with open(path, encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key, value = key.strip(), value.strip().strip("\"'")
+                if key and key not in os.environ:
+                    os.environ[key] = value
+    except OSError:
+        pass
+
+
+load_env_file()
+
+
+def provider() -> str:
+    """Which service answers: 'anthropic' (default) or 'bedrock'."""
+    value = os.environ.get("BOOKS_PROVIDER", "anthropic").strip().lower()
+    return "bedrock" if value in ("bedrock", "aws") else "anthropic"
+
+
+def bedrock_api() -> str:
+    """
+    'mantle': Bedrock's Messages-API endpoint (current models, the default).
+    'runtime': the older InvokeModel endpoint, for accounts whose models are
+               reached through inference profiles such as
+               eu.anthropic.claude-opus-4-6-v1.
+    """
+    value = os.environ.get("BOOKS_BEDROCK_API", "mantle").strip().lower()
+    return "runtime" if value in ("runtime", "invoke", "legacy") else "mantle"
+
+
+def aws_region() -> Optional[str]:
+    return os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or None
+
+
+def resolve_model(configured: Optional[str], default: str = DEFAULT_MODEL) -> str:
+    """
+    The model id to send. A model you configure is used exactly as written;
+    only the built-in default is translated to Bedrock's naming.
+    """
+    if configured:
+        return configured
+    if provider() == "bedrock" and not default.startswith(BEDROCK_PREFIX):
+        return BEDROCK_PREFIX + default
+    return default
+
+
+def message_api(client):
+    """
+    Where to send requests, and the extra arguments that go with them.
+
+    On the Claude API a refused request is re-run on a fallback model by the
+    server. Bedrock does not offer that parameter, so there the plain Messages
+    surface is used and a refusal simply falls back to title-only matching.
+    """
+    if provider() == "bedrock":
+        return client.messages, {}
+    return client.beta.messages, {
+        "betas": ["server-side-fallback-2026-07-01"],
+        "fallbacks": "default",
+    }
 BATCH_SIZE = 30
 VALID_KINDS = ("book", "movie", "music", "cocktail", "other")
 MANNERS = ("read", "quoted", "discussed", "recommended", "criticised", "compared", "passing")
@@ -106,7 +183,7 @@ _disabled_reason: Optional[str] = None
 
 
 def judge_model() -> str:
-    return os.environ.get("BOOKS_JUDGE_MODEL", DEFAULT_MODEL)
+    return resolve_model(os.environ.get("BOOKS_JUDGE_MODEL"))
 
 
 def _has_credentials() -> bool:
@@ -146,6 +223,28 @@ def _get_client():
     except ImportError:
         _disabled_reason = "the anthropic package is not installed"
         return None
+    if provider() == "bedrock":
+        region = aws_region()
+        if not region:
+            _disabled_reason = "BOOKS_PROVIDER=bedrock needs AWS_REGION (for example eu-central-1)"
+            return None
+        try:
+            # Credentials come from the AWS profile / SSO login, never from here
+            options = {"aws_region": region}
+            if os.environ.get("AWS_PROFILE"):
+                options["aws_profile"] = os.environ["AWS_PROFILE"]
+            if bedrock_api() == "runtime":
+                _client = anthropic.AnthropicBedrock(**options)
+            else:
+                _client = anthropic.AnthropicBedrockMantle(**options)
+        except Exception as e:
+            _disabled_reason = (
+                f"could not start the Bedrock client ({type(e).__name__}); "
+                "install its extras with: pip install anthropic[bedrock]"
+            )
+            return None
+        return _client
+
     if not _has_credentials():
         _disabled_reason = "no Anthropic credentials (set ANTHROPIC_API_KEY or run `ant auth login`)"
         return None
@@ -162,6 +261,7 @@ def judge_status() -> Dict:
     client = _get_client()
     return {
         "available": client is not None,
+        "provider": provider(),
         "model": judge_model() if client is not None else None,
         "reason": None if client is not None else _disabled_reason,
     }
@@ -188,7 +288,8 @@ def _build_user_message(source_title: str, source_author: str, batch: List[Dict]
 
 
 def _call(client, source_title: str, source_author: str, batch: List[Dict]) -> Dict:
-    response = client.beta.messages.create(
+    api, extra = message_api(client)
+    response = api.create(
         model=judge_model(),
         max_tokens=16000,
         system=[
@@ -202,9 +303,8 @@ def _call(client, source_title: str, source_author: str, batch: List[Dict]) -> D
             "effort": "medium",
             "format": {"type": "json_schema", "schema": VERDICT_SCHEMA},
         },
-        # A refused batch is re-run on a fallback model instead of being lost.
-        betas=["server-side-fallback-2026-07-01"],
-        fallbacks="default",
+        # On the Claude API, a refused batch is re-run on a fallback model
+        **extra,
         messages=[
             {
                 "role": "user",
@@ -270,7 +370,12 @@ def judge_mentions(
                     anthropic.PermissionDeniedError,
                 )
             if auth_errors and isinstance(e, auth_errors):
-                _disable("the Anthropic credentials were rejected")
+                _disable(
+                    "AWS refused the request: run `aws sso login` for your profile, and check "
+                    "that the account has access to this model"
+                    if provider() == "bedrock"
+                    else "the Anthropic credentials were rejected"
+                )
                 return None
             if n == 1 and not verdicts:
                 # Nothing judged at all: let the caller use the old path.

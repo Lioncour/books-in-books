@@ -129,10 +129,33 @@ $env:ANTHROPIC_API_KEY = "<your key>"   # or run `ant auth login` once
 
 The sidebar says whether the Judge is on. Without credentials the app still works, but falls back to title-only matching. Then re-read your books (**Retry** on each, or `python process_books.py --force`) so existing links are judged.
 
+### Using Amazon Bedrock
+
+If you already reach Claude through AWS, you do not need an Anthropic API key. Copy `.env.example` to `.env` and set:
+
+```
+BOOKS_PROVIDER=bedrock
+AWS_PROFILE=<your AWS profile>
+AWS_REGION=eu-central-1
+```
+
+Install the extras once (`pip install "anthropic[bedrock]"`), log in (`aws sso login --profile <your AWS profile>`), and start the app. The sidebar then reads "The Judge is on (… via Amazon Bedrock)".
+
+Who pays: Bedrock usage is billed per token to **the AWS account behind that profile**. It has nothing to do with a Claude subscription or its weekly limits. If the profile belongs to an employer, the employer is billed, so check that a private project is allowed on it.
+
+Accounts that reach models through inference profiles on the older InvokeModel endpoint set two more lines: `BOOKS_BEDROCK_API=runtime` and `BOOKS_JUDGE_MODEL=<your inference profile id>`, for example `eu.anthropic.claude-opus-4-6-v1`. On Bedrock a refused request is not retried on a fallback model; that book simply falls back to title-only matching.
+
+### Settings
+
+Settings can live in the terminal or in a `.env` file in the project folder (gitignored). The terminal wins.
+
 | Setting | Default | Purpose |
 |---------|---------|---------|
-| `ANTHROPIC_API_KEY` | unset | Credentials for the Judge |
-| `BOOKS_JUDGE_MODEL` | `claude-opus-5-5` | Model used to judge mentions |
+| `ANTHROPIC_API_KEY` | unset | Credentials for the Judge (Claude API) |
+| `BOOKS_PROVIDER` | `anthropic` | `bedrock` reaches Claude through Amazon Bedrock |
+| `AWS_PROFILE` / `AWS_REGION` | unset | Bedrock only: which AWS login and region to use |
+| `BOOKS_BEDROCK_API` | `mantle` | Bedrock only: `runtime` for the older InvokeModel endpoint |
+| `BOOKS_JUDGE_MODEL` | `claude-opus-5-5` | Model used to judge mentions (`anthropic.claude-opus-5-5` on Bedrock) |
 | `BOOKS_JUDGE` | on | `off` disables the Judge |
 | `BOOKS_READER` | off | `on` lets Claude read the whole book (see below) |
 | `BOOKS_READER_MODEL` | `claude-opus-5-5` | Model used by the Reader |

@@ -3,6 +3,8 @@ spacy>=3.7,<4
 ebooklib>=0.18,<1
 requests>=2.31,<3
 anthropic>=2.8,<3
+# To reach Claude through Amazon Bedrock instead of an API key:
+#   pip install "anthropic[bedrock]"
 waitress>=3.0,<4
 
 # After installing requirements, also install the spaCy model:
