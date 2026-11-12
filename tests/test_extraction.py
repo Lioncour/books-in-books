@@ -390,6 +390,84 @@ class PipelineHousekeepingTests(TempProject):
         self.assertEqual(self.cur.fetchone(), ("/works/zweig", "222"))
 
 
+class MannerAndCacheTests(TempProject):
+    def test_manner_from_the_judge_is_stored_on_the_link(self):
+        verdict = dict(book("Lean In", "Sheryl Sandberg"), manner="recommended")
+        self.store([{"title": "Lean In", "context": "you must read Lean In"}],
+                   fake_judge({"Lean In": verdict}))
+        self.cur.execute("SELECT manner FROM book_references")
+        self.assertEqual(self.cur.fetchone()[0], "recommended")
+
+    def test_catalogue_answers_are_cached(self):
+        mock.patch.stopall()  # use the real _ol_search path, with requests faked
+        reply = mock.Mock()
+        reply.json.return_value = {"docs": [{"key": "/works/1", "title": "Emma", "author_name": ["Jane Austen"],
+                                             "junk_field": "dropped"}]}
+        with mock.patch.object(pb.requests, "get", return_value=reply) as get:
+            first = pb._ol_search({"title": "Emma", "author": "Jane Austen"})
+            second = pb._ol_search({"author": "Jane Austen", "title": "Emma"})
+            pb._ol_search({"title": "Persuasion"})
+        self.assertEqual(first, second)
+        self.assertEqual(first, [{"key": "/works/1", "title": "Emma", "author_name": ["Jane Austen"]}])
+        self.assertEqual(get.call_count, 2)  # Emma once, Persuasion once
+
+    def test_stale_cache_entries_are_refetched(self):
+        mock.patch.stopall()
+        reply = mock.Mock()
+        reply.json.return_value = {"docs": []}
+        with mock.patch.object(pb.requests, "get", return_value=reply) as get:
+            pb._ol_search({"title": "Emma"})
+            with mock.patch.object(pb, "LOOKUP_CACHE_DAYS", 0):
+                pb._ol_search({"title": "Emma"})
+        self.assertEqual(get.call_count, 2)
+
+    def test_hand_edited_library_book_is_not_overwritten_by_file_metadata(self):
+        Path("books").mkdir()
+        Path("books/Wrong Name - Someone Else.txt").write_text("text", encoding="utf-8")
+        self.cur.execute(
+            "INSERT INTO processed_files (filename, file_hash, book_id) VALUES (?, 'h', ?)",
+            ("Wrong Name - Someone Else.txt", self.source_id),
+        )
+        self.cur.execute("UPDATE books SET user_edited = 1 WHERE id = ?", (self.source_id,))
+        self.conn.commit()
+        pb.repair_owned_books(self.cur, self.conn)
+        self.cur.execute("SELECT title, author FROM books WHERE id = ?", (self.source_id,))
+        self.assertEqual(self.cur.fetchone(), ("Careless People", "Sarah Wynn-Williams"))
+
+
+class EvalScriptTests(TempProject):
+    def test_precision_and_recall_against_a_gold_set(self):
+        import eval_extraction
+
+        for title, author, olid in [("Emma", "Jane Austen", "e"), ("Selected Essays", "Someone Wrong", "s"),
+                                    ("Bon voyage!", "A. Phrasebook", "b")]:
+            self.cur.execute(
+                "INSERT INTO books (title, author, open_library_id, verified) VALUES (?, ?, ?, 1)",
+                (title, author, olid),
+            )
+            self.cur.execute(
+                "INSERT INTO book_references (source_book_id, referenced_book_id) VALUES (?, ?)",
+                (self.source_id, self.cur.lastrowid),
+            )
+        self.conn.commit()
+        gold = {
+            "source": {"title": "Careless People", "author": "Sarah Wynn-Williams"},
+            "works": [
+                {"title": "Emma", "authors": ["Jane Austen"]},
+                {"title": "Selected Essays", "authors": ["William Hazlitt"]},
+                {"title": "Persuasion", "authors": ["Jane Austen"]},
+            ],
+            "not_works": ["Bon voyage"],
+        }
+        result = eval_extraction.evaluate(gold, self.cur)
+        self.assertEqual(result["correct"], 1)
+        self.assertEqual(len(result["wrong_work"]), 1)
+        self.assertEqual(len(result["not_a_work"]), 1)
+        self.assertEqual(result["precision"], round(1 / 3, 3))
+        self.assertEqual(result["recall"], round(1 / 3, 3))
+        self.assertEqual(sorted(result["missed"]), ["Persuasion", "Selected Essays"])
+
+
 class JudgeClientTests(unittest.TestCase):
     """judge.judge_mentions against a fake Anthropic client."""
 
@@ -521,6 +599,32 @@ class WriteGuardTests(unittest.TestCase):
 
     def test_old_verify_page_is_gone(self):
         self.assertEqual(self.client.get("/verify").status_code, 404)
+
+    def test_library_book_can_be_edited_by_hand(self):
+        conn = sqlite3.connect("database.db")
+        cur = conn.cursor()
+        cur.execute("INSERT INTO books (title, author, open_library_id, verified) VALUES ('Montaine', 'Unknown', 'm1', 0)")
+        book_id = cur.lastrowid
+        cur.execute("INSERT INTO books (title, author, open_library_id, verified) VALUES ('Not Mine', 'X', 'n1', 1)")
+        other_id = cur.lastrowid
+        Path("books").mkdir(exist_ok=True)
+        Path("books/montaigne.txt").write_text("essays", encoding="utf-8")
+        cur.execute("INSERT INTO processed_files (filename, file_hash, book_id) VALUES ('montaigne.txt', 'h', ?)", (book_id,))
+        conn.commit()
+
+        with mock.patch("process_books.refresh_owned_record", return_value=True) as refile:
+            ok = self.client.patch(f"/api/library/books/{book_id}",
+                                   json={"title": "Montaigne", "author": "Stefan Zweig"})
+        self.assertEqual(ok.status_code, 200)
+        self.assertTrue(ok.get_json()["refiled"])
+        refile.assert_called_once()
+        self.assertEqual(
+            cur.execute("SELECT title, author, user_edited FROM books WHERE id = ?", (book_id,)).fetchone(),
+            ("Montaigne", "Stefan Zweig", 1),
+        )
+        self.assertEqual(self.client.patch(f"/api/library/books/{other_id}", json={"title": "X"}).status_code, 400)
+        self.assertEqual(self.client.patch(f"/api/library/books/{book_id}", json={"title": " "}).status_code, 400)
+        conn.close()
 
     def test_review_flow_confirm_reject_restore(self):
         conn = sqlite3.connect("database.db")

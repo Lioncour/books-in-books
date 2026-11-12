@@ -52,7 +52,7 @@ Long-term: a curated **mention graph** so users can add a book by title and get 
 
 - No token is needed on your own machine. There is no default token: to manage from another machine, start with `HOST=0.0.0.0` and an `ADMIN_TOKEN` of your choosing
 - `/review` — confirm or reject links with the keyboard; decisions are remembered
-- `/manage` — add/remove library books, extract references, export for Pages
+- `/manage` — add/remove library books, correct a title or author by hand (**Edit**), extract references, export for Pages
 - `/admin` — curated catalog works + mention edges
 - **Import from my library** copies your existing verified EPUB extractions into the catalog as a starting point
 
@@ -106,6 +106,7 @@ books in books/
 | GET | `/api/review/queue` | Links awaiting a decision + dropped mentions |
 | POST | `/api/review/link` | Confirm, reject or restore a link |
 | POST | `/api/review/dropped` | Link or dismiss a dropped mention |
+| PATCH | `/api/library/books/<id>` | Set a library book's title and author by hand |
 
 ## How extraction works
 
@@ -147,7 +148,7 @@ Open [http://localhost:5000/review](http://localhost:5000/review). **Links to ch
 
 ## Connections
 
-The **Connections** button on the graph lists works mentioned by more than one of your books, authors who recur, your books that cite each other, and a reading list of books you do not own. **Same author** draws dotted ties between different works by one author. Works shared by several books are drawn in gold, and zooming in labels every node.
+The **Connections** button on the graph lists works mentioned by more than one of your books, authors who recur, your books that cite each other, and a reading list of books you do not own. **Same author** draws dotted ties between different works by one author. **Connections only** hides works that just one of your books mentions. Works shared by several books are drawn in gold, and zooming in labels every node. The layout is remembered between visits. With the Judge on, each mention also carries a small tag for how the work is used: read, quoted, discussed, recommended, criticised or comparison.
 
 ## Tests
 

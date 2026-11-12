@@ -87,7 +87,11 @@
                 <div class="review-main">
                     <div class="review-work">${escapeHtml(item.title)}</div>
                     <div class="review-meta">
-                        <span class="review-kind">${escapeHtml(item.kind)}</span>${escapeHtml(item.author || "Unknown")}
+                        <span class="review-kind">${escapeHtml(item.kind)}</span>${
+                            item.manner && item.manner !== "passing"
+                                ? `<span class="review-kind">${escapeHtml(item.manner)}</span>`
+                                : ""
+                        }${escapeHtml(item.author || "Unknown")}
                     </div>
                     <div class="review-meta">mentioned in <strong>${escapeHtml(item.source_title)}</strong>${found}</div>
                     ${item.context ? `<blockquote class="review-quote">${quoteHtml(item.context, item.raw_title || item.title)}</blockquote>` : ""}

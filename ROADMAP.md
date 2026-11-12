@@ -10,12 +10,17 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 36 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 42 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
 - **Library records.** Owned books are re-filed under their real title and author (`--fix-library`), which fixed the record and cover for *Montaigne* and *Careless People*.
 - **Housekeeping.** Works nothing links to are pruned, an identical upload is refused, and the old `/verify` page is retired.
+- **Catalogue cache.** Open Library answers are kept for 30 days in `lookup_cache.db`, so a re-judge is not one request per mention.
+- **Manner of mention.** The Judge also says how a work is used (read, quoted, discussed, recommended, criticised, comparison). It is stored on the link and shown as a tag. Empty until the library is re-read with the Judge on.
+- **Edit by hand.** A library book's title and author can be corrected on `/manage`; the edit is kept and the book is re-filed in the catalogue.
+- **Graph.** A "Connections only" filter, and node positions remembered between visits.
+- **Packaging.** Dependency ranges are pinned and the app serves through waitress when it is installed.
 
 ## Next: do these first
 
@@ -42,30 +47,20 @@ Ten books give ten starbursts. Three things create real links:
 ### 5. Add a book by title, no file needed
 The stated long-term direction. The catalogue tables and admin page exist. What is missing is a public shelf view: search a title, see what it mentions, add it to "my shelf". Needs the catalogue to be populated, which the Judge now makes trustworthy enough to do in bulk from public-domain texts (Project Gutenberg).
 
-### 6. Edit library books by hand
-Owned books are now re-filed by title and author automatically. What is left is a way to correct one by hand on the manage page: title, author, cover, and which catalogue record it is.
-
-### 7. Graph usability
-- Search that highlights and zooms to a node.
-- Filter the graph to one author, one decade, or "shared only".
+### 6. Graph usability
+- Filter the graph to one author, one decade, or one manner of mention ("books this author recommends").
 - A list view for phones, where a force graph is hard to use.
-- Persist node positions so the layout does not reshuffle on every load.
-
-### 8. Annotate the kind of mention
-The Judge already reads the passage. Have it also say *how* the work is mentioned: read by a character, quoted, criticised, recommended, a passing comparison. That turns a link into something worth reading and allows filtering to "books this author recommends".
+- Positions are remembered per browser; a "Reset layout" control would make that visible.
 
 ## Later: engineering
 
-### 9. Split the big files
+### 7. Split the big files
 `app.py` (about 1,900 lines), `process_books.py` (about 2,200) and `static/main.js` (about 2,800) each do several jobs. Split along the seams that now exist: text reading, candidate finding, judging, catalogue lookup, storage; and on the front end graph, panels, upload and processing. Do it with the tests green before and after.
 
-### 10. Cache catalogue lookups
-Candidates are cached now. Open Library answers are not, so a re-judge still makes one request per mention. Cache them by title and author with an expiry.
+### 8. Packaging
+- Offer spaCy's small model as an option now that the Judge does the quality work; the transformer model alone is about 500 MB.
+- A one-command start script for Windows that creates the venv and installs everything.
 
-### 11. Packaging
-- Pin dependency versions; the spaCy transformer model alone is about 500 MB, so consider the small model as an option now that the Judge does the quality work.
-- A proper WSGI server (waitress) for anyone who exposes it beyond their own machine.
-
-### 12. Housekeeping
-- `process_text_file` and `process_epub_file` are now aliases of `process_book_file`; remove them once nothing imports the old names.
-- The gold set script has no tests of its own.
+### 9. Housekeeping
+- The judging prompt and schema have no live test yet; add one behind a flag once a key is available.
+- `process_books.py` still holds matching, storage, file reading and the command line in one file (see item 7).

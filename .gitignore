@@ -24,7 +24,7 @@ wheels/
 .installed.cfg
 *.egg
 
-# Database
+# Database (database.db, lookup_cache.db)
 *.db
 *.sqlite
 *.sqlite3

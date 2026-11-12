@@ -20,6 +20,7 @@ from typing import Dict, List, Optional
 DEFAULT_MODEL = "claude-opus-5-5"
 BATCH_SIZE = 30
 VALID_KINDS = ("book", "movie", "music", "cocktail", "other")
+MANNERS = ("read", "quoted", "discussed", "recommended", "criticised", "compared", "passing")
 
 SYSTEM_PROMPT = """You help build a map of which books mention which other works.
 
@@ -50,6 +51,12 @@ the composer or best-known performer for music, the director for films. Use the 
 passage and the source book's period to choose between works that share a title, \
 and never name a work published after the source book. Empty string when the \
 work is anonymous or traditional, or when you are not confident.
+- manner: how the passage uses the work. "read" when someone reads, owns, buys \
+or is given it; "quoted" when its words are quoted or sung; "discussed" when its \
+content or merits are talked about; "recommended" when it is praised or urged on \
+someone; "criticised" when it is disparaged; "compared" when it serves as a \
+comparison or figure of speech; "passing" for a bare mention. Use "passing" when \
+is_reference is false.
 - reason: a few words, shown to the person reviewing the result.
 
 Also give source_year: the year the source book was first published, or null if \
@@ -74,6 +81,7 @@ VERDICT_SCHEMA = {
                     "kind": {"type": "string", "enum": list(VALID_KINDS)},
                     "canonical_title": {"type": "string"},
                     "author": {"type": "string"},
+                    "manner": {"type": "string", "enum": list(MANNERS)},
                     "reason": {"type": "string"},
                 },
                 "required": [
@@ -82,6 +90,7 @@ VERDICT_SCHEMA = {
                     "kind",
                     "canonical_title",
                     "author",
+                    "manner",
                     "reason",
                 ],
                 "additionalProperties": False,

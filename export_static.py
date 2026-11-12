@@ -33,7 +33,7 @@ def export_network():
     books = match_starting_books(cursor.fetchall())
     cursor.execute(
         """
-        SELECT source_book_id, referenced_book_id, context
+        SELECT source_book_id, referenced_book_id, context, manner
         FROM book_references
         ORDER BY source_book_id, referenced_book_id
         """
@@ -43,6 +43,7 @@ def export_network():
             "source": ref["source_book_id"],
             "target": ref["referenced_book_id"],
             "context": ref["context"],
+            "manner": ref["manner"],
         }
         for ref in cursor.fetchall()
     ]
@@ -87,7 +88,7 @@ def create_static_index(docs_dir: Path):
     # Keep a cache-bust on main.js for Pages deploy
     html_content = html_content.replace(
         'src="static/main.js"',
-        'src="static/main.js?v=34"',
+        'src="static/main.js?v=36"',
     )
 
     # Explore-only: no local manage routes on Pages

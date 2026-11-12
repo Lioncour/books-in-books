@@ -100,9 +100,14 @@
                 book.source_filename ? ` · ${escapeHtml(book.source_filename)}` : ""
               }</span>
             </div>
-            <button type="button" class="btn btn-ghost danger" data-remove="${book.id}" data-title="${escapeHtml(
-              book.title
-            )}">Remove</button>
+            <div class="manage-book-actions">
+              <button type="button" class="btn btn-ghost" data-edit="${book.id}" data-title="${escapeHtml(
+                book.title
+              )}" data-author="${escapeHtml(book.author || "")}">Edit</button>
+              <button type="button" class="btn btn-ghost danger" data-remove="${book.id}" data-title="${escapeHtml(
+                book.title
+              )}">Remove</button>
+            </div>
           </li>`;
       })
       .join("");
@@ -288,6 +293,53 @@
     $("logout-btn")?.addEventListener("click", async () => {
       await api("/api/admin/logout", { method: "POST", body: "{}" });
       setLoggedIn(false);
+    });
+
+    // Edit a library book's title and author in place
+    $("library-list")?.addEventListener("click", (e) => {
+      const edit = e.target.closest("[data-edit]");
+      if (edit) {
+        const meta = edit.closest(".manage-book-row")?.querySelector(".manage-book-meta");
+        if (!meta || meta.querySelector(".manage-edit-form")) return;
+        const form = document.createElement("form");
+        form.className = "manage-edit-form";
+        form.dataset.bookId = edit.getAttribute("data-edit");
+        form.innerHTML = `
+          <input name="title" aria-label="Title" placeholder="Title" required value="${escapeHtml(
+            edit.getAttribute("data-title") || ""
+          )}">
+          <input name="author" aria-label="Author" placeholder="Author" value="${escapeHtml(
+            edit.getAttribute("data-author") || ""
+          )}">
+          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-ghost" data-cancel-edit>Cancel</button>`;
+        meta.appendChild(form);
+        form.title.focus();
+        return;
+      }
+      if (e.target.closest("[data-cancel-edit]")) {
+        e.target.closest(".manage-edit-form")?.remove();
+      }
+    });
+
+    $("library-list")?.addEventListener("submit", async (e) => {
+      const form = e.target.closest(".manage-edit-form");
+      if (!form) return;
+      e.preventDefault();
+      try {
+        const res = await api(`/api/library/books/${form.dataset.bookId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ title: form.title.value.trim(), author: form.author.value.trim() }),
+        });
+        notify(
+          "Saved",
+          res.refiled ? `${res.title}: found its catalogue record and cover.` : res.title,
+          "success"
+        );
+        await refreshLibrary();
+      } catch (err) {
+        notify("Could not save", err.message || "", "error");
+      }
     });
 
     $("library-list")?.addEventListener("click", async (e) => {

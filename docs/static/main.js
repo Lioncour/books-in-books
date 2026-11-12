@@ -23,6 +23,61 @@
   /** Books always on; opt-in cultural layers */
   let enabledKinds = loadEnabledKinds();
   let showAuthorLinks = loadAuthorLinksPref();
+  let connectedOnly = false; // show only works that tie the library together
+  let savedPositions = loadPositions();
+
+  const MANNER_LABELS = {
+    read: "read",
+    quoted: "quoted",
+    discussed: "discussed",
+    recommended: "recommended",
+    criticised: "criticised",
+    compared: "comparison",
+  };
+
+  /* Tag for how the passage uses the work; bare mentions get no tag. */
+  function mannerTag(manner) {
+    const label = MANNER_LABELS[manner];
+    return label ? ` <span class="inline-kind inline-manner">${escapeHtml(label)}</span>` : "";
+  }
+
+  /* Node positions are remembered so the layout does not reshuffle on every visit. */
+  function loadPositions() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("bib.positions") || "null");
+      return saved && typeof saved === "object" && saved.nodes ? saved : { nodes: {} };
+    } catch (e) {
+      return { nodes: {} };
+    }
+  }
+
+  function savePositions() {
+    if (!nodes.length || connectedOnly || focusBookId) return;
+    const container = $("graph-container");
+    const out = {};
+    nodes.forEach((n) => {
+      if (Number.isFinite(n.x) && Number.isFinite(n.y)) out[String(n.id)] = [Math.round(n.x), Math.round(n.y)];
+    });
+    savedPositions = {
+      width: container ? container.clientWidth : 0,
+      height: container ? container.clientHeight : 0,
+      nodes: out,
+    };
+    try {
+      localStorage.setItem("bib.positions", JSON.stringify(savedPositions));
+    } catch (e) {
+      /* private mode or full storage */
+    }
+  }
+
+  /* Saved coordinates only make sense in a window of roughly the same size. */
+  function positionsFit(width, height) {
+    return (
+      savedPositions.width &&
+      Math.abs(savedPositions.width - width) < 160 &&
+      Math.abs(savedPositions.height - height) < 160
+    );
+  }
   let sharedNodeIds = new Set();
   let zoomK = 1;
   const LABEL_ZOOM = 1.6; // zoomed in this far, every node gets its title
@@ -400,7 +455,10 @@
       }
       const outgoing = allReferences
         .filter((r) => String(r.source) === String(bookId))
-        .map((r) => allBooks.find((b) => String(b.id) === String(r.target)))
+        .map((r) => {
+          const target = allBooks.find((b) => String(b.id) === String(r.target));
+          return target ? { ...target, context: r.context, manner: r.manner } : null;
+        })
         .filter(Boolean);
       const incoming = allReferences
         .filter((r) => String(r.target) === String(bookId))
@@ -472,6 +530,7 @@
                       ? ` <span class="inline-kind">${escapeHtml(kindLabel(r.kind))}</span>`
                       : ""
                   }
+${mannerTag(r.manner)}
                   <span class="ref-author">${escapeHtml(r.author || "")}</span>
                   ${r.context ? `<span class="context-snippet">…${escapeHtml(cleanQuote(r.context))}…</span>` : ""}
                 </button>
@@ -1254,6 +1313,23 @@
       }
     });
 
+    if (connectedOnly) {
+      // Keep the library, works several books share, and authors who recur
+      const keep = new Set(startingBooks.map(String));
+      sharedIds.forEach((id) => keep.add(id));
+      byAuthor.forEach((ids) => {
+        if (ids.length >= 2) ids.forEach((id) => keep.add(id));
+      });
+      return {
+        connectedBooks: connectedBooks.filter((b) => keep.has(String(b.id))),
+        connectedReferences: connectedReferences.filter(
+          (ref) => keep.has(ref.source) && keep.has(ref.target)
+        ),
+        authorLinks: authorLinks.filter((l) => keep.has(l.source) && keep.has(l.target)),
+        sharedIds,
+      };
+    }
+
     return { connectedBooks, connectedReferences, authorLinks, sharedIds };
   }
 
@@ -1261,12 +1337,15 @@
   function computeInsights() {
     // Count films, music and drinks too, whatever the layer toggles show
     const savedKinds = enabledKinds;
+    const savedConnectedOnly = connectedOnly;
     enabledKinds = new Set(Object.keys(KIND_COLORS).concat(["book"]));
+    connectedOnly = false;
     let prepared;
     try {
       prepared = prepareGraphData(allBooks, allReferences);
     } finally {
       enabledKinds = savedKinds;
+      connectedOnly = savedConnectedOnly;
     }
     const { connectedBooks, connectedReferences } = prepared;
     const byId = new Map(connectedBooks.map((b) => [String(b.id), b]));
@@ -1511,6 +1590,7 @@
 
   function bindGraphTick() {
     if (!simulation) return;
+    simulation.on("end.save", savePositions);
     simulation.on("tick", () => {
       linkGroup.selectAll("line").each(function (d) {
         if (!d || d._blooming) return;
@@ -1556,6 +1636,14 @@
     const oldById = new Map((nodes || []).map((n) => [String(n.id), n]));
     const desiredIds = new Set(connectedBooks.map((b) => String(b.id)));
 
+    // Reuse last visit's layout when most of these nodes were placed then
+    const rememberedCount = connectedBooks.filter((b) => savedPositions.nodes[String(b.id)]).length;
+    const restorePositions =
+      reset &&
+      !connectedOnly &&
+      positionsFit(width, height) &&
+      rememberedCount >= connectedBooks.length * 0.8;
+
     const nextNodes = connectedBooks.map((book, i) => {
       const id = String(book.id);
       const style = styleForBook(book, connectedReferences);
@@ -1586,7 +1674,11 @@
       const anchor = findAnchorNode(id, connectedReferences, oldById);
       const cluster = !reset ? getClusterCenter(oldById) : null;
 
-      if (anchor && anchor.x != null && anchor.y != null) {
+      const remembered = reset && restorePositions ? savedPositions.nodes[id] : null;
+      if (remembered) {
+        x = remembered[0];
+        y = remembered[1];
+      } else if (anchor && anchor.x != null && anchor.y != null) {
         // Seed at the mother node; bloom tween pushes petals outward
         bloomAngle = (Math.PI * 2 * (i % 12)) / 12 + Math.random() * 0.35;
         bloomParentId = anchor.id;
@@ -1750,7 +1842,7 @@
         .force("charge", d3.forceManyBody().strength((d) => (d.isStarting ? -240 : -160)))
         .force("center", d3.forceCenter(width / 2, height / 2))
         .force("collision", d3.forceCollide().radius((d) => d.size + 3).strength(0.9))
-        .alpha(reset ? 1 : 0.22)
+        .alpha(reset ? (restorePositions ? 0.05 : 1) : 0.22)
         .alphaDecay(reset ? 0.028 : 0.022);
     } else {
       simulation.nodes(nodes);
@@ -2764,6 +2856,13 @@
     $("process-dismiss")?.addEventListener("click", hideProcessBanner);
     $("focus-mode")?.addEventListener("click", clearFocusMode);
     $("open-insights")?.addEventListener("click", openInsightsPanel);
+    const connectedToggle = $("layer-connected");
+    if (connectedToggle) {
+      connectedToggle.addEventListener("change", () => {
+        connectedOnly = connectedToggle.checked;
+        syncGraph();
+      });
+    }
     const authorToggle = $("layer-author");
     if (authorToggle) {
       authorToggle.checked = showAuthorLinks;
@@ -2825,6 +2924,9 @@
         5000
       );
     }
+
+    // The layout may still be settling when the page closes: keep what we have
+    window.addEventListener("pagehide", savePositions);
 
     window.addEventListener("resize", () => {
       if (!svg) return;

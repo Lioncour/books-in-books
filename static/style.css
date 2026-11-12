@@ -624,6 +624,41 @@ button.quiet-link.as-button:hover,
     box-shadow: none;
 }
 
+.inline-manner {
+    text-transform: none;
+    font-style: italic;
+    letter-spacing: 0;
+}
+
+.manage-edit-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto auto;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+
+.manage-edit-form input {
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    min-width: 0;
+}
+
+.manage-book-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+    .manage-edit-form {
+        grid-template-columns: 1fr;
+    }
+}
+
 .judge-hint {
     margin: -0.5rem 0 0;
     font-size: 0.78rem;

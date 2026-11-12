@@ -399,6 +399,12 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/favicon.ico")
+def favicon():
+    """Browsers ask for this path whatever the page declares."""
+    return app.send_static_file("favicon.svg")
+
+
 @app.route("/manage")
 def manage_page():
     """Local-only library management: add/remove books and publish to Pages."""
@@ -432,14 +438,18 @@ def api_references():
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT source_book_id, referenced_book_id
+            SELECT source_book_id, referenced_book_id, manner
             FROM book_references
             ORDER BY source_book_id, referenced_book_id
             """
         )
         references = cursor.fetchall()
         references_list = [
-            {"source": ref["source_book_id"], "target": ref["referenced_book_id"]}
+            {
+                "source": ref["source_book_id"],
+                "target": ref["referenced_book_id"],
+                "manner": ref["manner"],
+            }
             for ref in references
         ]
         conn.close()
@@ -535,7 +545,8 @@ def api_book_references(book_id):
 
         cursor.execute(
             """
-            SELECT b.id, b.title, b.author, b.verified, b.match_score, b.cover_id, b.cover_url, b.kind, br.context
+            SELECT b.id, b.title, b.author, b.verified, b.match_score, b.cover_id, b.cover_url, b.kind,
+                   br.context, br.manner
             FROM book_references br
             JOIN books b ON br.referenced_book_id = b.id
             WHERE br.source_book_id = ?
@@ -552,6 +563,7 @@ def api_book_references(book_id):
                 "match_score": r["match_score"],
                 "kind": r["kind"] if "kind" in r.keys() and r["kind"] else "book",
                 "context": r["context"],
+                "manner": r["manner"],
                 "cover_url": book_cover_url(r, size="S"),
             }
             for r in cursor.fetchall()
@@ -1174,7 +1186,7 @@ def api_review_queue():
         SELECT br.source_book_id, s.title AS source_title, s.author AS source_author,
                t.id AS target_id, t.title, t.author, t.kind, t.match_score,
                t.cover_id, t.cover_url, t.open_library_id,
-               br.context, br.raw_title, IFNULL(br.confirmed, 0) AS confirmed
+               br.context, br.raw_title, br.manner, IFNULL(br.confirmed, 0) AS confirmed
         FROM book_references br
         JOIN books s ON s.id = br.source_book_id
         JOIN books t ON t.id = br.referenced_book_id
@@ -1198,6 +1210,7 @@ def api_review_queue():
             "open_library_id": r["open_library_id"],
             "context": r["context"],
             "raw_title": r["raw_title"],
+            "manner": r["manner"],
             "confirmed": bool(r["confirmed"]),
         }
         for r in cursor.fetchall()
@@ -1521,6 +1534,44 @@ def api_library_delete_book(book_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/library/books/<int:book_id>", methods=["PATCH"])
+@require_admin
+def api_library_edit_book(book_id):
+    """Set a library book's title and author by hand, then re-file it in the catalogue."""
+    from process_books import refresh_owned_record
+
+    data = request.get_json(silent=True) or {}
+    title = (data.get("title") or "").strip()
+    author = (data.get("author") or "").strip()
+    if not title:
+        return jsonify({"error": "A title is required"}), 400
+    if len(title) > 300 or len(author) > 200:
+        return jsonify({"error": "Title or author is too long"}), 400
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM books WHERE id = ?", (book_id,))
+    if not cursor.fetchone():
+        conn.close()
+        return jsonify({"error": "Book not found"}), 404
+    if book_id not in owned_book_files():
+        conn.close()
+        return jsonify({"error": "Only library books can be edited"}), 400
+
+    cursor.execute(
+        "UPDATE books SET title = ?, author = ?, user_edited = 1 WHERE id = ?",
+        (title, author or "Unknown", book_id),
+    )
+    conn.commit()
+    refiled = False
+    try:
+        refiled = refresh_owned_record(book_id, title, author, cursor, conn)
+    except Exception:
+        pass  # offline: the edit itself is saved
+    conn.close()
+    return jsonify({"ok": True, "title": title, "author": author or "Unknown", "refiled": refiled})
+
+
 @app.route("/api/admin/export-static", methods=["POST"])
 @require_admin
 def api_admin_export_static():
@@ -1841,4 +1892,13 @@ if __name__ == "__main__":
         print("Note: reachable from other machines, read-only for them (ADMIN_TOKEN not set).")
     print("Press Ctrl+C to stop")
     print()
+    if not debug:
+        try:
+            from waitress import serve
+        except ImportError:
+            serve = None
+        if serve is not None:
+            # A real WSGI server instead of Flask's development one
+            serve(app, host=host, port=port, threads=8)
+            raise SystemExit(0)
     app.run(debug=debug, host=host, port=port, threaded=True, use_reloader=False)

@@ -116,6 +116,10 @@ def init_database(quiet: bool = False):
         cursor.execute("ALTER TABLE books ADD COLUMN kind TEXT DEFAULT 'book'")
         cursor.execute("UPDATE books SET kind = 'book' WHERE kind IS NULL OR kind = ''")
 
+    if "user_edited" not in columns:
+        # 1 = title/author were set by hand on the manage page; never overwrite
+        cursor.execute("ALTER TABLE books ADD COLUMN user_edited INTEGER DEFAULT 0")
+
     # Do not auto-retag franchise titles as movies — novels exist (e.g. Star Trek).
     # Kind is set at extraction time from context + domain lookup.
 
@@ -138,6 +142,9 @@ def init_database(quiet: bool = False):
     if "raw_title" not in ref_cols:
         # The wording found in the text, before it was matched to a work
         cursor.execute("ALTER TABLE book_references ADD COLUMN raw_title TEXT")
+    if "manner" not in ref_cols:
+        # How the passage uses the work: read, quoted, recommended, ...
+        cursor.execute("ALTER TABLE book_references ADD COLUMN manner TEXT")
     if "confirmed" not in ref_cols:
         # 1 = a person confirmed this link in the review queue; survives re-extraction
         cursor.execute("ALTER TABLE book_references ADD COLUMN confirmed INTEGER DEFAULT 0")
@@ -676,14 +683,67 @@ def _ol_doc_to_match(doc: Dict, score: float) -> Dict:
     }
 
 
+LOOKUP_CACHE_FILE = "lookup_cache.db"
+LOOKUP_CACHE_DAYS = 30
+_OL_FIELDS = ("key", "title", "author_name", "first_publish_year", "cover_i", "edition_count")
+
+
+def _lookup_cache():
+    """
+    A small SQLite file of its own: the main database is mid-transaction while
+    mentions are being filed, and a second writer there would be locked out.
+    """
+    conn = sqlite3.connect(LOOKUP_CACHE_FILE, timeout=5)
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS lookups (
+            key TEXT PRIMARY KEY,
+            docs TEXT NOT NULL,
+            fetched_at REAL NOT NULL
+        )
+        """
+    )
+    return conn
+
+
 def _ol_search(params: Dict) -> List[Dict]:
+    """Open Library search, remembered for a month so a re-judge is not one request per mention."""
+    import time
+
+    key = json.dumps(params, sort_keys=True, ensure_ascii=False)
+    cache = None
+    try:
+        cache = _lookup_cache()
+        row = cache.execute(
+            "SELECT docs, fetched_at FROM lookups WHERE key = ?", (key,)
+        ).fetchone()
+        if row and time.time() - row[1] < LOOKUP_CACHE_DAYS * 86400:
+            cache.close()
+            return json.loads(row[0])
+    except (sqlite3.Error, ValueError):
+        cache = None  # the cache is a convenience; never let it break a lookup
+
     response = requests.get(
         "https://openlibrary.org/search.json",
         params={**params, "limit": 10},
         timeout=30,
     )
     response.raise_for_status()
-    return response.json().get("docs") or []
+    docs = [
+        {field: doc[field] for field in _OL_FIELDS if field in doc}
+        for doc in (response.json().get("docs") or [])
+    ]
+    if cache is not None:
+        try:
+            cache.execute(
+                "INSERT OR REPLACE INTO lookups (key, docs, fetched_at) VALUES (?, ?, ?)",
+                (key, json.dumps(docs, ensure_ascii=False), time.time()),
+            )
+            cache.commit()
+            cache.close()
+        except sqlite3.Error:
+            pass
+    return docs
 
 
 def _too_new(doc: Dict, max_year: Optional[int]) -> bool:
@@ -1080,9 +1140,11 @@ def _link_reference(
     context: Optional[str],
     raw_title: Optional[str],
     confirmed: bool = False,
+    manner: Optional[str] = None,
 ) -> bool:
     """Insert the edge if new. Returns True when a row was added."""
     context = clean_context(context)
+    manner = manner or None
     cursor.execute(
         "SELECT 1 FROM book_references WHERE source_book_id = ? AND referenced_book_id = ?",
         (source_book_id, referenced_book_id),
@@ -1093,19 +1155,34 @@ def _link_reference(
             UPDATE book_references
             SET context = COALESCE(context, ?),
                 raw_title = COALESCE(raw_title, ?),
+                manner = COALESCE(?, manner),
                 confirmed = MAX(IFNULL(confirmed, 0), ?)
             WHERE source_book_id = ? AND referenced_book_id = ?
             """,
-            (context, raw_title, 1 if confirmed else 0, source_book_id, referenced_book_id),
+            (
+                context,
+                raw_title,
+                manner,
+                1 if confirmed else 0,
+                source_book_id,
+                referenced_book_id,
+            ),
         )
         return False
     cursor.execute(
         """
         INSERT INTO book_references
-            (source_book_id, referenced_book_id, context, raw_title, confirmed)
-        VALUES (?, ?, ?, ?, ?)
+            (source_book_id, referenced_book_id, context, raw_title, confirmed, manner)
+        VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (source_book_id, referenced_book_id, context, raw_title, 1 if confirmed else 0),
+        (
+            source_book_id,
+            referenced_book_id,
+            context,
+            raw_title,
+            1 if confirmed else 0,
+            manner,
+        ),
     )
     return True
 
@@ -1311,7 +1388,14 @@ def _store_references(
                 ensure_cover_for_book(referenced_book_id, cursor, conn)
             except Exception:
                 pass
-            if _link_reference(cursor, source_book_id, referenced_book_id, context, raw_title):
+            if _link_reference(
+                cursor,
+                source_book_id,
+                referenced_book_id,
+                context,
+                raw_title,
+                manner=(verdict or {}).get("manner"),
+            ):
                 added += 1
                 if not quiet:
                     print(f"  Added verified {kind}: {lookup_title}")
@@ -1655,11 +1739,6 @@ def process_book_file(
         raise
 
 
-# Kept for callers that still use the per-format names
-process_text_file = process_book_file
-process_epub_file = process_book_file
-
-
 def clean_filename_phrase(text: str) -> str:
     """Turn underscore/slug phrases into a readable title/author string."""
     text = text.replace("_", " ").strip()
@@ -1857,8 +1936,12 @@ def repair_owned_books(cursor, conn, books_dir: Optional[Path] = None) -> int:
             "UPDATE processed_files SET book_id = ? WHERE filename = ?",
             (book_id, file_path.name),
         )
-        cursor.execute("SELECT title, author FROM books WHERE id = ?", (book_id,))
-        row_title, row_author = cursor.fetchone()
+        cursor.execute(
+            "SELECT title, author, IFNULL(user_edited, 0) FROM books WHERE id = ?", (book_id,)
+        )
+        row_title, row_author, user_edited = cursor.fetchone()
+        if user_edited:
+            continue  # a person set these by hand
         changed = False
         if title_similarity(row_title or "", title) < MIN_VERIFY_SCORE:
             cursor.execute(
@@ -2020,6 +2103,14 @@ def process_single_file(
         conn.commit()
 
     title, author = file_title_and_author(file_path)
+    if known_book_id is not None:
+        cursor.execute(
+            "SELECT title, author FROM books WHERE id = ? AND IFNULL(user_edited, 0) = 1",
+            (known_book_id,),
+        )
+        edited = cursor.fetchone()
+        if edited:  # hand-set title/author beat the file's metadata
+            title, author = edited[0], edited[1] or author
     if progress_callback:
         progress_callback(
             {
