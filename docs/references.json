@@ -1,1022 +1,1802 @@
 [
   {
     "source": 1,
-    "target": 2,
-    "context": "urch’s only decoration except a rotogravure print of Hunt’s The Light of the World. There was no sign of piano, organ, hymn-books, church prog",
-    "manner": null
+    "target": 400,
+    "context": "Lawyers, I suppose, were children once.",
+    "manner": "quoted"
   },
   {
     "source": 1,
-    "target": 3,
-    "context": "or a photographer in Meridian, had entered his picture in a Beautiful Child contest and won five dollars. She gave the money to Dill, w",
-    "manner": null
+    "target": 401,
+    "context": "Maycomb County had recently been told that it had nothing to fear but fear itself.",
+    "manner": "quoted"
   },
   {
     "source": 1,
-    "target": 4,
-    "context": "ion to proceed without his help.     On the dying notes of “Jubilee,” Zeebo said, “In that far-off sweet forever, just beyond t",
-    "manner": null
+    "target": 402,
+    "context": "a checkerboard and an unsullied Code of Alabama",
+    "manner": "passing"
   },
   {
     "source": 1,
-    "target": 5,
-    "context": "ssion: “I won’t say you ran out on a dare an‘ I’ll swap you The Gray Ghost if you just go up and touch the house.”     Jem brightened.",
-    "manner": null
+    "target": 403,
+    "context": "Dill had seen Dracula, a revelation that moved Jem to eye him with the beginning of respect.",
+    "manner": "discussed"
   },
   {
     "source": 1,
-    "target": 6,
-    "context": "under duress, apparently saw nothing personal in singing, “Amazing Grace, how sweet the sound, that saved a wretch like me…” It was",
-    "manner": null
+    "target": 404,
+    "context": "He played the character parts formerly thrust upon me— the ape in Tarzan, Mr. Crabtree in The Rover Boys, Mr. Damon in Tom Swift.",
+    "manner": "discussed"
   },
   {
     "source": 1,
-    "target": 7,
-    "context": "yed the character parts formerly thrust upon me— the ape in Tarzan, Mr. Crabtree in The Rover Boys, Mr. Damon in Tom Swift. Th",
-    "manner": null
+    "target": 405,
+    "context": "He played the character parts formerly thrust upon me— the ape in Tarzan, Mr. Crabtree in The Rover Boys, Mr. Damon in Tom Swift.",
+    "manner": "discussed"
   },
   {
     "source": 1,
-    "target": 179,
-    "context": "on. At each seat was a cheap cardboard fan bearing a garish Garden of Gethsemane, courtesy Tyndal’s Hardware Co. (You-Name-It-We-Sell-It).",
-    "manner": null
+    "target": 406,
+    "context": "Dill bet Jem The Gray Ghost against two Tom Swifts",
+    "manner": "read"
   },
   {
     "source": 1,
-    "target": 180,
-    "context": "mamma married.”     “What was the book, Cal?” I asked.     “Blackstone’s Commentaries.”     Jem was thunderstruck. “You mean you taught Zeebo out",
-    "manner": null
+    "target": 407,
+    "context": "Our first raid came to pass only because Dill bet Jem The Gray Ghost against two Tom Swifts",
+    "manner": "read"
   },
   {
     "source": 1,
-    "target": 181,
-    "context": "ing syrupy biscuits for lunch, being a holy-roller, singing Sweetly Sings the Donkey and pronouncing it dunkey, all of which the state paid teac",
-    "manner": null
+    "target": 408,
+    "context": "I was not to approach him with requests to enact a chapter of Tarzan and the Ant Men",
+    "manner": "passing"
+  },
+  {
+    "source": 1,
+    "target": 409,
+    "context": "the diaries of Lorenzo Dow—anything Atticus happened to be reading",
+    "manner": "read"
+  },
+  {
+    "source": 1,
+    "target": 410,
+    "context": "One day we were so busily playing Chapter XXV, Book II of One Man’s Family, we did not see Atticus standing on the sidewalk looking at us",
+    "manner": "passing"
+  },
+  {
+    "source": 1,
+    "target": 411,
+    "context": "tried to keep them there when all about him men were losing their heads",
+    "manner": "quoted"
+  },
+  {
+    "source": 1,
+    "target": 412,
+    "context": "Jem sat down in a cane-bottom chair and opened Ivanhoe.",
+    "manner": "read"
+  },
+  {
+    "source": 1,
+    "target": 413,
+    "context": "“There’s a land beyond the river.”",
+    "manner": "quoted"
+  },
+  {
+    "source": 1,
+    "target": 414,
+    "context": "Zeebo lined On Jordan’s Stormy Banks, and church was over.",
+    "manner": "quoted"
+  },
+  {
+    "source": 1,
+    "target": 415,
+    "context": "“Blackstone’s Commentaries.”",
+    "manner": "read"
+  },
+  {
+    "source": 1,
+    "target": 416,
+    "context": "I heard him rumble, “Nearer my God to thee,” some notes behind the rest of us.",
+    "manner": "quoted"
+  },
+  {
+    "source": 1,
+    "target": 417,
+    "context": "Jem would struggle the rest of an evening through the speeches of Henry W. Grady.",
+    "manner": "read"
+  },
+  {
+    "source": 1,
+    "target": 418,
+    "context": "Mayella sounded like a Mr. Jingle in a book I had been reading.",
+    "manner": "compared"
+  },
+  {
+    "source": 1,
+    "target": 419,
+    "context": "Thomas Jefferson once said that all men are created equal, a phrase that the Yankees and the distaff side of the Executive branch in Washington are fond of hurling at us.",
+    "manner": "quoted"
+  },
+  {
+    "source": 1,
+    "target": 420,
+    "context": "apparently saw nothing personal in singing, “Amazing Grace, how sweet the sound, that saved a wretch like me…”",
+    "manner": "quoted"
+  },
+  {
+    "source": 1,
+    "target": 421,
+    "context": "singing Sweetly Sings the Donkey and pronouncing it dunkey",
+    "manner": "passing"
+  },
+  {
+    "source": 1,
+    "target": 422,
+    "context": "I must have heard her in my sleep, or the band playing Dixie woke me",
+    "manner": "passing"
+  },
+  {
+    "source": 1,
+    "target": 423,
+    "context": "The band played the national anthem, and we heard the audience rise.",
+    "manner": "passing"
+  },
+  {
+    "source": 1,
+    "target": 424,
+    "context": "the line carefully, and it was sung. At the chorus Zeebo closed the book, a signal for the congregation to proceed without his help. On the dying notes of “Jubilee,” Zeebo said, “In that far-off sweet forever, just beyond the shining river.” Line for line, voices followed in simple harmony until the hymn ended in a me",
+    "manner": "quoted"
   },
   {
     "source": 3,
     "target": 18,
-    "context": "ts myself. I was reminded, as I did this, of a scene from a Star Trek program where a member of the starship crew was trying to t",
-    "manner": null
+    "context": "I was reminded, as I did this, of a scene from a Star Trek program where a member of the starship crew was trying to teach the fine art of eating to a woman who had spent most of her life as a sort of living machine.",
+    "manner": "compared"
   },
   {
     "source": 3,
     "target": 23,
-    "context": "acher. We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 24,
-    "context": "ng dream in the early 1980s. Stimulated by a cartoon called The Masters of the Universe, these toys may not have actually ruled the universe, but f",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 25,
-    "context": "y classes the way He-Man had anyway. My girls had all been “My Little Pony” addicts in that era. I opened the comic and paged thr",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 26,
-    "context": "hat we normally do.” “Yeah, we’re going to discuss how Psycho Girl killed some poor kid in the first grade,” Billy added.",
-    "manner": null
+    "context": "We were like the characters in the children’s story “The Gingerbread Boy,” all chasing one after another after Venus, who was after Billy.",
+    "manner": "compared"
   },
   {
     "source": 3,
     "target": 27,
-    "context": "on either killing one another or reenacting some version of Lord of the Flies, Julie became easily overcome in situations where fighting",
-    "manner": null
+    "context": "Given that most days my boys were intent on either killing one another or reenacting some version of Lord of the Flies",
+    "manner": "compared"
   },
   {
     "source": 3,
     "target": 28,
-    "context": "ide to stand by the wall.” I picked out Arnold Lobel’s Frog and Toad Are Friends, a longtime favorite of mine. It was an easy-reader childre",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 29,
-    "context": "e of its shouting. But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 30,
-    "context": "ing. But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,” be",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 31,
-    "context": "as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,” because they were f",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 33,
-    "context": "nch. Santa pulled over a little chair and sat down to read “The Night Before Christmas” to the children while they ate. A tiny moment of peac",
-    "manner": null
+    "context": "I picked out Arnold Lobel’s Frog and Toad Are Friends, a longtime favorite of mine.",
+    "manner": "read"
   },
   {
     "source": 3,
     "target": 34,
-    "context": "ks – Arnold Lobel’s Frog and Toad books and Russell Hoban’s Frances series on the idea that familiarity would be a good way to",
-    "manner": null
+    "context": "It’s called Bread and Jam for Frances. That’s a funny one.",
+    "manner": "passing"
   },
   {
     "source": 3,
     "target": 35,
-    "context": "our détente by getting up to locate a second book, I opened Frog and Toad again. There was one particularly funny little story where",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 36,
-    "context": "r. On this day, it had taken almost seven minutes to choose Best Friends for Frances, so I settled down to read it. As had beco",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 37,
-    "context": "eed, one that I’d used for years in working with children: “Would You Like to Swing on a Star.” “A mule is an animal with long, funny ears.” I waggl",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 38,
-    "context": "the homemade game. There is a children’s board game called Candy Land that involves progressing along a long snaking path made up",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 39,
-    "context": "e room telepathically. Six or seven minutes of reading She-Ra aloud to myself in the reading corner and no sign of moveme",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 40,
-    "context": "hoes and attached a little blue ribbon medallion that said “First Prize.” Not exactly appropriate, but it was all I could find at t",
-    "manner": null
+    "context": "Or shall we read Frog and Toad Together? I like that one too.",
+    "manner": "read"
   },
   {
     "source": 3,
     "target": 41,
-    "context": "classroom. I’d been reading an old favorite of mine – Treasure Island – to the children after lunch. I always did this every year",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 42,
-    "context": ". She had long blonde hair pushed back with a headband à la Alice in Wonderland, whom she would have made a pretty good stand-in for, excep",
-    "manner": null
+    "context": "I’d been reading an old favorite of mine – Treasure Island – to the children after lunch.",
+    "manner": "read"
   },
   {
     "source": 3,
     "target": 43,
-    "context": "Greek myths, picture books, and the whole of A. A. Milne’s Winnie-the-Pooh – but Venus’s favorite was a thin book of verse called Fath",
-    "manner": null
-  },
-  {
-    "source": 3,
-    "target": 44,
-    "context": "ngsong. Her favorite of all the rhymes was one called “Dilly Dilly.” Dilly, Dilly, Piccalilli. Tell me something very sil",
-    "manner": null
+    "context": "Jesse, on the other hand, was one of life’s natural Eeyores.",
+    "manner": "compared"
   },
   {
     "source": 3,
     "target": 45,
-    "context": "terest in my routine. Donna, the girl whose story I told in The Saddest Girl in the World, had left us in November and I’d taken Christmas off and wa",
-    "manner": null
+    "context": "Donna, the girl whose story I told in The Saddest Girl in the World, had left us in November",
+    "manner": "passing"
   },
   {
     "source": 3,
-    "target": 178,
-    "context": "this gave us lots of Christmas songs to work with. Indeed, “Jingle Bells” almost became our theme song we sang it so much. The",
-    "manner": null
+    "target": 215,
+    "context": "Stimulated by a cartoon called The Masters of the Universe, these toys may not have actually ruled the universe, but for several years they’d come darned close in my classroom.",
+    "manner": "passing"
   },
   {
-    "source": 13,
-    "target": 9,
-    "context": "e to survive here? I thought back to the Star Trek episode, The Way to Eden, where the entire planet had turned out to be poisonous. It",
-    "manner": null
+    "source": 3,
+    "target": 216,
+    "context": "“If You’re Happy and You Know It” was an old favorite.",
+    "manner": "quoted"
   },
   {
-    "source": 13,
-    "target": 10,
-    "context": "his purpose. And, like 99% of my TODOs, it was filed under “Someday.”    I took a moment to mourn for Arthur. Downer or not, he",
-    "manner": null
+    "source": 3,
+    "target": 217,
+    "context": "ast,” appearing whenever I could squeeze it in. We started with singing. Anytime I could manage it. “If You’re Happy and You Know It” was an old favorite. And “B-I-N-G-O,” which the boys loved because of its shouting. But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 222,
+    "context": "“Jingle bells, Jingle bells,” I started. “Come on, everyone! Jingle all the way. Oh what fun…”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 223,
+    "context": "Santa pulled over a little chair and sat down to read “The Night Before Christmas” to the children while they ate.",
+    "manner": "read"
+  },
+  {
+    "source": 3,
+    "target": 224,
+    "context": "it had taken almost seven minutes to choose Best Friends for Frances, so I settled down to read it.",
+    "manner": "read"
+  },
+  {
+    "source": 3,
+    "target": 226,
+    "context": "but Venus’s favorite was a thin book of verse called Father Fox’s Pennyrhymes.",
+    "manner": "read"
+  },
+  {
+    "source": 3,
+    "target": 227,
+    "context": "wife because he couldn’t resist her. Venus quickly learned them and enjoyed saying them in a lilting singsong. Her favorite of all the rhymes was one called “Dilly Dilly.” Dilly, Dilly, Piccalilli. Tell me something very silly. Well, there was a chap, his name was Bert. He ate the buttons off his shirt. Every time we came to",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 228,
+    "context": "It was a follow-up to Father Fox’s Pennyrhymes called Father Fox’s Feast of Songs.",
+    "manner": "read"
+  },
+  {
+    "source": 3,
+    "target": 229,
+    "context": "onicled her struggles in the classroom in a succession of bestselling books. She currently lives and writes in North Wales. Other Works One Child Ghost Girl Just Another Kid The Tiger’s Child Twilight Children Copyright HarperElementAn Imprint of HarperCollinsPublishers77–85 Fulham Palace Road,Ham",
+    "manner": "passing"
+  },
+  {
+    "source": 3,
+    "target": 230,
+    "context": "Just Another Kid",
+    "manner": "passing"
+  },
+  {
+    "source": 3,
+    "target": 231,
+    "context": "The Tiger’s Child",
+    "manner": "passing"
+  },
+  {
+    "source": 3,
+    "target": 232,
+    "context": "Twilight Children",
+    "manner": "passing"
+  },
+  {
+    "source": 3,
+    "target": 233,
+    "context": "Then as I was taking down folders from a higher shelf, a comic fell. I picked it up. She-Ra, Princess of Power.",
+    "manner": "read"
+  },
+  {
+    "source": 3,
+    "target": 234,
+    "context": "She had long blonde hair pushed back with a headband à la Alice in Wonderland, whom she would have made a pretty good stand-in for",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 323,
+    "context": "“Pride goeth before a fall.”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 324,
+    "context": "With their manic behavior, identical Howdy Doody faces, and weird, out-of-date clothes",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 325,
+    "context": "Like maybe she’s Freddy’s little sister from Elm Street or something.",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 326,
+    "context": "Recognizing discretion to be the better part of valor, the bus driver stopped her complaining and left immediately.",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 327,
+    "context": "Stuck my head in a little skunk’s hole! Little skunk said, ‘Well, bless my soul! Take it out! Take it out! Take it out!’",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 328,
+    "context": "And “B-I-N-G-O,” which the boys loved because of its shouting.",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 329,
+    "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 330,
+    "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 331,
+    "context": "But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 332,
+    "context": "“Little arrows in your clothing, Little arrows in your hair. When you’re in love you’ll find those little arrows everywhere,”",
+    "manner": "quoted"
+  },
+  {
+    "source": 3,
+    "target": 333,
+    "context": "But it’s like being with a Stepford wife.",
+    "manner": "compared"
+  },
+  {
+    "source": 3,
+    "target": 334,
+    "context": "“Yeah, Springfield, Illinois!” Billy interjected. “That’s where Bart Simpson lives!”",
+    "manner": "passing"
+  },
+  {
+    "source": 3,
+    "target": 335,
+    "context": "h the boys loved because of its shouting. But I included some old-timers, such as “High Hopes,” “In the Cool, Cool, Cool of the Evening,” “Little Arrows,” and “If You Want to Swing on a Star,” because they were funny, could be mimed, and stood up well to being sung with gusto. But mainly because I could remember the words! And, of course, as it was",
+    "manner": "quoted"
   },
   {
     "source": 13,
     "target": 11,
-    "context": "itary person. I had no training, no experience, and reading Art of War, as useful as it had been for ideas, wasn’t going to make m",
-    "manner": null
-  },
-  {
-    "source": 13,
-    "target": 12,
-    "context": "at the system representation in the holotank. Then I put on On the Road Again, full blast, and fired up the SURGE drive. In the village b",
-    "manner": null
-  },
-  {
-    "source": 13,
-    "target": 15,
-    "context": "ed.”    “And so many stinkers, too. Really, if you’re up on Star Wars and Star Trek, you’re golden. Anyway, back to Castaway… Cli",
-    "manner": null
-  },
-  {
-    "source": 13,
-    "target": 17,
-    "context": ". When I’d been a kid, watching Star Trek and Star Wars and Stargate and all the other science fiction shows, it seemed like eve",
-    "manner": null
+    "context": "I pulled up my copy of Art of War, hoping for more inspiration this time around.",
+    "manner": "read"
   },
   {
     "source": 13,
     "target": 18,
-    "context": "tty good argument for a common chemical basis for life. Not Star Trek level compatible, but we could probably subsist on an alien",
-    "manner": null
+    "context": "Not Star Trek level compatible, but we could probably subsist on an alien ecosystem.",
+    "manner": "passing"
   },
   {
     "source": 13,
     "target": 19,
-    "context": "ne department. I was reminded of Bill Paxton’s character in Aliens.    I glared at Elmer for a second, then continued. “We hav",
-    "manner": null
+    "context": "I was reminded of Bill Paxton’s character in Aliens.",
+    "manner": "compared"
   },
   {
     "source": 13,
-    "target": 20,
-    "context": "his face and shook his head vehemently.    “The strains of Also Sprach Zarathustra in the background…” I continued.    Marvin started to moan.",
-    "manner": null
-  },
-  {
-    "source": 13,
-    "target": 21,
-    "context": "nd the first one was starting in less than fifteen minutes. Exploring the Galaxy featured Lawrence Vienn as one of the speakers. He was a po",
-    "manner": null
+    "target": 43,
+    "context": "“Chrissake, Eeyore, get a grip.",
+    "manner": "compared"
   },
   {
     "source": 13,
     "target": 171,
-    "context": "such as it was. It reminded me of the robot from the movie Short Circuit. I moved my ‘head’ around and the roamer’s video showed the",
-    "manner": null
-  },
-  {
-    "source": 13,
-    "target": 172,
-    "context": "e story. There was a movie out a number of years ago called Castaway.” [133 years ago]. Chrissake, GUPPI. Shut it. “Heard of it?",
-    "manner": null
-  },
-  {
-    "source": 13,
-    "target": 173,
-    "context": "was probably the easiest uncertainty to answer. The classic Chinese Room, which just used scripts to react to input, had no internal",
-    "manner": null
-  },
-  {
-    "source": 13,
-    "target": 174,
-    "context": "nodded an acknowledgement to him, and forwarded to Bill an In Memorium entry about Arthur, for the archives. As soon as Charles wa",
-    "manner": null
-  },
-  {
-    "source": 13,
-    "target": 175,
-    "context": "replicant. Homer had come up with endless variations on the Beans, Beans song, some of which had caught on Earthside.    The second",
-    "manner": null
-  },
-  {
-    "source": 13,
-    "target": 176,
-    "context": "ct. Working the bugs out of that thing has become a game of Whack-a-Mole.”    Garfield laughed. “Okay, old man. I’ll pull a couple o",
-    "manner": null
+    "context": "It reminded me of the robot from the movie Short Circuit.",
+    "manner": "compared"
   },
   {
     "source": 13,
     "target": 177,
-    "context": "ou from. Maybe I should use that for the next batch of Bobs and bring them up to date the old fashioned way.”    “Whiskey, with a little sugar and bitters round the lip of the glass?”    I put",
-    "manner": null
+    "context": "“Whiskey, with a little sugar and bitters round the lip of the glass?”",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 252,
+    "context": "Really, if you’re up on Star Wars and Star Trek, you’re golden.",
+    "manner": "recommended"
+  },
+  {
+    "source": 13,
+    "target": 292,
+    "context": "There was a movie out a number of years ago called Castaway.",
+    "manner": "discussed"
+  },
+  {
+    "source": 13,
+    "target": 293,
+    "context": "I thought back to the Star Trek episode, The Way to Eden, where the entire planet had turned out to be poisonous.",
+    "manner": "discussed"
+  },
+  {
+    "source": 13,
+    "target": 294,
+    "context": "Then I put on On the Road Again, full blast, and fired up the SURGE drive.",
+    "manner": "passing"
+  },
+  {
+    "source": 13,
+    "target": 295,
+    "context": "“The strains of Also Sprach Zarathustra in the background…” I continued.",
+    "manner": "passing"
+  },
+  {
+    "source": 13,
+    "target": 296,
+    "context": "Homer had come up with endless variations on the Beans, Beans song, some of which had caught on Earthside.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 297,
+    "context": "Bert and Ernie had adopted Battlestar Galactica-style uniforms and command deck VRs. I was a little surprised by that, as it hadn’t been one of my favorite shows.",
+    "manner": "discussed"
+  },
+  {
+    "source": 13,
+    "target": 334,
+    "context": "I didn’t like being bested by Homer Simpson.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 354,
+    "context": "“Auntie Em! Auntie Em!” Homer’s VR came online, smiling.",
+    "manner": "quoted"
+  },
+  {
+    "source": 13,
+    "target": 425,
+    "context": "I love to sail forbidden seas, and land on barbarous coasts.",
+    "manner": "quoted"
+  },
+  {
+    "source": 13,
+    "target": 426,
+    "context": "You couldn’t truly say you’d been to a science fiction con until you’d been run over by Farscape cosplayers",
+    "manner": "passing"
+  },
+  {
+    "source": 13,
+    "target": 427,
+    "context": "She’s kind of like the terminator, that way.",
+    "manner": "quoted"
+  },
+  {
+    "source": 13,
+    "target": 428,
+    "context": "“So this is like the Andromeda Strain?”",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 429,
+    "context": "MUST LOOK LIKE SCARY GUY FROM POLTERGEIST 2.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 430,
+    "context": "I wasn’t the rampaging Frankenstein they seemed to be concerned about.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 431,
+    "context": "Well, that’s double-plus ungood.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 432,
+    "context": "We always liked Bill the Cat.",
+    "manner": "passing"
+  },
+  {
+    "source": 13,
+    "target": 433,
+    "context": "Classic catch-22.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 434,
+    "context": "Bangarang, mofo!",
+    "manner": "quoted"
+  },
+  {
+    "source": 13,
+    "target": 435,
+    "context": "The old Pacino-ism really nailed it: Just when I thought I was out, they pull me back in!",
+    "manner": "quoted"
+  },
+  {
+    "source": 13,
+    "target": 436,
+    "context": "“Uh huh. Maybe you can make yourself a Hobbes.”",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 437,
+    "context": "“And maybe you can make yourself a Dill-bert.”",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 438,
+    "context": "while the delegates displayed complete contempt for Robert’s Rules of Order",
+    "manner": "passing"
+  },
+  {
+    "source": 13,
+    "target": 439,
+    "context": "“Oh, goody,” I said, smacking my forehead, “a quest. Will there be nine of them? They can stop in Rivendell…”",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 440,
+    "context": "When I’d been a kid, watching Star Trek and Star Wars and Stargate and all the other science fiction shows, it seemed like every planet was M-class and every star was yellow.",
+    "manner": "passing"
+  },
+  {
+    "source": 13,
+    "target": 441,
+    "context": "“A black featureless block. Dimensions one by four by nine.” I leered at Marvin.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 442,
+    "context": "Mostly it was from Foster’s Midworld, but I’d thinned things out so there were good lines-of-sight.",
+    "manner": "discussed"
+  },
+  {
+    "source": 13,
+    "target": 443,
+    "context": "The best metaphor I could come up with was the alien ship in Prometheus.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 444,
+    "context": "This was more like an Alien scenario.",
+    "manner": "compared"
+  },
+  {
+    "source": 13,
+    "target": 445,
+    "context": "While we didn’t expect Medeiros to be a “two-dimensional thinker”—he was after all, military",
+    "manner": "quoted"
   },
   {
     "source": 48,
-    "target": 15,
-    "context": "Justin Beiber is going to play Darth Vader in the next Star Wars movie.” I suggested. “Oooooh, good one! I knew t",
-    "manner": null
+    "target": 17,
+    "context": "I had pictured wormholes as a sort a Stargate thing, a big ring hanging in space, with a glowing center.",
+    "manner": "compared"
   },
   {
     "source": 48,
     "target": 18,
-    "context": "rprise.” Major Simms protested. I guessed she wasn’t a Star Trek fan. “This is the first human starship. If you&#",
-    "manner": null
+    "context": "Warp factor five was not an option, unfortunately.",
+    "manner": "passing"
   },
   {
     "source": 48,
     "target": 61,
-    "context": "hat scenario, since I’d already seen that in the movie Red Dawn. The good one made way back when Reagan was in office,",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 62,
-    "context": "at controlled the ice cream truck’s music system, and ‘Turkey in the Straw’ blared out of the rooftop speakers as the truck bounc",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 63,
-    "context": "Stan punched buttons, and the music changed to ‘Camptown Races’, then ‘Pop Goes the Weasel’ then a couple video game theme",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 64,
-    "context": "tons, and the music changed to ‘Camptown Races’, then ‘Pop Goes the Weasel’ then a couple video game theme songs I couldn’t name,",
-    "manner": null
+    "context": "I didn’t have to imagine that scenario, since I’d already seen that in the movie Red Dawn.",
+    "manner": "compared"
   },
   {
     "source": 48,
     "target": 65,
-    "context": "eeze us, make us sleep the whole way? They did that in Avatar, right, you saw that movie?” People were gr",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 66,
-    "context": "e scars on my left arm, and paperwork started to award a Bronze Star. That paperwork had stopped at the brigade level, whic",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 67,
-    "context": "be a jerk? A Turing Test is—” “I know what a Turing Test is, I’m not stupid.” Silence. “That was a dramat",
-    "manner": null
+    "context": "They did that in Avatar, right, you saw that movie?",
+    "manner": "discussed"
   },
   {
     "source": 48,
     "target": 68,
-    "context": "ound. “That is an annoying misquote from Shakespeare’s Macbeth. The correct line is ‘Lay on, MacDuff’ and it means th",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 69,
-    "context": "wear, and pretend I’m listening. Besides, I’m watching Wheel Of Fortune.” And probably all other TV shows that were being broa",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 70,
-    "context": "ed something I’d heard from a guy who was been awarded the Medal of Honor; wearing the Medal isn’t something you do for yourself",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 71,
-    "context": "2 CHAPTER ONE The Flying Dutchman shuddered again, with sounds of groaning and the terri",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 72,
-    "context": "and tried something else. Columbus Day and Ascendant were written together starting around 2011, I switched",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 73,
-    "context": "rted over. This time I wrote an outline for the entire Expeditionary Force story arc first, so I would know where the overall story",
-    "manner": null
+    "context": "That is an annoying misquote from Shakespeare’s Macbeth. The correct line is ‘Lay on, MacDuff’ and it means the opposite-",
+    "manner": "quoted"
   },
   {
     "source": 48,
     "target": 74,
-    "context": "aded Columbus Day, I had the second book in the series SpecOps about halfway done, and I kept writing at night and on",
-    "manner": null
+    "context": "SpecOps was published at the beginning of June 2016",
+    "manner": "discussed"
   },
   {
     "source": 48,
     "target": 75,
-    "context": "ay, my reaction was “THE RC Bray? The guy who narrated The Martian? Winner of an Audie Award for best sci fi narrator? Ha",
-    "manner": null
+    "context": "The guy who narrated The Martian?",
+    "manner": "passing"
   },
   {
     "source": 48,
     "target": 76,
-    "context": "amed Tim Gerard Reynolds? Not the TGR who narrated the Red Rising audiobooks, right?” Clearly, I have been v",
-    "manner": null
+    "context": "Not the TGR who narrated the Red Rising audiobooks, right?",
+    "manner": "passing"
   },
   {
     "source": 48,
     "target": 77,
-    "context": "; Book 3: Paradise Book ‘3.5’: Trouble on Paradise novella Book 4: Black Ops",
-    "manner": null
-  },
-  {
-    "source": 48,
-    "target": 78,
-    "context": "8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
-    "manner": null
+    "context": "Book 3: Paradise",
+    "manner": "passing"
   },
   {
     "source": 48,
     "target": 170,
-    "context": "re since I left Earth on the space elevator. It was a bad idea for me to and #13; order a rum and Coke. My thinking was that, after a long day being and #13; interrogated, I needed something w",
-    "manner": null
+    "context": "It was a bad idea for me to order a rum and Coke.",
+    "manner": "read"
   },
   {
-    "source": 49,
-    "target": 32,
-    "context": "and came on, Grace took up the accordion and tried to play ‘Jingle Bells’. Sheila turned on the television and lay on the settee wat",
-    "manner": null
+    "source": 48,
+    "target": 248,
+    "context": "‘Turkey in the Straw’ blared out of the rooftop speakers",
+    "manner": "passing"
   },
   {
-    "source": 49,
-    "target": 50,
-    "context": "he nation equally.’                           Excerpt from ‘The Proclamation of the Irish Republic’, 1916",
-    "manner": null
+    "source": 48,
+    "target": 249,
+    "context": "the music changed to ‘Camptown Races’",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 250,
+    "context": "then ‘Pop Goes the Weasel’",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 251,
+    "context": "You’re mixing metaphors, this isn’t Jeopardy.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 252,
+    "context": "For a second, I pictured a Death Star. Only filled with lizards instead of storm troopers.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 253,
+    "context": "Besides, I’m watching Wheel Of Fortune.",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 254,
+    "context": "If you read ‘Aces’, you can see some early elements of the Expeditionary Force stories",
+    "manner": "discussed"
+  },
+  {
+    "source": 48,
+    "target": 255,
+    "context": "Columbus Day and Ascendant were written together starting around 2011",
+    "manner": "discussed"
+  },
+  {
+    "source": 48,
+    "target": 256,
+    "context": "Book 4: Black Ops",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 257,
+    "context": "Book 5: Zero Hour",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 258,
+    "context": "Book 6: Mavericks",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 259,
+    "context": "Book 7: Renegades",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 260,
+    "context": "e novella Book 4: Black Ops Book 5: Zero Hour Book 6: Mavericks Book 7: Renegades Book 8: Armageddon – coming Summer 2019 Book 9: Valkyrie – coming December 2019",
+    "manner": "passing"
+  },
+  {
+    "source": 48,
+    "target": 354,
+    "context": "“Yeah, man, what you need is a brain, and you better talk to the Wizard of Oz about that.”",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 355,
+    "context": "bringing it with me didn’t mean I was going to get all cuddly and sing Kumbaya with the damned Ruhar",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 356,
+    "context": "It’s just a flesh wound.",
+    "manner": "quoted"
+  },
+  {
+    "source": 48,
+    "target": 357,
+    "context": "You got some ‘splanin’ to do, Lucy.",
+    "manner": "quoted"
+  },
+  {
+    "source": 48,
+    "target": 358,
+    "context": "Two out of three ain’t bad, I was on a roll.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 359,
+    "context": "you got any ideas what to do with the Rip Van Winkles here?",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 360,
+    "context": "I thought the guy who killed the albatross was the ancient mariner.",
+    "manner": "discussed"
+  },
+  {
+    "source": 48,
+    "target": 361,
+    "context": "Is the Dutchman the squid guy in that Johnny Depp pirates movie? Man, that guy gave me the creeps.",
+    "manner": "discussed"
+  },
+  {
+    "source": 48,
+    "target": 362,
+    "context": "but that Humpty Dumpty can’t be put together again.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 363,
+    "context": "A magic beanstalk that led home.",
+    "manner": "compared"
+  },
+  {
+    "source": 48,
+    "target": 364,
+    "context": "The idea for Ascendant came to me after watching the first Harry Potter movie",
+    "manner": "discussed"
   },
   {
     "source": 49,
     "target": 51,
-    "context": "water bottle, from Ned. And from Mrs Wilson he’d been given A Christmas Carol, an old book with a hard, red cover and no pictures, which",
-    "manner": null
-  },
-  {
-    "source": 49,
-    "target": 52,
-    "context": "found it queer that the address wasn’t longer.          ‘ “Santa Claus, The North Pole”. That can’t be all?’          ‘Everyone up there knows whe",
-    "manner": null
+    "context": "And from Mrs Wilson he’d been given A Christmas Carol, an old book with a hard, red cover and no pictures, which smelled of must.",
+    "manner": "read"
   },
   {
     "source": 49,
     "target": 53,
-    "context": "not in two minds: if Santa would pleese bring Enid Blyton’s Five Go Down to the Sea or Five Run Away Together or both, she was going to leave a",
-    "manner": null
+    "context": "if Santa would pleese bring Enid Blyton’s Five Go Down to the Sea or Five Run Away Together or both",
+    "manner": "passing"
   },
   {
     "source": 49,
     "target": 54,
-    "context": "would pleese bring Enid Blyton’s Five Go Down to the Sea or Five Run Away Together or both, she was going to leave a big slice of cak",
-    "manner": null
-  },
-  {
-    "source": 49,
-    "target": 55,
-    "context": "ts reflection on the water. Somewhere, voices were singing ‘Adeste Fideles’. Most likely these were the boarders at St Margaret’s, nex",
-    "manner": null
-  },
-  {
-    "source": 49,
-    "target": 56,
-    "context": "stained-glass windows. During the sermon, his gaze followed the Stations of the Cross: Jesus taking up his cross and falling, meeting his mother,",
-    "manner": null
-  },
-  {
-    "source": 49,
-    "target": 57,
-    "context": "consecration was over and it came time to go up and receive Communion, Furlong stayed contrarily where he was, with his back agai",
-    "manner": null
-  },
-  {
-    "source": 49,
-    "target": 58,
-    "context": "the television and lay on the settee watching an episode of All Creatures Great and Small. Furlong wished Eileen would sit down but as soon as she’d",
-    "manner": null
+    "context": "if Santa would pleese bring Enid Blyton’s Five Go Down to the Sea or Five Run Away Together or both",
+    "manner": "passing"
   },
   {
     "source": 49,
     "target": 59,
-    "context": "re he set the concertina down and closed his eyes and sang ‘The Croppy Boy’. The song and the way he sang it made the hairs stand up o",
-    "manner": null
+    "context": "closed his eyes and sang ‘The Croppy Boy’",
+    "manner": "quoted"
   },
   {
     "source": 49,
-    "target": 60,
-    "context": "over design by Faber Cover image: Pieter Bruegel the Elder, Hunters in the Snow (Winter), 1565, incamerastock/Alamy             This is a w",
-    "manner": null
+    "target": 222,
+    "context": "Grace took up the accordion and tried to play ‘Jingle Bells’.",
+    "manner": "passing"
   },
   {
-    "source": 74,
-    "target": 15,
-    "context": "ere the rebels had their base in 'The Empire Strikes Back'. Star Wars.\"  \"Oh, yeah.\" I remembered now. \"No, we're not calling it",
-    "manner": null
+    "source": 49,
+    "target": 245,
+    "context": "Sheila turned on the television and lay on the settee watching an episode of All Creatures Great and Small.",
+    "manner": "read"
+  },
+  {
+    "source": 49,
+    "target": 246,
+    "context": "Or David Copperfield. I never did get round to reading that one.",
+    "manner": "passing"
+  },
+  {
+    "source": 49,
+    "target": 247,
+    "context": "Foster was named by The Times as one of the top fifty works of fiction to be published in the twenty-first century.",
+    "manner": "passing"
+  },
+  {
+    "source": 49,
+    "target": 351,
+    "context": "Somewhere, voices were singing ‘Adeste Fideles’.",
+    "manner": "passing"
+  },
+  {
+    "source": 49,
+    "target": 352,
+    "context": "O holy night, the stars are brightly shining.",
+    "manner": "quoted"
+  },
+  {
+    "source": 49,
+    "target": 353,
+    "context": "walk the blue fields",
+    "manner": "passing"
   },
   {
     "source": 74,
     "target": 18,
-    "context": "oises. In the background was the battle stations alarm from Star Trek, which I had forgotten Sergeant Adams had programmed into t",
-    "manner": null
+    "context": "In the background was the battle stations alarm from Star Trek, which I had forgotten Sergeant Adams had programmed into the ship’s systems.",
+    "manner": "passing"
   },
   {
     "source": 74,
-    "target": 163,
-    "context": "at the hell was that?\"  \"Huh?\"  \"The music!\"  \"Oh, that was Don't Stop Believin' by Journey. I thought you'd be lonely while I was crunching",
-    "manner": null
+    "target": 251,
+    "context": "Skippy played the annoying theme music from 'Jeopardy' while I thought furiously",
+    "manner": "quoted"
   },
   {
     "source": 74,
-    "target": 164,
-    "context": "ou know, the ice planet where the rebels had their base in 'The Empire Strikes Back'. Star Wars.\"  \"Oh, yeah.\" I remembered now. \"No, we're not",
-    "manner": null
+    "target": 252,
+    "context": "ll it Hoth.\" Williams suggested. \"Hoth?\" I asked. \"Why's that?\" \"Hoth. You know, the ice planet where the rebels had their base in 'The Empire Strikes Back'. Star Wars.\" \"Oh, yeah.\" I remembered now. \"No, we're not calling it Hoth, sounds too much like 'hot'. This planet is a crappy place. Nobody wants to be there, we're onl",
+    "manner": "passing"
   },
   {
     "source": 74,
-    "target": 165,
-    "context": "e. “For the moment, I will refrain from making the humorous Godfather references that you know I am dying to say, so make it quic",
-    "manner": null
+    "target": 334,
+    "context": "You, for one, should welcome your new cockroach overlords.",
+    "manner": "quoted"
   },
   {
     "source": 74,
-    "target": 166,
-    "context": "f that phrase, of course, was by Claude Raines in the movie Casablanca, although that line is strangely misquoted very often. The",
-    "manner": null
+    "target": 357,
+    "context": "You got some 'splainin' to do, Lucy.",
+    "manner": "quoted"
   },
   {
     "source": 74,
-    "target": 167,
-    "context": "play chess, or something?\"  \"With you? Ha! Maybe a game of 'Go Fish'?\"  We mostly left each other alone after that, I read a bo",
-    "manner": null
+    "target": 368,
+    "context": "Here's another good quote for you to remember: brevity is the soul of wit.",
+    "manner": "quoted"
   },
   {
-    "source": 80,
-    "target": 81,
-    "context": "you want are contained in the Nonesuch Press edition of his Selected Essays and the Stevenson is found in Virginibus Puerisque. We are",
-    "manner": null
+    "source": 74,
+    "target": 382,
+    "context": "Good Ship Lollipop for all he cared, it wouldn't change",
+    "manner": "passing"
+  },
+  {
+    "source": 74,
+    "target": 383,
+    "context": "\"Oh, that's ‘Soul Finger’ by the Bar-Kays.\"",
+    "manner": "discussed"
+  },
+  {
+    "source": 74,
+    "target": 384,
+    "context": "Skippy had replaced my image and voice, with Barney. Barney, the big stupid purple dinosaur.",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 385,
+    "context": "I'd forgotten about the Smurfs.",
+    "manner": "passing"
+  },
+  {
+    "source": 74,
+    "target": 386,
+    "context": "I think you mean 'to infinity and beyond', Skippy.",
+    "manner": "quoted"
+  },
+  {
+    "source": 74,
+    "target": 387,
+    "context": "Although, when you think about it, Goldilocks was a bit of a dimwitted bee-atch. Who falls asleep in a house owned by bears?",
+    "manner": "discussed"
+  },
+  {
+    "source": 74,
+    "target": 388,
+    "context": "Oh, that was Don't Stop Believin' by Journey.",
+    "manner": "passing"
+  },
+  {
+    "source": 74,
+    "target": 389,
+    "context": "'Rocky' also does not mean it can beat up other planets in a fight.",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 390,
+    "context": "Hoth. You know, the ice planet where the rebels had their base in 'The Empire Strikes Back'. Star Wars.",
+    "manner": "discussed"
+  },
+  {
+    "source": 74,
+    "target": 391,
+    "context": "For the moment, I will refrain from making the humorous Godfather references that you know I am dying to say, so make it quick.",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 392,
+    "context": "he sang \"The wheels on the bus go round and round-\"",
+    "manner": "quoted"
+  },
+  {
+    "source": 74,
+    "target": 393,
+    "context": "launched into \"Ninety nine bottles of beer on the wall-\"",
+    "manner": "quoted"
+  },
+  {
+    "source": 74,
+    "target": 394,
+    "context": "\"They been spending most their lives livin' in the gangster's paradise-\"",
+    "manner": "quoted"
+  },
+  {
+    "source": 74,
+    "target": 395,
+    "context": "a Hollywood film where a car turns into a flying robot, isn't it?",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 396,
+    "context": "No one aboard is singing the Kristang version of 'Ninety Nine Bottles of Beer on the Wall', Joe, these lizards are not a crew of happy campers.",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 397,
+    "context": "The most famous usage of that phrase, of course, was by Claude Raines in the movie Casablanca, although that line is strangely misquoted very often.",
+    "manner": "discussed"
+  },
+  {
+    "source": 74,
+    "target": 398,
+    "context": "Sure, I'll pencil you in for the twelfth of Never",
+    "manner": "compared"
+  },
+  {
+    "source": 74,
+    "target": 399,
+    "context": "Oklahoma, where the wind comes sweeping down the plain-",
+    "manner": "quoted"
   },
   {
     "source": 80,
     "target": 82,
-    "context": "We happen to have in stock Volume II of the Works & Life of Walter Savage Landor which contains the Greek dialogues including the one mentio",
-    "manner": null
+    "context": "U.S.A. Dear Miss Hanff, Your four dollars arrived safely and we have credited the 12 cents to your account. We happen to have in stock Volume II of the Works & Life of Walter Savage Landor which contains the Greek dialogues including the one mentioned in your letter, as well as the Roman dialogues. It is an old edition published in 1876, not very",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 83,
-    "context": "ade the mistake with the Latin Bible and will try to find a Vulgate for you. Not forgetting Leigh Hunt.    Yours faithfully,",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 84,
-    "context": "otten all about your wants.    Anyway, we now have in stock the Oxford Book of English Verse, printed on India paper, original blue cloth binding, 1905,",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 85,
-    "context": "one, particulars as follows:     NEWMAN (JOHN HENRY, D.D.) Discourses on the Scope and Nature of University Education, Addressed to the Catholics of Dubl",
-    "manner": null
+    "context": "I’ve been using my Latin teacher’s Vulgate, what I imagine I’ll do is just not give it back till you find me one of my own.",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 86,
-    "context": "of all, please don’t worry about us using old books such as Clarendon’s Rebellion for wrapping. In this particular case they were just two od",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 87,
-    "context": "ight senses would have given us a shilling for them.    The Quiller-Couch anthology, The Pilgrim’s Way, has been sent to you by Book",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 88,
-    "context": "ven us a shilling for them.    The Quiller-Couch anthology, The Pilgrim’s Way, has been sent to you by Book Post. The balance due was $1.",
-    "manner": null
+    "context": "please don’t worry about us using old books such as Clarendon’s Rebellion for wrapping",
+    "manner": "discussed"
   },
   {
     "source": 80,
     "target": 89,
-    "context": "We are glad you liked the “Q” anthology. We have no copy of the Oxford Book of English Prose in stock at the moment but will try to find one for you.",
-    "manner": null
+    "context": "We have no copy of the Oxford Book of English Prose in stock at the moment",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 90,
-    "context": "ck at the moment but will try to find one for you.    About the Sir Roger de Coverley Papers, we happen to have in stock a volume of eighteenth century",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 91,
-    "context": "und my bookshop while I’m stuck on 95th St. writing the TV “Adventures of Ellery Queen.” Did I tell you we’re not allowed to use a lipstick-staine",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 92,
-    "context": "ired at all the local music shops but was unable to get the Messiah or Bach’s St. Matthew Passion in stiff covers in clean, sec",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 93,
-    "context": "cal music shops but was unable to get the Messiah or Bach’s St. Matthew Passion in stiff covers in clean, secondhand copies, and then I fou",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 94,
-    "context": "buying a dress you haven’t tried on, but you can’t even get Walton’s Lives in a library over here.    You can look at it. They have it",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 95,
-    "context": "1952        To “her friends at 84, Charing Cross Road”:    The Book-Lovers’ Anthology stepped out of its wrappings, all gold-embossed leather and",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 96,
-    "context": "who John Donne was, but thanks to Hemingway everybody knows No Man Is An Island, all I had to do was work that in and it was sold.    So th",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 97,
-    "context": "handsome but it’s a good clean copy. We have no edition of De Tocqueville but will keep looking for one for you.    Megan is still he",
-    "manner": null
+    "context": "About the Sir Roger de Coverley Papers, we happen to have in stock a volume of eighteenth century essays which includes a good selection of them",
+    "manner": "discussed"
   },
   {
     "source": 80,
     "target": 98,
-    "context": ".    We have finally managed to find a very nice edition of Tristram Shandy with the Robb illustrations, price approximately $2.75. We",
-    "manner": null
+    "context": "Don’t know whether I ever told you how dearly I love that Tristram Shandy, the Robb illustrations are enchanting",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 99,
-    "context": "list of other Macdonald Illustrated Classics which includes the Essays of Elia. I’d love to have this in the Macdonald edition—or any nice",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 100,
-    "context": "how to break the bad news, but two days after offering you the Shorter Oxford Dictionary for your friend, a man came in and bought it when my back w",
-    "manner": null
+    "context": "We had several copies of Lamb’s Essays of Elia earlier on but they were snapped up during the holiday rush.",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 101,
-    "context": "HY.    Is there such a thing as a modern-English version of the Canterbury Tales? I have these guilts about never having read Chaucer but I",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 102,
-    "context": "ou ever see one of those? It’s less attractively bound than the Proceedings of the New York State Assembly and it weighs more. It was given to me by a gent who knows",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 103,
-    "context": "ws I’m fond of John Donne. The title of this book is: The Complete Poetry & Selected Prose of JOHN DONNE & The Complete Poet",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 104,
-    "context": "I thought:    “I will read the three standard passages from Sermon XV aloud,” you have to read Donne aloud, it’s like a Bach fugu",
-    "manner": null
+    "context": "Is there such a thing as a modern-English version of the Canterbury Tales?",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 105,
-    "context": "discover they have deleted Jezebel off it. So you get down Donne’s Sermons, Selected Passages (Logan Pearsall Smith) where you spend twenty minutes locat",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 106,
-    "context": "ust Die. Now that you’ve found it, you find he also deleted Jezebel so you get down the Complete Poetry & Selected Prose (N",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 107,
-    "context": "gently: how hard is it going to be to find me John Donne’s Complete Sermons and how much is it going to cost?    i am going to bed. i w",
-    "manner": null
+    "context": "you get down Donne’s Sermons, Selected Passages (Logan Pearsall Smith)",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 108,
-    "context": "lene,    You will be pleased to know that we have a copy of the Memoirs of the Duke de Saint-Simon in stock in the Arkwright translation, six volumes nicely b",
-    "manner": null
+    "context": "we have a copy of the Memoirs of the Duke de Saint-Simon in stock in the Arkwright translation",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 109,
-    "context": "w section and there on page 3 was a review of a book called A House Is Not a Home by Polly Adler, all about whorehouses, and under the title",
-    "manner": null
+    "context": "a review of a book called A House Is Not a Home by Polly Adler, all about whorehouses",
+    "manner": "passing"
   },
   {
     "source": 80,
     "target": 110,
-    "context": "surprised to learn that the two volumes of Virginia Woolf’s Common Reader are on their way to you. If you want anything else I can pr",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 111,
-    "context": "’s enough Chaucer-made-easy, it has the schoolroom smell of Lamb’s Tales from Shakespeare.    I’m glad I read it. i liked reading ab",
-    "manner": null
+    "context": "the two volumes of Virginia Woolf’s Common Reader are on their way to you",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 112,
-    "context": "We have just managed to obtain a copy of E. M. Delafield’s Diary of a Provincial Lady, in an edition published by Macmillan in 1942, a good clean",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 113,
-    "context": "he rug surrounded by books in every direction to scrawl you a Bon Voyage. I hope you and Brian have a ball in London. He said to me",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 114,
-    "context": "Helene—sample letter 30 Sept 1974; text below:        “Open House” will—with lotsa luck—be in the hands of the printers aroun",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 115,
-    "context": "up to read not only “84” but all my other books, including “Underfoot” written ten years before you got here.    I shall be in aw",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 116,
-    "context": "hop in the summer of 1971, a trip recorded in her 1973 book The Duchess of Bloomsbury Street. In Duchess, Hanff describes her visits with friends and fa",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 117,
-    "context": "n her career.    For years, as she was later to describe in Underfoot in Show Business (1961), she had been writing plays that never got produced,",
-    "manner": null
+    "context": "We have just managed to obtain a copy of E. M. Delafield’s Diary of a Provincial Lady",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 118,
-    "context": "n 1950 after buying a first edition of John Henry Newman’s “Idea of a University” (1852) for $6. “I feel vaguely guilty about owning it. All",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 119,
-    "context": "f Bloomsbury Street (1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Mo",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 120,
-    "context": "(1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969)",
-    "manner": null
-  },
-  {
-    "source": 80,
-    "target": 121,
-    "context": "cy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964).    “It’s unreal to me, w",
-    "manner": null
+    "context": "Some time ago you asked us for Newman’s Idea of a University.",
+    "manner": "read"
   },
   {
     "source": 80,
     "target": 122,
-    "context": "77) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964).    “It’s unreal to me, what the last 10 years have",
-    "manner": null
+    "context": "of Bloomsbury Street (1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964). “It’s unreal to me, what the last 10 years have been like,” Ms. Hanff said in 1982. “The fans—people all over the world who regard me as a friend! A",
+    "manner": "passing"
   },
   {
-    "source": 123,
-    "target": 124,
-    "context": "ro quo is clear. This stuff isn’t free. As Mark declares in the Little Red Book every employee is handed when they’re hired, Our philosophy",
-    "manner": null
+    "source": 80,
+    "target": 182,
+    "context": "The three Hazlitt essays you want are contained in the Nonesuch Press edition of his Selected Essays",
+    "manner": "read"
   },
   {
-    "source": 123,
-    "target": 125,
-    "context": "lt. And his team is instrumental in the development of the “People You May Know” tool, which is described by Mashable as Facebook’s “creepy",
-    "manner": null
+    "source": 80,
+    "target": 183,
+    "context": "we have a Latin New Testament, also a Greek New Testament, ordinary modern editions in cloth binding",
+    "manner": "read"
   },
   {
-    "source": 123,
-    "target": 126,
-    "context": "ough for some reason there is a book next to the bed titled How to Use the Internet. The next morning I discover a rotary phone; strangely, you",
-    "manner": null
+    "source": 80,
+    "target": 184,
+    "context": "we now have in stock the Oxford Book of English Verse, printed on India paper, original blue cloth binding, 1905",
+    "manner": "read"
   },
   {
-    "source": 123,
-    "target": 127,
-    "context": "ire to one of the rooms in Mark’s complex and start to play Settlers of Catan. It’s me, Debbie, Mark’s assistant Andrea, Mark, and two of",
-    "manner": null
+    "source": 80,
+    "target": 187,
+    "context": "Oh my, i do bless you for that Walton’s Lives.",
+    "manner": "read"
   },
   {
-    "source": 123,
-    "target": 128,
-    "context": "ch the guys overwhelmingly prefer because it’s just like in Tomb Raider—Mark marches up to another group of tourists, clearly wanti",
-    "manner": null
+    "source": 80,
+    "target": 188,
+    "context": "I finally got round to Jane Austen and went out of my mind over Pride & Prejudice",
+    "manner": "recommended"
   },
   {
-    "source": 123,
-    "target": 129,
-    "context": "Korean DJs. Mark gives it his all on the Backstreet Boys’ “I Want It That Way” lyrics. The party spills over to the private jet flight fr",
-    "manner": null
+    "source": 80,
+    "target": 191,
+    "context": "two days after offering you the Shorter Oxford Dictionary for your friend, a man came in and bought it",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 192,
+    "context": "We are sending off by Book Post today the Johnson on Shakespeare",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 193,
+    "context": "e on the radio—Corelli or somebody—and this thing on the table. This Giant Modern Library thing. So I thought: “I will read the three standard passages from Sermon XV aloud,” you have to read Donne aloud, it’s like a Bach fugue. Would you like to know what I went through in an innocent attempt to read three contiguous unc",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 196,
+    "context": "it has the schoolroom smell of Lamb’s Tales from Shakespeare",
+    "manner": "compared"
+  },
+  {
+    "source": 80,
+    "target": 197,
+    "context": "Underfoot in Show Business",
+    "manner": "discussed"
+  },
+  {
+    "source": 80,
+    "target": 198,
+    "context": "rney documented in The Duchess of Bloomsbury Street (1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964). “It’s unreal to me, what the last 10 years have been like,” Ms. Hanff said in 1982. “The fans—people all over the world w",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 199,
+    "context": "The Quiller-Couch anthology, The Pilgrim’s Way, has been sent to you by Book Post.",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 200,
+    "context": "writing the TV “Adventures of Ellery Queen.”",
+    "manner": "discussed"
+  },
+  {
+    "source": 80,
+    "target": 201,
+    "context": "Like Bach’s St. Matthew Passion and Handel’s Messiah?",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 202,
+    "context": "Like Bach’s St. Matthew Passion and Handel’s Messiah?",
+    "manner": "discussed"
+  },
+  {
+    "source": 80,
+    "target": 203,
+    "context": "We have also acquired a copy of Plato’s Four Socratic Dialogues, translated by Benjamin Jowett, Oxford, 1903.",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 204,
+    "context": "It was given to me by a gent who knows I’m fond of John Donne.",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 205,
+    "context": "I dramatized Landor’s “Aesop and Rhodope” for the “Hallmark Hall of Fame.”",
+    "manner": "discussed"
+  },
+  {
+    "source": 80,
+    "target": 206,
+    "context": "hop eventually closed. Hanff did finally visit Charing Cross Road and the empty but still standing shop in the summer of 1971, a trip recorded in her 1973 book The Duchess of Bloomsbury Street. In Duchess, Hanff describes her visits with friends and fans to various locations and places of literary and historical interest in London and Southern Englan",
+    "manner": "discussed"
+  },
+  {
+    "source": 80,
+    "target": 207,
+    "context": "isited the boarded-up bookshop and met Mr. Doel’s widow, Nora, a journey documented in The Duchess of Bloomsbury Street (1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964). “It’s unreal to me, what the last 10 years ha",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 208,
+    "context": "up bookshop and met Mr. Doel’s widow, Nora, a journey documented in The Duchess of Bloomsbury Street (1973). Ms. Hanff’s other books include Q’s Legacy (1986), Apple of My Eye (1977) and the children’s titles Movers and Shakers (1969) and Terrible Thomas (1964). “It’s unreal to me, what the last 10 years have been like,” Ms. Hanff",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 209,
+    "context": "So that’s how John Donne made the “Hallmark Hall of Fame” and paid for all the books you ever sent me and five teeth.",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 211,
+    "context": "The Book-Lovers’ Anthology stepped out of its wrappings, all gold-embossed leather and gold-tipped pages",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 213,
+    "context": "Sermon XV and there they are: Excerpts I, II and III,—only when you get to the end of Excerpt I you discover they have deleted Jezebel off it. So you get down Donne’s Sermons, Selected Passages (Logan Pearsall Smith) where you spend twenty minutes locating Sermon XV, Excerpt I, because by Logan Pearsall Smith it isn’t Sermon XV, Excerpt I, it’s Passag",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 214,
+    "context": "py comes along. The price is approximately $2.65 and you have a credit with us of 50 cents. I am afraid the complete Donne Sermons can be had only by buying Donne’s Complete Works. This runs to more than 40 volumes and would be very expensive if in good condition. We hope you had a good Christmas and New Year in spite of the Giant Mod",
+    "manner": "discussed"
+  },
+  {
+    "source": 80,
+    "target": 298,
+    "context": "the Stevenson is found in Virginibus Puerisque",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 299,
+    "context": "Have you got a copy of Landor’s Imaginary Conversations?",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 300,
+    "context": "The day Hazlitt came he opened to “I hate to read new books,” and I hollered “Comrade!” to whoever owned it before me.",
+    "manner": "quoted"
+  },
+  {
+    "source": 80,
+    "target": 301,
+    "context": "this is not pepys’ diary, this is some busybody editor’s miserable collection of EXCERPTS from pepys’ diary may he rot.",
+    "manner": "criticised"
+  },
+  {
+    "source": 80,
+    "target": 302,
+    "context": "it sounds green and gracious in Eric Coates’ London Suite.",
+    "manner": "discussed"
+  },
+  {
+    "source": 80,
+    "target": 303,
+    "context": "Or London Again Suite.",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 304,
+    "context": "a very nice copy of Walton’s Compleat Angler and hope to have it to send you next week",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 305,
+    "context": "thanks to Hemingway everybody knows No Man Is An Island",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 306,
+    "context": "thanks to Hemingway everybody knows No Man Is An Island, all I had to do was work that in and it was sold.",
+    "manner": "quoted"
+  },
+  {
+    "source": 80,
+    "target": 307,
+    "context": "Or didn’t I ever tell you I write arty murders for Ellery Queen on television?",
+    "manner": "discussed"
+  },
+  {
+    "source": 80,
+    "target": 308,
+    "context": "Have you got De Tocqueville’s Journey to America?",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 309,
+    "context": "This one got knighted for turning Catullus—caTULLus—into Victorian hearts-and-flowers.",
+    "manner": "criticised"
+  },
+  {
+    "source": 80,
+    "target": 310,
+    "context": "Brian introduced me to Kenneth Grahame’s Wind in the Willows and I have to have this",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 311,
+    "context": "like miniver cheevy, I was born too late.",
+    "manner": "compared"
+  },
+  {
+    "source": 80,
+    "target": 312,
+    "context": "She also filled me in on Beowulf and his illegitimate son Sidwith—or is it Widsith? she says it’s not worth reading",
+    "manner": "criticised"
+  },
+  {
+    "source": 80,
+    "target": 313,
+    "context": "She also filled me in on Beowulf and his illegitimate son Sidwith—or is it Widsith?",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 314,
+    "context": "all this and the dodgers disintegrating before my very eyes, nobody-knows-the-trouble-i-see.",
+    "manner": "quoted"
+  },
+  {
+    "source": 80,
+    "target": 315,
+    "context": "I bought myself a Cassell’s dictionary, I’ll work out the hard passages by myself.",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 316,
+    "context": "I have managed to obtain a copy of the Bernard Shaw-Ellen Terry correspondence.",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 317,
+    "context": "M. De Tocqueville’s compliments and he begs to announce his safe arrival in America.",
+    "manner": "read"
+  },
+  {
+    "source": 80,
+    "target": 318,
+    "context": "Playhouse 90, The Adventures of Ellery Queen and Hallmark Hall of Fame",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 319,
+    "context": "James Madison’s stenographic record of the Constitutional Convention",
+    "manner": "passing"
+  },
+  {
+    "source": 80,
+    "target": 320,
+    "context": "How-doth-the-busy-bee.",
+    "manner": "quoted"
+  },
+  {
+    "source": 80,
+    "target": 322,
+    "context": "ion Helene at the typewriter Helene circa 1990s Helene—sample letter 30 Sept 1974; text below: “Open House” will—with lotsa luck—be in the hands of the printers around Christmas (or Gene, my editor, and I, will both commit suicide) & will be out next September. M",
+    "manner": "passing"
   },
   {
     "source": 123,
     "target": 130,
-    "context": "about Andrew Ross Sorkin’s account of his role in the book Too Big to Fail, where he felt the importance of his role was downplayed an",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 131,
-    "context": "her life, messaging Sheryl that the experience is “a total Pretty Woman moment (the good one not the one where they kick her out).",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 132,
-    "context": "ore like a Wall Street boardroom, or maybe the jury room in Twelve Angry Men, people in suits earnestly and thoroughly sifting through r",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 133,
-    "context": "iends who are Black and Hispanic.” She doesn’t mention how “All Lives Matter,” a slogan created as a negative rejoinder to “Black Lives",
-    "manner": null
+    "context": "he remained bitter about Andrew Ross Sorkin’s account of his role in the book Too Big to Fail",
+    "manner": "discussed"
   },
   {
     "source": 123,
     "target": 134,
-    "context": "ud.” Mark looks baffled. Oh god. This was a very bad idea. “Citizen Kane?” Nothing from Mark. “Citizen Kane. You know, the movie,” E",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 135,
-    "context": "tate media coverage of his downfall. This is the same book, The Governance of China, that Mark gave to a number of his top lieutenants. Apparen",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 136,
-    "context": "ccount called Feeling Worthless before committing suicide. “Worthless” being one of the targeting fields. This only emerged due t",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 137,
-    "context": "y post things that could have been lifted from the pages of Atlas Shrugged, like, “I take exception to think that I am part of the pro",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 138,
-    "context": "es the weekly company Q&A, which some wanted to rename “Question Mark,” to mythologize the past. He tells stories about how peopl",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 139,
-    "context": "oring hate speech on the platform. So we need everything in Unicode. Nobody cares. I’m told, “I would love to prioritize gettin",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 140,
-    "context": "e Red Book6. What Do We Stand For?7. Show Him a Good Time8. Running Out of Road9. Lady McNugget10. Only Good News11. Road Trip12. The Body13",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 141,
-    "context": "es for the 0.001 Percent23. Making Sure This Thing Flies24. California Time25. Muppets and Monsignors26. The Wicked Witch of the West27.",
-    "manner": null
-  },
-  {
-    "source": 123,
-    "target": 142,
-    "context": "er Tactics 28. Lean In and Lie Back 29. Citizen Sanchez 30. Poker Face 31. A Heartwarming Story 32. What to Not Expect When You’re",
-    "manner": null
+    "context": "“Citizen Kane. You know, the movie,” Elliot says.",
+    "manner": "compared"
   },
   {
     "source": 123,
     "target": 169,
-    "context": "and I just stand there, looking at each other. I turn to Javi, who declares, “I’m getting mojitos for all of us,” and strides off to the bar, leaving me and Mark in an uncomfortable silen",
-    "manner": null
+    "context": "“I’m getting mojitos for all of us,”",
+    "manner": "passing"
+  },
+  {
+    "source": 123,
+    "target": 235,
+    "context": "Lean In is based on eleven principles that basically boil down to: if a woman works hard enough, she can thrive at home and at work.",
+    "manner": "criticised"
+  },
+  {
+    "source": 123,
+    "target": 236,
+    "context": "Mark launched it nearly a year ago, in August 2013, with a paper grandly titled “Is Connectivity a Human Right?”",
+    "manner": "discussed"
+  },
+  {
+    "source": 123,
+    "target": 237,
+    "context": "Someone puts Bon Jovi on the karaoke system and the guys drunkenly belt out the line, “Going down in a blaze of glory.”",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 238,
+    "context": "a total Pretty Woman moment (the good one not the one where they kick her out)",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 239,
+    "context": "I’d pictured it more like a Wall Street boardroom, or maybe the jury room in Twelve Angry Men",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 240,
+    "context": "they post things that could have been lifted from the pages of Atlas Shrugged",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 242,
+    "context": "“A Whole New World” from Aladdin",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 243,
+    "context": "quietly sing \"Happy Birthday\" to Sasha before she goes to sleep",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 334,
+    "context": "It reminds me of the GIF of Homer Simpson backing away through a hedge.",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 336,
+    "context": "—F. SCOTT FITZGERALD, THE GREAT GATSBY",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 337,
+    "context": "“Ah.” I finally got it. “Finding Nemo.”",
+    "manner": "discussed"
+  },
+  {
+    "source": 123,
+    "target": 338,
+    "context": "working on policy at Facebook was way less like enacting a chapter from Machiavelli",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 339,
+    "context": "Like Chairman Mao’s original, Facebook’s Little Red Book is filled with quotes, images, and core principles from its supreme leader",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 340,
+    "context": "My mind involuntarily keeps repeating the John Updike quote “Celebrity is a mask that eats into the face.”",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 341,
+    "context": "(“Project Buffy”—named semi-ironically for Buffy the Vampire Slayer and “social layer”)",
+    "manner": "passing"
+  },
+  {
+    "source": 123,
+    "target": 342,
+    "context": "Mark gives it his all on the Backstreet Boys’ “I Want It That Way” lyrics.",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 343,
+    "context": "the WEF has weaponized the concept of status envy to create a Hunger Games for the 0.001 percent",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 344,
+    "context": "“The cat’s in the bag and the bag’s in the river.”",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 345,
+    "context": "The occasion is piled high with difficulty, and we must rise with the occasion. As our case is new, so we must think anew, act anew.",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 346,
+    "context": "He publishes a six-thousand-word manifesto full of global aspirations.",
+    "manner": "quoted"
+  },
+  {
+    "source": 123,
+    "target": 347,
+    "context": "This is the same book, The Governance of China, that Mark gave to a number of his top lieutenants.",
+    "manner": "read"
+  },
+  {
+    "source": 123,
+    "target": 348,
+    "context": "Like it’s the year 1776 and Thomas Paine has this great commonsense idea about independence from Great Britain.",
+    "manner": "compared"
+  },
+  {
+    "source": 123,
+    "target": 349,
+    "context": "are taking turns onstage with embarrassing stilted karaoke renditions of the raps from Hamilton.",
+    "manner": "passing"
+  },
+  {
+    "source": 123,
+    "target": 350,
+    "context": "“You’re catching on,” he said. “So you see, one of these things is not like the other.”",
+    "manner": "quoted"
   },
   {
     "source": 143,
     "target": 144,
-    "context": "obsession with gardening, Zweig states in his autobiography The World of Yesterday: “My books had all been translated into English but were li",
-    "manner": null
+    "context": "Zweig states in his autobiography The World of Yesterday: “My books had all been translated into English but were little known there.",
+    "manner": "quoted"
   },
   {
     "source": 143,
     "target": 145,
-    "context": "self-destructive trajectories provided him with his trilogy The Struggle with the Daemon (1925). This was the second of his three ‘Master Builders o",
-    "manner": null
+    "context": "provided him with his trilogy The Struggle with the Daemon (1925)",
+    "manner": "passing"
   },
   {
     "source": 143,
     "target": 146,
-    "context": ", stumbled upon a “dusty old edition” of Montaigne’s famous Essais. The seemingly random discovery, “einen grossen Fund”, as h",
-    "manner": null
+    "context": "stumbled upon a “dusty old edition” of Montaigne’s famous Essais",
+    "manner": "read"
   },
   {
     "source": 143,
     "target": 147,
-    "context": "adows. As Donald Prater explains in his biography of Zweig, European of Yesterday (Oxford, 1972), although the writer’s rediscovery of Montai",
-    "manner": null
+    "context": "As Donald Prater explains in his biography of Zweig, European of Yesterday (Oxford, 1972)",
+    "manner": "passing"
   },
   {
     "source": 143,
     "target": 148,
-    "context": "fter Zweig’s death by Richard Friedenthal in the collection Europäisches Erbe (‘European Heir’), gives the impression of a complete work.",
-    "manner": null
-  },
-  {
-    "source": 143,
-    "target": 149,
-    "context": "id thoughts and, eerily, to prefigure the double suicide in Petrópolis:                       Then from the silence a dark voice s",
-    "manner": null
+    "context": "published after Zweig’s death by Richard Friedenthal in the collection Europäisches Erbe (‘European Heir’)",
+    "manner": "passing"
   },
   {
     "source": 143,
     "target": 150,
-    "context": "t stop. The young Montaigne reads with great enthusiasm the Metamorphoses by Ovid, the Aeneid by Virgil, the dramas of Plautus in the",
-    "manner": null
-  },
-  {
-    "source": 143,
-    "target": 151,
-    "context": "reads with great enthusiasm the Metamorphoses by Ovid, the Aeneid by Virgil, the dramas of Plautus in their original language",
-    "manner": null
-  },
-  {
-    "source": 143,
-    "target": 152,
-    "context": "pon it, immortalized for eternity. What Goethe says in his ‘Urworte’ on personality, Montaigne could quite justifiably echo:",
-    "manner": null
-  },
-  {
-    "source": 143,
-    "target": 153,
-    "context": "found only one overriding theme, one emphatic affirmation: “La plus grande chose du monde c’est de savoir être à soi.”* Neither positi",
-    "manner": null
-  },
-  {
-    "source": 143,
-    "target": 154,
-    "context": "ramic jar in the marketplace in Athens.             p. 116: The Malleus Maleficarum (roughly translating as “Hammer of the witches”) was a trea",
-    "manner": null
-  },
-  {
-    "source": 143,
-    "target": 155,
-    "context": "p. 116: The Malleus Maleficarum (roughly translating as “Hammer of the witches”) was a treatise on the prosecution of those practising wit",
-    "manner": null
+    "context": "The young Montaigne reads with great enthusiasm the Metamorphoses by Ovid",
+    "manner": "read"
   },
   {
     "source": 143,
     "target": 156,
-    "context": "A genius of the short story’ Mark Lawson, Guardian          TRAVELLER OF THE CENTURY          ANDRÉS NEUMAN          ‘A beautiful, accomplished",
-    "manner": null
-  },
-  {
-    "source": 143,
-    "target": 157,
-    "context": "s generous, as moving as it is smart’ Juan Gabriel Vásquez, Guardian          BEWARE OF PITY          STEFAN ZWEIG          Zwei",
-    "manner": null
-  },
-  {
-    "source": 143,
-    "target": 158,
-    "context": "ing as it is smart’ Juan Gabriel Vásquez, Guardian          BEWARE OF PITY          STEFAN ZWEIG          Zweig’s fictional masterpiece’ Guardia",
-    "manner": null
+    "context": "TRAVELLER OF THE CENTURY",
+    "manner": "recommended"
   },
   {
     "source": 143,
     "target": 159,
-    "context": "trayal of how that world was destroyed’ David Hare          JOURNEY BY MOONLIGHT          ANTAL SZERB          ‘Just divine… makes you imagine the aut",
-    "manner": null
+    "context": "JOURNEY BY MOONLIGHT",
+    "manner": "recommended"
   },
   {
     "source": 143,
     "target": 160,
-    "context": "autifully evocative… a must-read novel’ Daily Mail          THE RABBIT BACK LITERATURE SOCIETY          PASIIL MARIJÄÄSKELÄINEN          ‘Wonderfully knot",
-    "manner": null
+    "context": "THE RABBIT BACK LITERATURE SOCIETY",
+    "manner": "recommended"
   },
   {
     "source": 143,
     "target": 161,
-    "context": "of life’s upheavals and reversals’ Financial Times          BARCELONA SHADOWS          MARC PASTOR            ‘As gruesome as it is gripp",
-    "manner": null
+    "context": "BARCELONA SHADOWS",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 261,
+    "context": "our to fall, perhaps the darkest in history, to make us realize that freedom is as vital to our soul as breathing to our body.* — From ‘At This Dark Hour’, a speech given by Stefan Zweig to the US PEN Club in New York, May 1941 I During his prodigious writing life the perennially curi",
+    "manner": "quoted"
+  },
+  {
+    "source": 143,
+    "target": 262,
+    "context": "n Kleist, whose unavoidable, self-destructive trajectories provided him with his trilogy The Struggle with the Daemon (1925). This was the second of his three ‘Master Builders of the Spirit’ trilogies. Preceding this had been a volume containing studies of Dostoevsky, Balzac and Dickens (1920), and the series concluded with Casanova, Stendhal and",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 263,
+    "context": "particularly through the essay ‘A Custom of the Isle of Cea’, whose principal theme is the question of a willed death",
+    "manner": "quoted"
+  },
+  {
+    "source": 143,
+    "target": 265,
+    "context": "or his ‘Considérations sur Cicéron’?",
+    "manner": "criticised"
+  },
+  {
+    "source": 143,
+    "target": 266,
+    "context": "the Aeneid by Virgil, the dramas of Plautus in their original language",
+    "manner": "read"
+  },
+  {
+    "source": 143,
+    "target": 267,
+    "context": "What Goethe says in his ‘Urworte’ on personality, Montaigne could quite justifiably echo:",
+    "manner": "quoted"
+  },
+  {
+    "source": 143,
+    "target": 268,
+    "context": "Even in those times of fanaticism, in the period of the Malleus Maleficarum, of the Chambre Ardente of the Inquisition",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 269,
+    "context": "BEWARE OF PITY",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 270,
+    "context": "ide: a swirling helix of a family saga… a new writer as toe-curling as early Roth, as roomy as Franzen and as caustic as Houellebecq’ Sunday Telegraph THE PARROTS FILIPPO BOLOGNA ‘A five-star satire on literary vanity… a wonderful, surprising novel’ Metro I WAS JACK MORTIMER ALEXANDE",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 271,
+    "context": "SONG FOR AN APPROACHING STORM",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 272,
+    "context": "RED LOVE: THE STORY OF AN EAST GERMAN FAMILY",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 273,
+    "context": "FROM THE FATHERLAND, WITH LOVE",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 274,
+    "context": "THE LAST DAYS",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 275,
+    "context": "photocopying, recording or otherwise, without prior permission in writing from Pushkin Press Cover illustration: Black and white illustration from The Essays of Michel de Montaigne (p.128), published by Doubleday in 1947 © Salvador Dalí, Fundació Gala-Salvador Dalí, DACS 2015 www.pushkinpress.com",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 276,
+    "context": "Balzac so wonderfully describes this in his Louis Lambert",
+    "manner": "compared"
+  },
+  {
+    "source": 143,
+    "target": 365,
+    "context": "unlike the ‘Chess’ short story, which was finished",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 366,
+    "context": "the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’",
+    "manner": "criticised"
+  },
+  {
+    "source": 143,
+    "target": 367,
+    "context": "one of his most successful books being an account of the exploits of Joseph Fouché",
+    "manner": "discussed"
+  },
+  {
+    "source": 143,
+    "target": 368,
+    "context": "the noble sorrow that his follower Shakespeare knew how to articulate in such an unforgettable manner, through characters so dear to him: Hamlet, Brutus, Prospero.",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 369,
+    "context": "the noble sorrow that his follower Shakespeare knew how to articulate in such an unforgettable manner, through characters so dear to him: Hamlet, Brutus, Prospero.",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 370,
+    "context": "the noble sorrow that his follower Shakespeare knew how to articulate in such an unforgettable manner, through characters so dear to him: Hamlet, Brutus, Prospero.",
+    "manner": "passing"
+  },
+  {
+    "source": 143,
+    "target": 371,
+    "context": "As Verlaine rightly said, “And what remains is literature.”",
+    "manner": "quoted"
+  },
+  {
+    "source": 143,
+    "target": 372,
+    "context": "Admittedly these travel notes are not a work of art, inasmuch as Montaigne has only written a very brief account and in a language not his own.",
+    "manner": "discussed"
+  },
+  {
+    "source": 143,
+    "target": 373,
+    "context": "THE SPECTRE OF ALE X ANDERWOLF",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 374,
+    "context": "BINOCULAR VISION",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 375,
+    "context": "BONITA AVENUE",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 376,
+    "context": "I WAS JACK MORTIMER",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 377,
+    "context": "BUTTERFLIES IN NOVEMBER",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 378,
+    "context": "WHILE THE GODS WERE SLEEPING",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 379,
+    "context": "THE BRETHREN",
+    "manner": "recommended"
+  },
+  {
+    "source": 143,
+    "target": 380,
+    "context": "lity of meeting my own soul. Of what relevance to me, a young man of the new twentieth century, were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’ or his ‘Considérations sur Cicéron’? This Frenchman, already yellowed by time and lost in the riddles of his Latin quotations, seemed so scholarly and anachro",
+    "manner": "discussed"
+  },
+  {
+    "source": 143,
+    "target": 381,
+    "context": "e to me, a young man of the new twentieth century, were the effusive divagations of this Seigneur de Montaigne on ‘La Cérémonie de l’entrevue des rois’ or his ‘Considérations sur Cicéron’? This Frenchman, already yellowed by time and lost in the riddles of his Latin quotations, seemed so scholarly and anachronistic. And even his wisdom, so gent",
+    "manner": "discussed"
   }
 ]

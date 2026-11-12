@@ -24,6 +24,7 @@
   let enabledKinds = loadEnabledKinds();
   let showAuthorLinks = loadAuthorLinksPref();
   let connectedOnly = false; // show only works that tie the library together
+  let mannerFilter = ""; // show only works mentioned in this way (read, quoted, …)
   let savedPositions = loadPositions();
 
   const MANNER_LABELS = {
@@ -52,7 +53,7 @@
   }
 
   function savePositions() {
-    if (!nodes.length || connectedOnly || focusBookId) return;
+    if (!nodes.length || connectedOnly || mannerFilter || focusBookId) return;
     const container = $("graph-container");
     const out = {};
     nodes.forEach((n) => {
@@ -113,7 +114,7 @@
     const tokens = text.split(/\s+/).filter((t) => t.length > 1);
     if (!tokens.length) return "";
     const key = tokens.sort().join(" ");
-    const generic = ["unknown", "anonymous", "various", "cocktail", "movie", "music"];
+    const generic = ["unknown", "anonymous", "various", "cocktail", "movie", "music", "traditional", "film tv"];
     return generic.includes(key) ? "" : key;
   }
 
@@ -504,7 +505,9 @@
           : ""
       }
       ${
-        book.verified
+        String(book.open_library_id || "").startsWith("judge_")
+          ? `<p class="verify-badge unverified">Identified by the Judge · not found in a catalogue</p>`
+          : book.verified
           ? `<p class="verify-badge">Verified via Open Library${
               book.match_score != null ? ` · ${Math.round(book.match_score * 100)}% match` : ""
             }</p>`
@@ -1247,12 +1250,14 @@ ${mannerTag(r.manner)}
       .map((ref) => ({
         source: idRemap.get(String(ref.source)) || String(ref.source),
         target: idRemap.get(String(ref.target)) || String(ref.target),
+        manner: ref.manner || null,
       }))
       .filter(
         (ref) =>
           uniqueBookIds.has(ref.source) &&
           uniqueBookIds.has(ref.target) &&
-          ref.source !== ref.target
+          ref.source !== ref.target &&
+          (!mannerFilter || ref.manner === mannerFilter)
       );
 
     startingBooks = startingBooks.map((id) => idRemap.get(id) || id).filter((id) => uniqueBookIds.has(id));
@@ -1338,14 +1343,17 @@ ${mannerTag(r.manner)}
     // Count films, music and drinks too, whatever the layer toggles show
     const savedKinds = enabledKinds;
     const savedConnectedOnly = connectedOnly;
+    const savedManner = mannerFilter;
     enabledKinds = new Set(Object.keys(KIND_COLORS).concat(["book"]));
     connectedOnly = false;
+    mannerFilter = "";
     let prepared;
     try {
       prepared = prepareGraphData(allBooks, allReferences);
     } finally {
       enabledKinds = savedKinds;
       connectedOnly = savedConnectedOnly;
+      mannerFilter = savedManner;
     }
     const { connectedBooks, connectedReferences } = prepared;
     const byId = new Map(connectedBooks.map((b) => [String(b.id), b]));
@@ -1410,7 +1418,21 @@ ${mannerTag(r.manner)}
       .sort((a, b) => b.score - a.score || a.book.title.localeCompare(b.book.title))
       .slice(0, 20);
 
-    return { shared, ownedMentioned, recurringAuthors, readingList };
+    // What the library itself recommends or disparages, from the Judge's reading
+    const byManner = (manner) =>
+      connectedReferences
+        .filter((ref) => ref.manner === manner && owned.has(ref.source) && byId.has(ref.target))
+        .map((ref) => ({ book: byId.get(ref.target), sources: [byId.get(ref.source)].filter(Boolean) }))
+        .sort((a, b) => a.book.title.localeCompare(b.book.title));
+
+    return {
+      shared,
+      ownedMentioned,
+      recurringAuthors,
+      readingList,
+      recommended: byManner("recommended"),
+      criticised: byManner("criticised"),
+    };
   }
 
   function openInsightsPanel() {
@@ -1421,7 +1443,8 @@ ${mannerTag(r.manner)}
     panel.hidden = false;
     if (app) app.classList.add("detail-open");
 
-    const { shared, ownedMentioned, recurringAuthors, readingList } = computeInsights();
+    const { shared, ownedMentioned, recurringAuthors, readingList, recommended, criticised } =
+      computeInsights();
     const names = (books) => books.map((b) => escapeHtml(b.title)).join(" · ");
     const workItem = (entry) => `
       <li>
@@ -1476,6 +1499,26 @@ ${mannerTag(r.manner)}
         ownedMentioned.length ? `<ul class="ref-list">${ownedMentioned.map(workItem).join("")}</ul>` : "",
         "None of your books mention another one you own."
       )}
+      ${
+        recommended.length
+          ? section(
+              `Recommended in your books (${recommended.length})`,
+              "Works a book of yours praises or urges on someone.",
+              `<ul class="ref-list">${recommended.map(workItem).join("")}</ul>`,
+              ""
+            )
+          : ""
+      }
+      ${
+        criticised.length
+          ? section(
+              `Criticised in your books (${criticised.length})`,
+              "Works a book of yours disparages.",
+              `<ul class="ref-list">${criticised.map(workItem).join("")}</ul>`,
+              ""
+            )
+          : ""
+      }
       ${section(
         "Reading list",
         "Books you don't own, ranked by how often your library points to them.",
@@ -1641,6 +1684,7 @@ ${mannerTag(r.manner)}
     const restorePositions =
       reset &&
       !connectedOnly &&
+      !mannerFilter &&
       positionsFit(width, height) &&
       rememberedCount >= connectedBooks.length * 0.8;
 
@@ -2856,6 +2900,28 @@ ${mannerTag(r.manner)}
     $("process-dismiss")?.addEventListener("click", hideProcessBanner);
     $("focus-mode")?.addEventListener("click", clearFocusMode);
     $("open-insights")?.addEventListener("click", openInsightsPanel);
+    // Filled once the references are loaded (see refreshAll below)
+    const setupMannerFilter = () => {
+      const mannerSelect = $("manner-filter");
+      if (mannerSelect) {
+        // Offer the filter only when some mention carries a manner
+        const counts = {};
+        allReferences.forEach((ref) => {
+          if (MANNER_LABELS[ref.manner]) counts[ref.manner] = (counts[ref.manner] || 0) + 1;
+        });
+        const present = Object.keys(MANNER_LABELS).filter((m) => counts[m]);
+        mannerSelect.hidden = present.length === 0;
+        mannerSelect.innerHTML =
+          `<option value="">Any mention</option>` +
+          present
+            .map((m) => `<option value="${m}">${escapeHtml(MANNER_LABELS[m])} (${counts[m]})</option>`)
+            .join("");
+        mannerSelect.onchange = () => {
+          mannerFilter = mannerSelect.value;
+          syncGraph();
+        };
+      }
+    };
     const connectedToggle = $("layer-connected");
     if (connectedToggle) {
       connectedToggle.addEventListener("change", () => {
@@ -2910,9 +2976,10 @@ ${mannerTag(r.manner)}
           const hint = $("judge-hint");
           if (!hint || !health.judge) return;
           hint.hidden = false;
+          const via = health.judge.provider === "bedrock" ? " via Amazon Bedrock" : "";
           hint.textContent = health.judge.available
-            ? `The Judge is on (${health.judge.model}): mentions are checked in context.`
-            : "The Judge is off: no Claude credentials, so matching is by title only. Set ANTHROPIC_API_KEY and restart for accurate links.";
+            ? `The Judge is on (${health.judge.model}${via}): mentions are checked in context.`
+            : `The Judge is off (${health.judge.reason || "no Claude credentials"}), so matching is by title only. See “Turning the Judge on” in the README.`;
           hint.classList.toggle("is-off", !health.judge.available);
         })
         .catch(() => {});
@@ -2935,6 +3002,9 @@ ${mannerTag(r.manner)}
       svg.attr("width", container.clientWidth).attr("height", container.clientHeight);
     });
 
-    refreshAll().then(() => resumeProcessIfNeeded());
+    refreshAll().then(() => {
+      setupMannerFilter();
+      resumeProcessIfNeeded();
+    });
   });
 })();

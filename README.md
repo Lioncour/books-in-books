@@ -118,7 +118,7 @@ books in books/
 **The Judge** (Claude) reads each candidate in its passage and decides whether it really refers to a work, what kind it is, its catalogue title and who wrote it.  
 **Lucien** looks that title up *with the author* (Open Library / film / music / cocktail lexicon) and files what is real.
 
-Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused. Measured on *84, Charing Cross Road*, precision went from 58% to 95% and recall from 52% to 80%.
+Why the Judge matters: matching on the title alone turned the tune "Pop Goes the Weasel" into a James Patterson novel and credited *Atlas Shrugged* to the wrong author. With an author to check against, a same-titled work by someone else is refused. Measured on *84, Charing Cross Road*, precision went from 58% to 95% and recall from 52% to 83% with the Judge alone, and to 98% and 93% with the Reader on as well.
 
 How a judged mention is filed:
 - **With an author:** the catalogue is searched by title and author. If no catalogue has it, the work is filed on the Judge's word and marked "Identified by the Judge".
@@ -181,7 +181,7 @@ The graph **defaults to books only**. Use **Also show → Movies / Music / Drink
 
 Borges, italics and quotation marks only find titles that look like titles. A work named in plain prose is invisible to them. With `BOOKS_READER=on`, Claude reads the book itself, part by part, and lists every work it refers to with the sentence it found it in. An entry whose sentence is not really in the text is discarded, and the rest go straight to the catalogue lookup.
 
-It is off by default because it sends the whole book to the API, which costs more than judging a few hundred short candidates. Turn it on for one book, compare `eval_extraction.py` before and after, and keep it on if the recall is worth it. `BOOKS_READER_MODEL=claude-haiku-5-5` is much cheaper. Results are cached per file and model.
+It is off by default because it sends the whole book to the API, which costs more than judging a few hundred short candidates. On *84, Charing Cross Road* it took the links from 42 to 66, nearly all of them real. A short book takes a few minutes and a long novel a quarter of an hour. `BOOKS_READER_MODEL=claude-haiku-5-5` is much cheaper. Results are cached per file and model.
 
 ## Reviewing and correcting
 

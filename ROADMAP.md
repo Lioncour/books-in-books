@@ -10,7 +10,7 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 49 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 68 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
@@ -21,31 +21,26 @@ Items are ordered by how much they improve the result for the effort.
 - **Edit by hand.** A library book's title and author can be corrected on `/manage`; the edit is kept and the book is re-filed in the catalogue.
 - **Graph.** A "Connections only" filter, and node positions remembered between visits.
 - **Packaging.** Dependency ranges are pinned, the app serves through waitress when it is installed, `start.ps1` sets everything up on first run, and the small spaCy model is an option (and the fallback).
-- **The Reader.** Optional (`BOOKS_READER=on`): Claude reads the book itself and lists the works it mentions, each backed by a sentence that is checked against the text. Built and tested against a stand-in for the API; not yet run for real.
-- **Amazon Bedrock.** `BOOKS_PROVIDER=bedrock` reaches Claude through an AWS profile instead of an Anthropic API key, with settings in a local `.env`. Not yet run against AWS.
+- **The Reader.** Optional (`BOOKS_READER=on`): Claude reads the book itself and lists the works it mentions, each backed by a sentence that is checked against the text. On one book it took the links from 42 to 66.
+- **Amazon Bedrock.** `BOOKS_PROVIDER=bedrock` reaches Claude through an AWS profile instead of an Anthropic API key, with settings in a local `.env`.
+- **First real run (12 Nov 2026).** The whole library was re-read through Bedrock with the Judge and the Reader on. Links went from 170 to 300, works shared by several books from 2 to 9. On *84, Charing Cross Road*: precision 58% to 98%, recall 52% to 93% (the gold set was widened with real mentions the Reader found, so that recall figure flatters a little).
+- **Tuning from that run.** Works the Judge names with an author but no catalogue finds are filed on its word; judged music keeps the composer or is marked traditional; without an author only an identical title is accepted; later editions' afterwords may list later books.
+- **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
 ## Next: do these first
 
-### 1. Re-read the library with the Judge on
-Nothing in the database has been judged yet. Set `ANTHROPIC_API_KEY`, or point the app at Amazon Bedrock in `.env`, then:
-1. `python -m unittest tests.test_live_judge -v` with `BOOKS_LIVE_TESTS=1`: a one-minute check that the Judge behaves.
-2. `python eval_extraction.py --details` and note the baseline (58% / 52% for *84, Charing Cross Road*).
-3. `python process_books.py --force`, then the eval again, then walk `/review`.
+### 1. Walk the review queue
+300 links are waiting on `/review`, 62 of them filed on the Judge's word without a catalogue record. Those 62 are the ones most worth a look. Confirm and reject with the keyboard; decisions survive the next re-read.
 
-Expect the link count to drop and the wrong ones (tunes filed as novels, wrong authors) to go. This is the single step that turns the work above into a better graph.
+### 2. More gold sets, then compare models
+One gold set is not enough to trust a number, and this one was partly built from the tool's own output. Add one for a novel (*Columbus Day*) and one for non-fiction (*Careless People*), labelled by hand from the book. Then compare models: the run above used Opus 5.5 for both steps, and `claude-haiku-5-5` for the Reader would cut the cost by an order of magnitude if the numbers hold.
 
-### 2. Measure, then tune
-Run `python eval_extraction.py --details` before and after step 1 and write the numbers down. Then:
-- Correct the draft gold set for *84, Charing Cross Road* and add one for a novel and one for non-fiction, since they fail in different ways.
-- Compare models: `BOOKS_JUDGE_MODEL=claude-haiku-5-5` is far cheaper and may be good enough.
-- Look at the "Missed" list. Each entry is either a candidate nobody flagged or a lookup that failed, and they need different fixes.
-
-### 3. Try the Reader, and decide
-The Reader is built but unmeasured. Run one book with `BOOKS_READER=on` and compare the eval numbers and the cost against the Judge alone. Then decide whether it becomes the default, stays optional, or runs on a cheaper model. If it is kept, sending the parts through the Message Batches API halves the price.
+### 3. Make the Reader cheaper
+The Reader reads each book in 40,000-character parts, one request each, and a long novel takes a quarter of an hour. Sending the parts through the Message Batches API halves the price, and running a few parts at once would cut the wait. Results are cached per file and model, so this only matters for new books.
 
 ### 4. Make the graph connect
-Ten books give ten starbursts. Three things create real links:
+Ten books now share nine works (Star Trek, The Simpsons, Hamlet, Winnie-the-Pooh and others), up from two. Three things would create more real links:
 - **More books.** The network effect needs a larger library; batch upload already works.
 - **Second-hop links from the catalogue.** For a mentioned book you do not own, pull its own mentions from the shared catalogue, so two of your books connect through a third.
 - **Normalise editions and series.** "Star Trek" the film and the novelisation, or two volumes of one series, should be able to count as one node.
