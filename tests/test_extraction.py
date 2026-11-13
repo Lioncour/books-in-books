@@ -1099,6 +1099,38 @@ class CatalogueTests(TempProject):
         self.assertEqual(emma["url"], "https://www.gutenberg.org/ebooks/158.txt.utf-8")
         self.assertEqual(whale["gutenberg_id"], 15)
 
+    def test_a_book_added_by_title_can_be_read_from_its_free_text(self):
+        import gutenberg
+
+        with mock.patch.object(pb, "lookup_open_library", return_value=None):
+            shelf = pb.add_shelf_book("Emma", "Jane Austen", self.cur, self.conn)
+        text = Path(self._tmp.name) / "pg158.txt"
+        text.write_text("Emma Woodhouse, handsome, clever, and rich.", encoding="utf-8")
+        read = []
+
+        def process(path, book_id, cursor, conn, **kwargs):
+            read.append((path.name, book_id))
+            return {"added": 3}
+
+        found = {"gutenberg_id": 158, "title": "Emma", "author": "Austen, Jane", "url": "u"}
+        with mock.patch.object(gutenberg, "find_text", return_value=found),                 mock.patch.object(gutenberg, "fetch_text", return_value=text),                 mock.patch.object(pb, "process_book_file", side_effect=process):
+            outcome = pb.read_shelf_book(shelf["id"])
+        self.assertEqual((outcome["read"], outcome["added"]), (True, 3))
+        self.assertEqual(read, [("pg158.txt", shelf["id"])])
+        self.cur.execute("SELECT gutenberg_id, status FROM catalogue_texts WHERE book_id = ?", (shelf["id"],))
+        self.assertEqual(self.cur.fetchone(), (158, "read"))
+
+    def test_a_book_with_no_free_text_is_left_as_it_is(self):
+        import gutenberg
+
+        with mock.patch.object(pb, "lookup_open_library", return_value=None):
+            shelf = pb.add_shelf_book("A Living Author's Novel", "Someone", self.cur, self.conn)
+        with mock.patch.object(gutenberg, "find_text", return_value=None),                 mock.patch.object(pb, "process_book_file", side_effect=AssertionError("must not read")):
+            outcome = pb.read_shelf_book(shelf["id"])
+        self.assertEqual(outcome, {"read": False, "reason": "no free text"})
+        self.cur.execute("SELECT COUNT(*) FROM catalogue_texts")
+        self.assertEqual(self.cur.fetchone()[0], 0)
+
     def test_old_mentioned_works_are_read_once_and_new_ones_left_alone(self):
         import gutenberg
 

@@ -102,12 +102,19 @@
                   : book.no_file
                   ? " · added by title, no file"
                   : ""
-              }${book.read_at ? ` · read ${escapeHtml(book.read_at)}` : ""}</span>
+              }${book.read_at ? ` · read ${escapeHtml(book.read_at)}` : ""}${
+                book.from_catalogue ? " · text from Project Gutenberg" : ""
+              }</span>
             </div>
             <div class="manage-book-actions">
               <button type="button" class="btn btn-ghost" data-read="${book.id}" data-is-read="${
                 book.read_at ? "1" : ""
               }">${book.read_at ? "✓ Read" : "Mark read"}</button>
+              ${
+                book.no_file && !book.from_catalogue
+                  ? `<button type="button" class="btn btn-ghost" data-free-text="${book.id}" title="Read its text from Project Gutenberg, if it is free">Read free text</button>`
+                  : ""
+              }
               ${
                 book.no_file
                   ? ""
@@ -304,6 +311,24 @@
     $("logout-btn")?.addEventListener("click", async () => {
       await api("/api/admin/logout", { method: "POST", body: "{}" });
       setLoggedIn(false);
+    });
+
+    // Read a book added by title from its Project Gutenberg text
+    $("library-list")?.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-free-text]");
+      if (!btn) return;
+      btn.disabled = true;
+      try {
+        const res = await api(`/api/library/books/${btn.getAttribute("data-free-text")}/read-free-text`, {
+          method: "POST",
+          body: "{}",
+        });
+        notify("Reading", res.message, "info");
+        startPolling();
+      } catch (err) {
+        notify("Not read", err.message || "", "error");
+        btn.disabled = false;
+      }
     });
 
     // Mark a library book as read today, or take the mark off again

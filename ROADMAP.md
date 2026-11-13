@@ -10,7 +10,7 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 114 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 116 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
@@ -51,7 +51,8 @@ Items are ordered by how much they improve the result for the effort.
 - **Marking books as read.** A button on each library book records the day it was read; books added by title arrive marked.
 - **Token count per book.** Through Claude Code, each read now reports what it used (tokens in, tokens out, requests).
 - **A local Gutenberg catalogue.** Their catalogue file (62,161 English texts) is kept in `catalogue/` and searched there: a lookup went from over a minute to about a millisecond, and works offline. Alternative titles are folded in, so "Moby-Dick" finds "Moby-Dick; or, The Whale".
-- **A Catalogue switch in the graph.** Off (the default), you see only your own books and what they mention; on, the works read from Project Gutenberg as well, with everything they mention.
+- **A Catalogue switch in the graph.** Off, you see only the books you read yourself and what they mention; on, everything read from a free text as well. A library book read from Project Gutenberg stays visible either way; only its mentions follow the switch.
+- **A book added by title can read itself.** When its text is free, **Read free text** fetches it from Project Gutenberg and reads it through the ordinary pipeline, so it stops being a bare node. Tried on *Winnie-the-Pooh*: 8 mentions, and the first real token count through Claude Code — 66,613 tokens in, 4,518 out, 6 requests for a 200,000-character book, about 0.33 tokens per character.
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
@@ -64,8 +65,8 @@ The library was emptied on 13 Nov 2026 and starts again from the books actually 
 
 ## Then: product
 
-### 2. Let a book added by title bring its mentions
-A book added by title has no mentions of its own. When it is old enough, the catalogue reader could fetch and read it at once, instead of waiting for `--catalogue` to reach it.
+### 2. A shelf that fills itself
+Reading a book's free text works one book at a time, by hand. It could happen as the book is added, and a book that is not free could still borrow what a shared catalogue knows about it.
 
 ## Later: engineering
 
@@ -73,5 +74,5 @@ A book added by title has no mentions of its own. When it is old enough, the cat
 `process_books.py` is down to about 2,400 lines; what is left is matching and storage, which lean on each other and on names the tests replace, so the next cut needs the tests rewritten first. `app.py` (about 2,000 lines) could give its review and admin routes to Flask blueprints. `static/main.js` (about 3,200 lines) is one closure sharing its state; splitting it means choosing a module system, and nothing tests it today.
 
 ### 4. Housekeeping
-- **Reading speed through Claude Code.** After three measuring runs each request took minutes instead of seconds, which looks like the subscription's rate limit. Watch the token count on the first real books.
+- **What a book costs.** *Winnie-the-Pooh* (200,000 characters) took 66,613 tokens in and 4,518 out, over 6 requests, in about three minutes. A full-length novel should be three to five times that. Watch it on the first books.
 - The front end has no tests; the graph, the filters and the list view are checked by hand.

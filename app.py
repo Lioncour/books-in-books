@@ -236,6 +236,12 @@ def match_starting_books(books_rows):
     except sqlite3.OperationalError:
         read_dates = {}
 
+    try:
+        cursor.execute("SELECT book_id FROM catalogue_texts WHERE status = 'read'")
+        from_catalogue = {row["book_id"] for row in cursor.fetchall()}
+    except sqlite3.OperationalError:
+        from_catalogue = set()
+
     # What was folded into each work: its parts and its other names
     includes = {}
     try:
@@ -338,6 +344,7 @@ def match_starting_books(books_rows):
                 "no_file": is_starting and not source_filename and book["id"] in shelf_ids,
                 "year": years.get(book["id"]),
                 "read_at": read_dates.get(book["id"]) if is_starting else None,
+                "from_catalogue": book["id"] in from_catalogue,
                 "includes": [
                     t for t in includes.get(book["id"], []) if t.lower() != book["title"].lower()
                 ],
@@ -1632,6 +1639,96 @@ def api_library_mark_read(book_id):
     return jsonify({"ok": True, "read_at": date if read else None})
 
 
+def run_free_text_job(book_id, title):
+    """Background worker: read a shelf book from its Project Gutenberg text."""
+    from process_books import read_shelf_book
+
+    try:
+        update_process_status(
+            {
+                "status": "running",
+                "phase": "starting",
+                "message": f"Borges: Fetching {title} from Project Gutenberg…",
+                "agent": "borges",
+                "errors": [],
+                "books_processed": [],
+            }
+        )
+        outcome = read_shelf_book(book_id, quiet=True, progress_callback=update_process_status)
+        update_process_status(
+            {
+                "status": "done",
+                "phase": "idle",
+                "message": (
+                    f"Read {title}: {outcome.get('added', 0)} mention(s) found."
+                    if outcome.get("read")
+                    else f"Could not read {title}: {outcome.get('reason')}"
+                ),
+                "books_processed": [title] if outcome.get("read") else [],
+                "errors": [] if outcome.get("read") else [str(outcome.get("reason"))],
+            }
+        )
+    except Exception as e:
+        update_process_status(
+            {"status": "error", "phase": "idle", "message": str(e), "errors": [str(e)]}
+        )
+
+
+@app.route("/api/library/books/<int:book_id>/read-free-text", methods=["POST"])
+@require_admin
+def api_library_read_free_text(book_id):
+    """Read a book added by title from its Project Gutenberg text, if there is one."""
+    global _process_thread
+    from process_books import free_text_for
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT title FROM books WHERE id = ?", (book_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"error": "Book not found"}), 404
+    title = row["title"]
+    found = free_text_for(book_id, cursor)
+    conn.close()
+    if not found:
+        return jsonify({"error": f'No free text of "{title}" on Project Gutenberg'}), 404
+
+    with _process_lock:
+        busy = _process_status.get("status") == "running" or (
+            _process_thread is not None and _process_thread.is_alive()
+        )
+    if busy:
+        return jsonify({"error": "Processing already in progress"}), 409
+
+    thread = threading.Thread(
+        target=run_free_text_job, kwargs={"book_id": book_id, "title": title}, daemon=True
+    )
+    with _process_lock:
+        _process_thread = thread
+        _process_status.update(
+            {
+                "status": "running",
+                "phase": "starting",
+                "message": f"Borges: Fetching {title} from Project Gutenberg…",
+                "agent": "borges",
+                "processed": 0,
+                "total": 1,
+                "errors": [],
+                "books_processed": [],
+            }
+        )
+        _save_process_status()
+    thread.start()
+    return jsonify(
+        {
+            "ok": True,
+            "gutenberg_id": found["gutenberg_id"],
+            "message": f'Reading "{found["title"]}" from Project Gutenberg…',
+        }
+    )
+
+
 @app.route("/api/library/books", methods=["POST"])
 @require_admin
 def api_library_add_by_title():
@@ -1650,12 +1747,20 @@ def api_library_add_by_title():
         book = add_shelf_book(title, author)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    from process_books import free_text_for
+
+    conn = get_db_connection()
+    free = free_text_for(book["id"], conn.cursor())
+    conn.close()
+    book["free_text"] = free["gutenberg_id"] if free else None
     mentioned = book["mentioned_by"]
     message = f'Added "{book["title"]}" by {book["author"]}.'
     if mentioned:
         message += " Mentioned by " + ", ".join(mentioned) + "."
     elif not book["found_in_catalogue"]:
         message += " No catalogue had it, so it is filed as you typed it."
+    if book["free_text"]:
+        message += " Its text is on Project Gutenberg, so it can be read."
     return jsonify({"ok": True, "book": book, "message": message})
 
 

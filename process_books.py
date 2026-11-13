@@ -1855,6 +1855,77 @@ def process_book_file(
         raise
 
 
+def free_text_for(book_id: int, cursor) -> Optional[Dict]:
+    """The Project Gutenberg edition of a library book, or None (searched locally)."""
+    import gutenberg
+
+    cursor.execute("SELECT title, author FROM books WHERE id = ?", (book_id,))
+    row = cursor.fetchone()
+    if not row:
+        return None
+    try:
+        return gutenberg.find_text(row[0] or "", (row[1] or "").replace("Unknown", "").strip())
+    except Exception:
+        return None
+
+
+def read_shelf_book(book_id: int, quiet: bool = True, progress_callback=None) -> Dict:
+    """
+    Read a book you added by title from its free text, so it brings its own
+    mentions instead of standing as a bare node. The reading is recorded as
+    coming from the catalogue, so the graph can be shown with and without it.
+    """
+    import gutenberg
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    try:
+        found = free_text_for(book_id, cursor)
+        if not found:
+            return {"read": False, "reason": "no free text"}
+        path = gutenberg.fetch_text(found)
+        if not quiet:
+            print(f"Reading from Project Gutenberg: {found['title']} (#{found['gutenberg_id']})")
+        result = process_book_file(
+            path,
+            book_id,
+            cursor,
+            conn,
+            quiet=quiet,
+            progress_callback=progress_callback,
+            file_hash=get_file_hash(path),
+        )
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO catalogue_texts (book_id, gutenberg_id, filename, status)
+            VALUES (?, ?, ?, 'read')
+            """,
+            (book_id, found["gutenberg_id"], path.name),
+        )
+        conn.commit()
+        merge_versions(cursor, conn, quiet=quiet)
+        import judge as _judge
+
+        if _judge.judge_status()["available"]:
+            merge_parts(cursor, conn, quiet=quiet)
+            fill_years(cursor, conn, quiet=quiet)
+        return {
+            "read": True,
+            "gutenberg_id": found["gutenberg_id"],
+            "added": result.get("added", 0),
+        }
+    except Exception as e:
+        cursor.execute(
+            "INSERT OR REPLACE INTO catalogue_texts (book_id, gutenberg_id, filename, status) "
+            "VALUES (?, NULL, NULL, 'error')",
+            (book_id,),
+        )
+        conn.commit()
+        return {"read": False, "reason": f"{type(e).__name__}: {e}"}
+    finally:
+        conn.close()
+
+
 def catalogue_candidates(cursor, limit: int) -> List[Tuple]:
     """
     Mentioned books worth reading for the shared catalogue: old enough to be

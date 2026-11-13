@@ -1354,17 +1354,25 @@ ${mannerTag(r.manner)}
 
     startingBooks = startingBooks.map((id) => idRemap.get(id) || id).filter((id) => uniqueBookIds.has(id));
 
+    // Books you read yourself. A library book whose text came from Project
+    // Gutenberg is shown, but what it mentions belongs to the catalogue.
+    const ownReadingIds = new Set(
+      uniqueBooks.filter((b) => b.is_starting && !b.from_catalogue).map((b) => String(b.id))
+    );
+
     const connectedBookIds = new Set(startingBooks);
     uniqueReferences.forEach((ref) => {
-      if (startingBooks.includes(ref.source)) {
+      if (ownReadingIds.has(ref.source)) {
         connectedBookIds.add(ref.target);
       }
     });
 
-    // With the catalogue shown, a mentioned work that was itself read brings
-    // along what it mentions, and so on outward
-    const libraryIdSet = new Set(startingBooks.map(String));
-    const catalogueRefs = uniqueReferences.filter((ref) => !libraryIdSet.has(ref.source));
+    // With the catalogue shown, a work whose text was read brings along what
+    // it mentions, and so on outward
+    // Mentions that came from a free text rather than from a book you read
+    // yourself: works read for the catalogue, and library books whose text
+    // came from Project Gutenberg
+    const catalogueRefs = uniqueReferences.filter((ref) => !ownReadingIds.has(ref.source));
     if (showHopLinks) {
       for (let round = 0; round < 4; round += 1) {
         const before = connectedBookIds.size;
@@ -1390,10 +1398,9 @@ ${mannerTag(r.manner)}
 
     // Only what library books mention; a mentioned work's own mentions are
     // the second hop, drawn apart further down
-    const librarySources = new Set(startingBooks.map(String));
     const connectedReferences = uniqueReferences.filter(
       (ref) =>
-        librarySources.has(ref.source) && visibleIds.has(ref.source) && visibleIds.has(ref.target)
+        ownReadingIds.has(ref.source) && visibleIds.has(ref.source) && visibleIds.has(ref.target)
     );
 
     // Works that two or more library books mention: the real connections

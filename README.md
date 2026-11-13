@@ -150,7 +150,7 @@ Each book in **Your library** has a **Mark read** button; it records today's dat
 
 ### Adding a book without a file
 
-On the manage page, **Add a book by title** puts a book in your library from its title alone (and the author, if the title is a common one). There is no text to read, so it brings no mentions of its own. It becomes a library book the others can point at, and if one of them already mentions it, that existing node is the one that joins your library, links and all.
+On the manage page, **Add a book by title** puts a book in your library from its title alone (and the author, if the title is a common one). If the book is old enough to be free, **Read free text** on the manage page fetches it from Project Gutenberg and reads it, so it brings its own mentions; otherwise it has none. It becomes a library book the others can point at, and if one of them already mentions it, that existing node is the one that joins your library, links and all.
 
 ### The shared catalogue and second-hop links
 
@@ -160,7 +160,7 @@ A work your books mention is only a dot until its own text is read. For works ol
 - The search is local. Project Gutenberg's catalogue (about 20 MB, 62,000 English texts) is kept in `catalogue/` and refreshed when it is a month old, or with `--catalogue --refresh`, so a lookup takes a millisecond instead of a minute.
 - The texts are kept in `catalogue/`, apart from your own books, and such a work does not join your library.
 - Each one costs as much as reading a book of your own.
-- In the graph, the **Catalogue** switch decides what you see: off, only your own books and what they mention; on, the works read from Project Gutenberg as well, with everything they mention, drawn as dashed lines.
+- In the graph, the **Catalogue** switch decides what you see: off, only the books you read yourself and what they mention; on, everything read from a free text as well, with what it mentions, drawn as dashed lines. A library book read from Project Gutenberg stays visible either way; only its mentions follow the switch.
 
 ### Using Amazon Bedrock
 
@@ -275,6 +275,7 @@ This compares the links in the database with hand-checked gold sets in `eval/gol
 | `python process_books.py --check` | Ask Claude one small question, to see that the chosen provider answers |
 | `python process_books.py --merge-versions` | Make versions of one work one node (runs by itself after each read) |
 | `python process_books.py --merge-parts` | Let the Cataloguer fold parts into their wholes (runs by itself after each judged read; `--again` asks about every work afresh) |
+| `python process_books.py --check` | Ask Claude one small question, to see that the chosen provider answers |
 | `python process_books.py --years` | Let the Cataloguer date works it has not dated yet (`--again` re-dates everything) |
 | `python process_books.py --catalogue N` | Read N mentioned works from Project Gutenberg for second-hop links (`--list` only shows them, `--refresh` updates the local catalogue) |
 | `python process_books.py --audit` | Let the Auditor check links it has not seen yet |
