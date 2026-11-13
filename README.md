@@ -199,7 +199,7 @@ Settings can live in the terminal or in a `.env` file in the project folder (git
 | `BOOKS_CATALOGUER` | on | `off` stops Claude folding parts into wholes (a book of the Bible into the Bible) |
 | `BOOKS_READER` | off | `on` lets Claude read the whole book (see below) |
 | `BOOKS_READER_PASSES` | `1` | `2` reads each book a second time, cut at different places, and keeps what either reading found: a few points more recall for twice the price |
-| `BOOKS_READER_MODEL` | `claude-opus-5-5` | Model used by the Reader |
+| `BOOKS_READER_MODEL` | `claude-opus-5-5` | Model used by the Reader. `claude-fable-5-2` found more in one reading (97% of the gold works across three books, against about 90% for Opus 5.5) |
 | `BOOKS_READER_PARALLEL` | `4` | Parts of a book the Reader reads at once |
 | `BOOKS_AUDITOR` | on | `off` stops Claude checking the finished links |
 | `BOOKS_AUDITOR_MODEL` | the Judge's | Model used by the Auditor |
