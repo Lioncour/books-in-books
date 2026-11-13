@@ -44,6 +44,7 @@ Items are ordered by how much they improve the result for the effort.
 - **The Cataloguer folds parts into wholes.** Claude is shown the list of mentioned works once and names the ones that belong inside another: Genesis, Proverbs, Daniel and two Gospels into the Bible, six Montaigne essays and the English title into *Essais*, a sermon into Donne's *Sermons*, a song into *Aladdin*, an episode into *Star Trek*. 24 folded, all read and found right. The Bible now joins seven of the ten books. What was folded is remembered, so the measurement still counts a part as found through its whole; precision and recall are unchanged on all five gold sets. It only asks again when new works have appeared. The detail panel lists what a work includes.
 - **Add a book by title.** The manage page takes a title and puts the book in the library with no file. A work already in the graph joins the library with its links (*The Wind in the Willows* arrived already mentioned by two books); one no catalogue knows is filed as typed.
 - **Filters and a list view.** The graph can be narrowed to one author or one period, and shown as a list of each library book with the works it mentions (the default on a phone). The Cataloguer dates the works: Open Library's own years turned out to be unusable (*Lean In* in 1799, *Macbeth* in 1508), so Claude was asked instead and dated 286 of 302, films and songs included.
+- **`process_books.py` split.** From 3,470 lines to 2,417, with six modules cut along the seams that existed: `titles.py` (comparing titles and authors), `open_library.py` (catalogue lookup and its cache), `book_text.py` (reading a file, italics and quotation marks), `file_metadata.py` (title and author from a file), `work_merging.py` (versions, parts, dates) and `covers.py`. The old names still import from `process_books`, so nothing else had to change. Tests green before and after.
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
@@ -61,9 +62,9 @@ Adding by title works, but such a book has no mentions of its own. The longer ai
 
 ## Later: engineering
 
-### 3. Split the big files
-`app.py` (about 1,900 lines), `process_books.py` (about 2,200) and `static/main.js` (about 2,800) each do several jobs. Split along the seams that now exist: text reading, candidate finding, judging, catalogue lookup, storage; and on the front end graph, panels, upload and processing. Do it with the tests green before and after.
+### 3. Split the remaining big files
+`process_books.py` is down to about 2,400 lines; what is left is matching and storage, which lean on each other and on names the tests replace, so the next cut needs the tests rewritten first. `app.py` (about 2,000 lines) could give its review and admin routes to Flask blueprints. `static/main.js` (about 3,200 lines) is one closure sharing its state; splitting it means choosing a module system, and nothing tests it today.
 
 ### 4. Housekeeping
-- `process_books.py` still holds matching, storage, file reading and the command line in one file (see item 3).
-- The candidate finder changed, so the first re-read of each book repeats the slow spaCy pass once.
+- The front end has no tests; the graph, the filters and the list view are checked by hand.
+- Fable 5.2 could not be tried as the Reader: the Claude Code program on this machine is older than it requires. Update it (`claude update`) and compare with `eval/reader_check.py`.

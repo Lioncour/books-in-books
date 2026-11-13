@@ -77,10 +77,18 @@ Commit `docs/` and enable Pages from the branch folder `/docs`. See [DEPLOY.md](
 ```
 books in books/
 ├── app.py                 # Flask server + APIs
-├── process_books.py       # NLP extraction + Open Library matching
+├── process_books.py       # The pipeline: candidates, matching, storage, command line
+├── titles.py              # Comparing titles and authors
+├── open_library.py        # Catalogue lookup, with a cache
+├── book_text.py           # Reading a file; italics and quotation marks
+├── file_metadata.py       # Title and author from a file name or EPUB metadata
+├── work_merging.py        # Versions, parts of a whole, dates
+├── covers.py              # Cover pictures
 ├── judge.py               # Claude judges each candidate mention in context
 ├── reader.py              # Optional: Claude reads the book and lists the works it mentions
 ├── auditor.py             # Claude checks the finished links and fixes or removes wrong ones
+├── cataloguer.py          # Claude folds parts into wholes and dates the works
+├── claude_code.py         # Ask Claude through the Claude Code program instead of an API
 ├── start.ps1              # First-run setup and start (Windows)
 ├── tests/                 # Offline tests
 ├── eval_extraction.py     # Precision / recall against eval/gold/

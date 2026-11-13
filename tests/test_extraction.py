@@ -485,7 +485,7 @@ class MannerAndCacheTests(TempProject):
         reply.json.return_value = {"docs": []}
         with mock.patch.object(pb.requests, "get", return_value=reply) as get:
             pb._ol_search({"title": "Emma"})
-            with mock.patch.object(pb, "LOOKUP_CACHE_DAYS", 0):
+            with mock.patch.object(pb.open_library, "LOOKUP_CACHE_DAYS", 0):
                 pb._ol_search({"title": "Emma"})
         self.assertEqual(get.call_count, 2)
 

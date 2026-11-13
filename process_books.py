@@ -23,6 +23,81 @@ except ImportError:
     epub = None
     ebooklib = None
 
+from titles import (  # noqa: F401
+    TITLE_STOPWORDS,
+    MIN_VERIFY_SCORE,
+    STRICT_TITLE_SCORE,
+    MIN_QUERY_CHARS,
+    MEDIA_TITLE_BLOCKLIST,
+    _PLACEHOLDER_CREATORS,
+    version_key,
+    normalize_title,
+    title_similarity,
+    token_coverage,
+    clean_text,
+    clean_context,
+    _AUTHOR_NOISE,
+    author_tokens,
+    author_matches,
+    is_plausible_title_query,
+    skip_reason_for_title,
+    override_key,
+)
+import open_library  # noqa: F401  (tests reach its cache settings through here)
+from open_library import (  # noqa: F401
+    lookup_google_books,
+    _ol_doc_to_match,
+    LOOKUP_CACHE_FILE,
+    LOOKUP_CACHE_DAYS,
+    _OL_FIELDS,
+    _lookup_cache,
+    _ol_search,
+    _too_new,
+    _lookup_open_library_by_author,
+    lookup_open_library,
+)
+from book_text import (  # noqa: F401
+    merge_mention_lists,
+    _EMPHASIS_RE,
+    _ITALIC_SPAN_RE,
+    _QUOTED_RE,
+    _SMALL_WORDS,
+    _strip_tags,
+    looks_like_a_title,
+    _context_for,
+    _ITALIC_RULE_RE,
+    _CLASS_IN_SELECTOR_RE,
+    italic_classes_from_css,
+    extract_markup_mentions,
+    extract_quoted_mentions,
+    read_book_file,
+    CONTEXT_CHARS,
+)
+from file_metadata import (  # noqa: F401
+    clean_filename_phrase,
+    looks_like_person_name,
+    extract_title_and_author,
+    clean_metadata_title,
+    normalize_author_name,
+    read_epub_metadata,
+    file_title_and_author,
+    _IDENTITY_CACHE,
+)
+
+from work_merging import (  # noqa: F401
+    _remap_book_id,
+    _same_work,
+    _fold_work_into,
+    merge_parts,
+    merge_versions,
+    fill_years,
+)
+from covers import (  # noqa: F401
+    clean_title_for_lookup,
+    lookup_wikipedia_thumb,
+    ensure_cover_for_book,
+)
+
 nlp = None
 
 # Duo that powers extraction: Borges reads the text; Lucien verifies & files.
@@ -79,34 +154,7 @@ def get_nlp():
     )
 
 
-TITLE_STOPWORDS = {"the", "a", "an", "of", "and", "or", "in", "on", "to", "for"}
-MIN_VERIFY_SCORE = 0.72
-STRICT_TITLE_SCORE = 0.95
-MIN_QUERY_CHARS = 4
-MEDIA_TITLE_BLOCKLIST = {
-    "star trek",
-    "star wars",
-    "stargate",
-    "battlestar galactica",
-    "short circuit",
-    "aliens",
-    "alien",
-    "blade runner",
-    "the matrix",
-    "jurassic park",
-    "indiana jones",
-    "back to the future",
-    "the godfather",
-    "pulp fiction",
-    "fight club",
-    "terminator",
-    "the terminator",
-    "predator",
-    "mad max",
-    "ghostbusters",
-}
 NLP_CHUNK_CHARS = 90000
-CONTEXT_CHARS = 160
 
 
 def init_database(quiet: bool = False):
@@ -351,128 +399,6 @@ def prune_orphan_works(cursor) -> int:
     return cursor.rowcount
 
 
-def _remap_book_id(cursor, old_id: int, new_id: int):
-    if old_id == new_id:
-        return
-    cursor.execute(
-        """
-        UPDATE book_references
-        SET source_book_id = ?
-        WHERE source_book_id = ?
-        """,
-        (new_id, old_id),
-    )
-    cursor.execute(
-        """
-        UPDATE book_references
-        SET referenced_book_id = ?
-        WHERE referenced_book_id = ?
-        """,
-        (new_id, old_id),
-    )
-    cursor.execute(
-        "DELETE FROM book_references WHERE source_book_id = referenced_book_id"
-    )
-    cursor.execute(
-        """
-        UPDATE skipped_mentions
-        SET source_book_id = ?
-        WHERE source_book_id = ?
-        """,
-        (new_id, old_id),
-    )
-    # Keep people's corrections and file ownership pointing at the surviving row
-    for statement in (
-        "UPDATE OR IGNORE reference_overrides SET source_book_id = ? WHERE source_book_id = ?",
-        "UPDATE reference_overrides SET target_book_id = ? WHERE target_book_id = ?",
-        "UPDATE processed_files SET book_id = ? WHERE book_id = ?",
-    ):
-        try:
-            cursor.execute(statement, (new_id, old_id))
-        except sqlite3.OperationalError:
-            pass  # table/column not created yet on a very old database
-    cursor.execute("DELETE FROM books WHERE id = ?", (old_id,))
-
-
-# Creator labels that stand in for "not known" and so cannot tell two works apart
-_PLACEHOLDER_CREATORS = {"", "traditional", "anonymous", "unknown", "music", "film / tv", "cocktail"}
-
-
-def version_key(title: str) -> str:
-    """
-    What a title is a version of: "Star Wars: Episode V – The Empire Strikes
-    Back", "Star Trek (film series)" and "The Star Wars" come down to
-    "star wars" and "star trek". Brackets, a subtitle and a leading article go.
-    """
-    text = re.sub(r"\s*[\(\[].*?[\)\]]", "", (title or "").lower())
-    text = re.split(r"\s*[:–—]\s+|\s+-\s+", text.strip())[0]
-    text = re.sub(r"[^\w\s]", " ", text)
-    text = re.sub(r"^(the|a|an)\s+", "", " ".join(text.split()))
-    return text
-
-
-def _same_work(a: Dict, b: Dict) -> bool:
-    """Whether two records with the same version key are versions of one work."""
-    kinds = {a["kind"], b["kind"]}
-    if kinds == {"movie"} or kinds == {"book", "movie"}:
-        # the film, its sequels and series, and the book or comic it came from
-        return True
-    if len(kinds) > 1:
-        return False  # a song is not the novel that shares its title
-    known = [
-        r["author"]
-        for r in (a, b)
-        if (r["author"] or "").strip().lower() not in _PLACEHOLDER_CREATORS
-    ]
-    return (
-        len(known) < 2
-        or author_matches(known[0], [known[1]])
-        or author_matches(known[1], [known[0]])
-    )
-
-
-def fill_years(cursor, conn, quiet: bool = True, finder=None) -> Optional[int]:
-    """
-    Give mentioned works the year they first appeared, as dated by the
-    Cataloguer, so the graph can be narrowed to a period. The catalogue's own
-    years are not used: Open Library dates a work by its oldest record, which
-    put Lean In in 1799 and Macbeth in 1508. Claude is asked once per work.
-    Returns how many works got a year, or None when Claude is unavailable.
-    """
-    import cataloguer
-
-    if finder is None:
-        if not cataloguer.cataloguer_enabled():
-            return 0
-        finder = cataloguer.find_years
-    cursor.execute(
-        """
-        SELECT id, title, author, IFNULL(kind, 'book') FROM books
-        WHERE IFNULL(year_checked, 0) = 0 AND IFNULL(kind, 'book') != 'cocktail'
-          AND (id IN (SELECT referenced_book_id FROM book_references)
-               OR id IN (SELECT source_book_id FROM book_references)
-               OR IFNULL(on_shelf, 0) = 1)
-        ORDER BY title
-        """
-    )
-    works = [{"id": i, "title": t, "author": a, "kind": k} for i, t, a, k in cursor.fetchall()]
-    if not works:
-        return 0
-    years = finder(works)
-    if years is None:
-        return None
-    dated = 0
-    for work_id, year in years.items():
-        cursor.execute(
-            "UPDATE books SET year = ?, year_checked = 1 WHERE id = ?", (year, work_id)
-        )
-        dated += 1 if year is not None else 0
-    conn.commit()
-    if not quiet:
-        print(f"  Dated {dated} of {len(works)} work(s)")
-    return dated
-
-
 def add_shelf_book(title: str, author: str = "", cursor=None, conn=None) -> Dict:
     """
     Put a book in the library by its title, with no file. It has no mentions
@@ -563,144 +489,6 @@ def add_shelf_book(title: str, author: str = "", cursor=None, conn=None) -> Dict
     if own:
         conn.close()
     return result
-
-
-def _fold_work_into(cursor, other_id: int, keeper_id: int):
-    """Give one mentioned work's links to another and remove it."""
-    # Remember what was folded in, so the whole can still be found by its part's name
-    cursor.execute(
-        """
-        INSERT OR IGNORE INTO work_aliases (book_id, title)
-        SELECT ?, title FROM books WHERE id = ?
-        """,
-        (keeper_id, other_id),
-    )
-    cursor.execute(
-        "UPDATE OR IGNORE work_aliases SET book_id = ? WHERE book_id = ?", (keeper_id, other_id)
-    )
-    cursor.execute("DELETE FROM work_aliases WHERE book_id = ?", (other_id,))
-    # A book that mentions both keeps one link, not two
-    cursor.execute(
-        """
-        DELETE FROM book_references
-        WHERE referenced_book_id = ?
-          AND source_book_id IN (
-              SELECT source_book_id FROM book_references WHERE referenced_book_id = ?
-          )
-        """,
-        (other_id, keeper_id),
-    )
-    _remap_book_id(cursor, other_id, keeper_id)
-
-
-def merge_parts(cursor, conn, quiet: bool = True, finder=None) -> Optional[int]:
-    """
-    Fold parts into the wholes they belong to (a book of the Bible into the
-    Bible, a story into its collection), as named by the Cataloguer. Claude is
-    only asked when works have appeared that it has not seen. Books in the
-    library are never folded away. Returns None when Claude is unavailable.
-    """
-    import cataloguer
-
-    if finder is None:
-        if not cataloguer.cataloguer_enabled():
-            return 0
-        finder = cataloguer.find_parts
-    cursor.execute(
-        """
-        SELECT b.id, b.title, b.author, IFNULL(b.kind, 'book'), IFNULL(b.parts_checked, 0)
-        FROM books b
-        WHERE b.id IN (SELECT referenced_book_id FROM book_references)
-          AND IFNULL(b.on_shelf, 0) = 0
-          AND b.id NOT IN (SELECT book_id FROM processed_files WHERE book_id IS NOT NULL)
-          AND b.id NOT IN (SELECT source_book_id FROM book_references)
-        ORDER BY b.title
-        """
-    )
-    rows = cursor.fetchall()
-    if not any(not checked for *_rest, checked in rows):
-        return 0
-    works = [{"id": i, "title": t, "author": a, "kind": k} for i, t, a, k, _ in rows]
-    pairs = finder(works)
-    if pairs is None:
-        return None
-    known = {w["id"]: w for w in works}
-    folded = 0
-    for pair in pairs:
-        part, whole = known.get(pair.get("part")), known.get(pair.get("whole"))
-        if not part or not whole or part["id"] == whole["id"]:
-            continue
-        cursor.execute("SELECT 1 FROM books WHERE id = ?", (whole["id"],))
-        if not cursor.fetchone():
-            continue  # the whole was itself folded away in this pass
-        _fold_work_into(cursor, part["id"], whole["id"])
-        folded += 1
-        if not quiet:
-            print(f"  '{part['title']}' is part of '{whole['title']}' ({pair.get('reason') or ''})")
-    cursor.execute(
-        f"UPDATE books SET parts_checked = 1 WHERE id IN ({','.join('?' * len(works))})",
-        [w["id"] for w in works],
-    )
-    conn.commit()
-    return folded
-
-
-def merge_versions(cursor, conn, quiet: bool = True) -> int:
-    """
-    Make versions of one work one node: the film and its sequels, the film and
-    the book it was made from, two catalogue records of the same title. The
-    record more books point at survives and takes the others' links. Books in
-    the library are never merged away.
-    """
-    cursor.execute(
-        """
-        SELECT b.id, b.title, b.author, IFNULL(b.kind, 'book'),
-               (SELECT COUNT(*) FROM book_references r WHERE r.referenced_book_id = b.id)
-        FROM books b
-        WHERE b.id NOT IN (SELECT book_id FROM processed_files WHERE book_id IS NOT NULL)
-          AND IFNULL(b.on_shelf, 0) = 0
-          AND b.id NOT IN (SELECT source_book_id FROM book_references)
-        """
-    )
-    groups: Dict[str, List[Dict]] = {}
-    for book_id, title, author, kind, links in cursor.fetchall():
-        key = version_key(title)
-        if key:
-            groups.setdefault(key, []).append(
-                {"id": book_id, "title": title, "author": author, "kind": kind, "links": links}
-            )
-
-    # Fold a longer title into the shorter one it belongs to: "harry potter and
-    # the sorcerer s stone" into "harry potter", "wonderful wizard of oz" into
-    # "wizard of oz". The shorter title must be specific enough to stand alone.
-    for key in sorted(groups, key=len, reverse=True):
-        words = key.split()
-        for parent in groups:
-            if parent == key or parent not in groups or key not in groups:
-                continue
-            parent_words = parent.split()
-            series = len(parent_words) >= 2 and key.startswith(parent + " and the ")
-            one_word_more = len(parent_words) >= 3 and words[1:] == parent_words
-            if series or one_word_more:
-                groups[parent].extend(groups.pop(key))
-                break
-
-    merged = 0
-    for records in groups.values():
-        if len(records) < 2:
-            continue
-        # Most-linked first; a bare title before one with a subtitle; then the oldest
-        records.sort(key=lambda r: (-r["links"], len(r["title"]), r["id"]))
-        keeper = records[0]
-        for other in records[1:]:
-            if not _same_work(keeper, other):
-                continue
-            _fold_work_into(cursor, other["id"], keeper["id"])
-            merged += 1
-            if not quiet:
-                print(f"  Merged '{other['title']}' into '{keeper['title']}'")
-    conn.commit()
-    return merged
 
 
 def deduplicate_books(cursor, conn, quiet: bool = True) -> int:
@@ -863,380 +651,6 @@ def deduplicate_books(cursor, conn, quiet: bool = True) -> int:
     if merged:
         conn.commit()
     return merged
-
-
-def normalize_title(title: str) -> str:
-    """Lowercase, strip punctuation, drop light stopwords for comparison."""
-    text = title.lower().strip()
-    text = re.sub(r"[^\w\s]", " ", text)
-    words = [w for w in text.split() if w and w not in TITLE_STOPWORDS]
-    return " ".join(words)
-
-
-def title_similarity(a: str, b: str) -> float:
-    """Score how closely two titles match (0–1)."""
-    na, nb = normalize_title(a), normalize_title(b)
-    if not na or not nb:
-        return 0.0
-    if na == nb:
-        return 1.0
-
-    sa, sb = set(na.split()), set(nb.split())
-    if not sa or not sb:
-        return 0.0
-    jaccard = len(sa & sb) / len(sa | sb)
-
-    # One title contained in the other, as whole words: "if" is not inside
-    # "tom swift" just because the letters happen to be there.
-    if f" {na} " in f" {nb} " or f" {nb} " in f" {na} ":
-        len_ratio = min(len(na), len(nb)) / max(len(na), len(nb))
-        jaccard = max(jaccard, 0.65 + 0.35 * len_ratio)
-
-    return jaccard
-
-
-def token_coverage(query: str, candidate: str) -> float:
-    """Fraction of query tokens present in the candidate title."""
-    q = set(normalize_title(query).split())
-    c = set(normalize_title(candidate).split())
-    if not q:
-        return 0.0
-    return len(q & c) / len(q)
-
-
-def clean_text(text: str) -> str:
-    """Decode HTML entities left over from EPUB markup and tidy whitespace."""
-    if not text:
-        return ""
-    # Some EPUBs are double-escaped (&amp;#13;), so unescape twice.
-    text = html.unescape(html.unescape(text))
-    return text.replace("\r", " ").replace("\xa0", " ")
-
-
-def clean_context(text: Optional[str]) -> Optional[str]:
-    """Quote shown beside a reference: entities decoded, whitespace collapsed."""
-    if not text:
-        return text
-    return re.sub(r"\s+", " ", clean_text(text)).strip()
-
-
-_AUTHOR_NOISE = {
-    "de", "da", "di", "du", "van", "von", "der", "den", "la", "le",
-    "of", "the", "and", "jr", "sr", "st",
-}
-
-
-def author_tokens(name: Optional[str]) -> set:
-    """Significant lowercase name tokens (initials and particles dropped)."""
-    if not name:
-        return set()
-    text = re.sub(r"[^\w\s]", " ", name.lower())
-    return {t for t in text.split() if len(t) > 1 and t not in _AUTHOR_NOISE}
-
-
-def author_matches(hint: Optional[str], candidates) -> bool:
-    """
-    True when any candidate author plausibly is the hinted author.
-    The surname must agree (or the names share enough tokens), so "Sun Tzu"
-    matches "孙武 (Sun Tzu)" and "Dickens" matches "Charles Dickens".
-    """
-    want = author_tokens(hint)
-    if not want:
-        return False
-    if isinstance(candidates, str) or candidates is None:
-        candidates = [candidates]
-    words = re.sub(r"[^\w\s]", " ", (hint or "").lower()).split()
-    surname = words[-1] if words else ""
-    for cand in candidates:
-        have = author_tokens(cand)
-        if not have:
-            continue
-        if len(surname) > 1 and surname in have:
-            return True
-        shared = want & have
-        if shared and (len(shared) >= 2 or len(want) == 1 or len(have) == 1):
-            return True
-    return False
-
-
-def is_plausible_title_query(title: str) -> bool:
-    """Reject tiny / junk spaCy hits before calling Open Library."""
-    normalized = normalize_title(title)
-    if len(normalized) < MIN_QUERY_CHARS:
-        return False
-    words = normalized.split()
-    if len(words) == 1 and len(normalized) < 6:
-        return False
-    # Common false positives from WORK_OF_ART / too-generic singles
-    blocked = {
-        "god",
-        "song",
-        "poem",
-        "movie",
-        "film",
-        "painting",
-        "untitled",
-        "scripture",
-        "scriptures",
-        "commentaries",
-        "commentary",
-        "testament",
-    }
-    if title.lower().strip() in blocked or normalized in blocked:
-        return False
-    # Trailing fragments like "WE ARE A."
-    if title.strip().endswith(".") and len(words) <= 3:
-        return False
-    # Media franchises are handled as movie-kind mentions, not rejected here
-    return True
-
-
-def skip_reason_for_title(title: str) -> Optional[str]:
-    """Return a human reason if the title should be skipped before book OL lookup."""
-    normalized = normalize_title(title)
-    if not is_plausible_title_query(title):
-        if len(normalized) < MIN_QUERY_CHARS:
-            return "Title too short to verify"
-        return "Not a plausible book title"
-    return None
-
-
-def lookup_google_books(title: str) -> Optional[Dict]:
-    """Secondary verification via Google Books when Open Library is weak."""
-    try:
-        response = requests.get(
-            "https://www.googleapis.com/books/v1/volumes",
-            params={"q": f'intitle:"{title}"', "maxResults": 5},
-            timeout=20,
-        )
-        response.raise_for_status()
-        items = response.json().get("items") or []
-    except Exception:
-        return None
-
-    best = None
-    best_score = 0.0
-    for item in items:
-        info = item.get("volumeInfo") or {}
-        candidate_title = info.get("title") or ""
-        if not candidate_title:
-            continue
-        score = title_similarity(title, candidate_title)
-        coverage = token_coverage(title, candidate_title)
-        if coverage < 0.8 or score < 0.8:
-            continue
-        authors = info.get("authors") or ["Unknown"]
-        if score > best_score:
-            best_score = score
-            best = {
-                "title": candidate_title,
-                "author": authors[0],
-                "open_library_id": f"gbooks_{item.get('id', normalize_title(candidate_title))}",
-                "match_score": round(score, 3),
-                "cover_id": None,
-            }
-            image = (info.get("imageLinks") or {}).get("thumbnail")
-            if image:
-                best["cover_url"] = image
-    if best and best["match_score"] >= 0.85:
-        return best
-    return None
-
-
-def _ol_doc_to_match(doc: Dict, score: float) -> Dict:
-    author_names = doc.get("author_name") or []
-    cover_ids = doc.get("cover_i")
-    title = doc.get("title") or ""
-    return {
-        "title": title,
-        "author": author_names[0] if author_names else "Unknown",
-        "open_library_id": doc.get("key") or f"ol_{normalize_title(title)}",
-        "match_score": round(score, 3),
-        "cover_id": str(cover_ids) if cover_ids is not None else None,
-        "first_publish_year": doc.get("first_publish_year"),
-    }
-
-
-LOOKUP_CACHE_FILE = "lookup_cache.db"
-LOOKUP_CACHE_DAYS = 30
-_OL_FIELDS = ("key", "title", "author_name", "first_publish_year", "cover_i", "edition_count")
-
-
-def _lookup_cache():
-    """
-    A small SQLite file of its own: the main database is mid-transaction while
-    mentions are being filed, and a second writer there would be locked out.
-    """
-    conn = sqlite3.connect(LOOKUP_CACHE_FILE, timeout=5)
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS lookups (
-            key TEXT PRIMARY KEY,
-            docs TEXT NOT NULL,
-            fetched_at REAL NOT NULL
-        )
-        """
-    )
-    return conn
-
-
-def _ol_search(params: Dict) -> List[Dict]:
-    """Open Library search, remembered for a month so a re-judge is not one request per mention."""
-    import time
-
-    key = json.dumps(params, sort_keys=True, ensure_ascii=False)
-    cache = None
-    try:
-        cache = _lookup_cache()
-        row = cache.execute(
-            "SELECT docs, fetched_at FROM lookups WHERE key = ?", (key,)
-        ).fetchone()
-        if row and time.time() - row[1] < LOOKUP_CACHE_DAYS * 86400:
-            cache.close()
-            return json.loads(row[0])
-    except (sqlite3.Error, ValueError):
-        cache = None  # the cache is a convenience; never let it break a lookup
-
-    response = requests.get(
-        "https://openlibrary.org/search.json",
-        params={**params, "limit": 10},
-        timeout=30,
-    )
-    response.raise_for_status()
-    docs = [
-        {field: doc[field] for field in _OL_FIELDS if field in doc}
-        for doc in (response.json().get("docs") or [])
-    ]
-    if cache is not None:
-        try:
-            cache.execute(
-                "INSERT OR REPLACE INTO lookups (key, docs, fetched_at) VALUES (?, ?, ?)",
-                (key, json.dumps(docs, ensure_ascii=False), time.time()),
-            )
-            cache.commit()
-            cache.close()
-        except sqlite3.Error:
-            pass
-    return docs
-
-
-def _too_new(doc: Dict, max_year: Optional[int]) -> bool:
-    """A work can't be mentioned by a book published before it existed."""
-    if not max_year:
-        return False
-    year = doc.get("first_publish_year")
-    return isinstance(year, int) and year > max_year + 1
-
-
-def _lookup_open_library_by_author(
-    title: str, author: str, max_year: Optional[int]
-) -> Optional[Dict]:
-    """
-    Author-corroborated lookup. Because the author has to agree, the title may
-    match more loosely than in a title-only search ("Clarendon's Rebellion" vs
-    "The History of the Rebellion and Civil Wars in England").
-    """
-    best = None
-    best_score = 0.0
-    for params in ({"title": title, "author": author}, {"q": f"{title} {author}"}):
-        for doc in _ol_search(params):
-            candidate_title = doc.get("title") or ""
-            if not candidate_title or _too_new(doc, max_year):
-                continue
-            if not author_matches(author, doc.get("author_name") or []):
-                continue
-            score = max(
-                title_similarity(title, candidate_title),
-                0.9 * token_coverage(title, candidate_title),
-                0.9 * token_coverage(candidate_title, title),
-            )
-            if score < 0.5:
-                continue
-            # Prefer the widely published work when titles tie (not a study guide)
-            rank = score + min(doc.get("edition_count") or 0, 50) / 5000.0
-            if rank > best_score:
-                best_score = rank
-                best = _ol_doc_to_match(doc, min(1.0, score))
-        if best:
-            break
-    return best
-
-
-def lookup_open_library(
-    title: str,
-    author: Optional[str] = None,
-    max_year: Optional[int] = None,
-    strict_title: bool = False,
-) -> Optional[Dict]:
-    """
-    Search Open Library and return the best verified match, or None.
-    Result keys: title, author, open_library_id, match_score, cover_id,
-    first_publish_year.
-
-    author: when given (the Judge's reading of the passage), only works by that
-            author are accepted. There is no silent fallback to a same-titled
-            work by someone else: that was the main source of wrong links.
-    max_year: reject works first published after this year.
-    """
-    if author and author.strip() and author.strip().lower() != "unknown":
-        try:
-            return _lookup_open_library_by_author(title, author.strip(), max_year)
-        except Exception as e:
-            print(f"Open Library lookup failed for '{title}' by {author}: {e}")
-            return None
-
-    if not is_plausible_title_query(title):
-        return None
-
-    try:
-        docs = _ol_search({"title": title})
-
-        def pick_best(candidates):
-            query_words = normalize_title(title).split()
-            short_query = len(query_words) <= 2
-            local_best = None
-            local_score = 0.0
-            for doc in candidates:
-                candidate_title = doc.get("title") or ""
-                if not candidate_title or _too_new(doc, max_year):
-                    continue
-                score = title_similarity(title, candidate_title)
-                coverage = token_coverage(title, candidate_title)
-                if coverage < (1.0 if short_query else 0.75):
-                    continue
-                if short_query and score < 0.92:
-                    continue
-                if doc.get("author_name"):
-                    score = min(1.0, score + 0.02)
-                if score > local_score:
-                    local_score = score
-                    local_best = _ol_doc_to_match(doc, score)
-            return local_best
-
-        best = pick_best(docs)
-        if not best:
-            best = pick_best(_ol_search({"q": title}))
-    except Exception as e:
-        print(f"Open Library lookup failed for '{title}': {e}")
-        return None
-
-    if not best:
-        return None
-    if strict_title:
-        # No author to corroborate the match, so the title has to be the same
-        return best if best["match_score"] >= STRICT_TITLE_SCORE else None
-    # Franchise titles (Star Trek, etc.) can be real novels — allow OL matches.
-    # Film/TV routing is handled by classify_kind via context, not by blocking books.
-    if best["match_score"] >= MIN_VERIFY_SCORE and best["author"] != "Unknown":
-        return best
-    if best["match_score"] >= 0.95:
-        return best
-    # Borderline: try Google Books as a second opinion
-    if best["match_score"] >= 0.6:
-        gb = lookup_google_books(title)
-        if gb:
-            return gb
-    return None
 
 
 def _find_local_book(
@@ -1527,11 +941,6 @@ def get_or_create_book(
     )
     conn.commit()
     return cursor.lastrowid
-
-
-def override_key(raw_title: Optional[str]) -> str:
-    """Key a person's correction by the wording found in the text."""
-    return normalize_title(raw_title or "") or (raw_title or "").strip().lower()
 
 
 def _load_overrides(cursor, source_book_id: int) -> Dict[str, tuple]:
@@ -2184,20 +1593,6 @@ def extract_cocktail_mentions(text: str) -> List[Dict]:
     return list(mentions.values())
 
 
-def merge_mention_lists(*lists) -> List[Dict]:
-    """Dedupe mention dicts by normalized title; keep first context."""
-    merged = {}
-    for items in lists:
-        for item in items or []:
-            title = (item.get("title") or "").strip()
-            if not title:
-                continue
-            key = title.lower()
-            if key not in merged:
-                merged[key] = item
-    return list(merged.values())
-
-
 def extract_work_of_art_mentions(text: str, progress_callback=None):
     nlp_model = get_nlp()
     mentions = {}
@@ -2248,146 +1643,6 @@ def extract_work_of_art_mentions(text: str, progress_callback=None):
 
 # Bump when candidate finding changes, so cached candidates are rebuilt
 EXTRACTOR_VERSION = 3
-
-_EMPHASIS_RE = re.compile(r"<(i|em|cite)\b[^>]*>(.*?)</\1\s*>", re.I | re.S)
-_ITALIC_SPAN_RE = re.compile(
-    r"<span\b[^>]*class=[\"'][^\"']*(?:ital|booktitle|book-title)[^\"']*[\"'][^>]*>(.*?)</span\s*>",
-    re.I | re.S,
-)
-_QUOTED_RE = re.compile(r"[“\"]([A-Z0-9][^“”\"\n]{2,90})[”\"]")
-_SMALL_WORDS = {
-    "a", "an", "and", "as", "at", "but", "by", "de", "for", "from", "in", "into",
-    "la", "le", "nor", "of", "on", "or", "the", "to", "und", "van", "von", "with",
-}
-
-
-def _strip_tags(markup: str) -> str:
-    return re.sub(r"\s+", " ", clean_text(re.sub("<[^<]+?>", "", markup))).strip()
-
-
-def looks_like_a_title(text: str, min_words: int = 1) -> bool:
-    """
-    Cheap shape test for italic or quoted spans: capitalised like a title, short,
-    and not a sentence. It only has to be good enough to hand to the Judge.
-    """
-    text = (text or "").strip()
-    if not (3 <= len(text) <= 90) or not (text[0].isupper() or text[0].isdigit()):
-        return False
-    if text[-1] in ".,;:!?…—-":
-        return False
-    words = text.split()
-    if not (min_words <= len(words) <= 10):
-        return False
-    content = [w for w in words if w.strip("’'\"“”()").lower() not in _SMALL_WORDS]
-    if not content or not any(len(re.sub(r"\W", "", w)) >= 3 for w in content):
-        return False
-    capitalised = sum(1 for w in content if w.lstrip("’'\"“(")[:1].isupper())
-    return capitalised / len(content) >= 0.6
-
-
-def _context_for(text: str, needle: str) -> str:
-    at = text.find(needle)
-    if at == -1:
-        return needle
-    ctx_start = max(0, at - CONTEXT_CHARS)
-    ctx_end = min(len(text), at + len(needle) + CONTEXT_CHARS)
-    return re.sub(r"\s+", " ", text[ctx_start:ctx_end]).strip()
-
-
-_ITALIC_RULE_RE = re.compile(
-    r"([^{}]+)\{[^{}]*font-style\s*:\s*(?:italic|oblique)[^{}]*\}", re.I
-)
-_CLASS_IN_SELECTOR_RE = re.compile(r"\.([A-Za-z_][\w-]*)")
-
-
-def italic_classes_from_css(css: str) -> List[str]:
-    """
-    Class names a stylesheet sets in italics. Many EPUBs do not use <i> at all:
-    the publisher's tool writes <span class="class_s2US"> and puts the italics
-    in the CSS, so the class names have to be read from there.
-    """
-    names = []
-    for rule in _ITALIC_RULE_RE.finditer(css or ""):
-        for selector in rule.group(1).split(","):
-            # Only the last compound selector styles the element itself
-            last = selector.strip().split()[-1] if selector.strip() else ""
-            for name in _CLASS_IN_SELECTOR_RE.findall(last):
-                if name not in names:
-                    names.append(name)
-    return names
-
-
-def extract_markup_mentions(markup: str, text: str, italic_classes=()) -> List[Dict]:
-    """
-    Titles the publisher set in italics. spaCy misses many of these in running
-    prose ("she was reading <i>Middlemarch</i> again"); the markup does not.
-    italic_classes: class names the book's stylesheet sets in italics.
-    """
-    mentions = {}
-    spans = [m.group(2) for m in _EMPHASIS_RE.finditer(markup)]
-    spans += [m.group(1) for m in _ITALIC_SPAN_RE.finditer(markup)]
-    if italic_classes:
-        by_class = re.compile(
-            r"<(\w+)\b[^>]*class=[\"'][^\"']*\b(?:%s)\b[^\"']*[\"'][^>]*>(.*?)</\1\s*>"
-            % "|".join(re.escape(name) for name in italic_classes),
-            re.I | re.S,
-        )
-        spans += [m.group(2) for m in by_class.finditer(markup)]
-    for raw in spans:
-        title = _strip_tags(raw).strip(" .,;:")
-        if not looks_like_a_title(title):
-            continue
-        key = title.lower()
-        if key not in mentions:
-            mentions[key] = {
-                "title": title,
-                "context": _context_for(text, title),
-                "source": "markup",
-            }
-    return list(mentions.values())
-
-
-def extract_quoted_mentions(text: str) -> List[Dict]:
-    """Short Title Case phrases in quotation marks (essays, poems, songs, articles)."""
-    mentions = {}
-    for match in _QUOTED_RE.finditer(text or ""):
-        title = re.sub(r"\s+", " ", match.group(1)).strip()
-        if not looks_like_a_title(title, min_words=2):
-            continue
-        key = title.lower()
-        if key not in mentions:
-            ctx_start = max(0, match.start() - CONTEXT_CHARS)
-            ctx_end = min(len(text), match.end() + CONTEXT_CHARS)
-            mentions[key] = {
-                "title": title,
-                "context": re.sub(r"\s+", " ", text[ctx_start:ctx_end]).strip(),
-                "source": "quote",
-            }
-    return list(mentions.values())
-
-
-def read_book_file(file_path: Path) -> tuple:
-    """Return (plain text, raw markup or '', italic class names) for an EPUB or TXT file."""
-    if file_path.suffix.lower() == ".epub":
-        if epub is None or ebooklib is None:
-            raise RuntimeError("ebooklib is not installed. Run: pip install ebooklib")
-        import warnings
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            book = epub.read_epub(str(file_path))
-        markup = ""
-        css = ""
-        for item in book.get_items():
-            if item.get_type() == ebooklib.ITEM_DOCUMENT:
-                markup += item.get_content().decode("utf-8", errors="ignore") + "\n"
-            elif item.get_type() == ebooklib.ITEM_STYLE:
-                css += item.get_content().decode("utf-8", errors="ignore") + "\n"
-        # <style> blocks inside the pages count too
-        css += "\n".join(re.findall(r"<style[^>]*>(.*?)</style>", markup, flags=re.I | re.S))
-        return clean_text(re.sub("<[^<]+?>", "", markup)), markup, italic_classes_from_css(css)
-    with open(file_path, "r", encoding="utf-8") as f:
-        return clean_text(f.read()), "", []
 
 
 def find_candidates(file_path: Path, progress_callback=None) -> List[Dict]:
@@ -2562,160 +1817,6 @@ def process_book_file(
         if not quiet:
             print(f"Error processing file {file_path}: {e}")
         raise
-
-
-def clean_filename_phrase(text: str) -> str:
-    """Turn underscore/slug phrases into a readable title/author string."""
-    text = text.replace("_", " ").strip()
-    text = re.sub(r"\([^)]*epub[^)]*\)", "", text, flags=re.I)
-    text = re.sub(r"\((?:pdf|mobi|azw3?|kindle|retail)\)", "", text, flags=re.I)
-    text = re.sub(r"\s*\(\d+\)\s*$", "", text)
-    text = re.sub(r"\bbobiverse\b", "", text, flags=re.I)
-    text = re.sub(r"\bbook\s*\d+\b", "", text, flags=re.I)
-    text = re.sub(r"\s+", " ", text).strip(" -_")
-    return text
-
-
-def looks_like_person_name(text: str) -> bool:
-    """Heuristic: 'First Last' style tokens, not a multi-word book title."""
-    cleaned = clean_filename_phrase(text)
-    words = [w for w in re.sub(r"[.]", " ", cleaned).split() if w]
-    if not (2 <= len(words) <= 4):
-        return False
-    stop = {
-        "the",
-        "of",
-        "a",
-        "an",
-        "and",
-        "in",
-        "to",
-        "for",
-        "on",
-        "with",
-        "from",
-        "day",
-        "road",
-        "child",
-        "things",
-        "like",
-        "these",
-        "legion",
-        "boy",
-        "mole",
-        "fox",
-        "horse",
-    }
-    if any(w.lower() in stop for w in words):
-        return False
-    return True
-
-
-def extract_title_and_author(filename: str) -> tuple:
-    """Extract title and author from filename."""
-    stem = Path(filename).stem
-    if " - " in stem:
-        parts = stem.split(" - ", 1)
-        if len(parts) == 2:
-            part1 = clean_filename_phrase(parts[0])
-            part2 = clean_filename_phrase(parts[1])
-            p1_person = looks_like_person_name(part1)
-            p2_person = looks_like_person_name(part2)
-            # Author - Title (most of this library)
-            if p1_person and not p2_person:
-                return part2, part1
-            # Title - Author
-            if p2_person and not p1_person:
-                return part1, part2
-            if p1_person and p2_person:
-                return part2, part1
-
-            part1_words = len(part1.split())
-            part2_words = len(part2.split())
-            if part1_words <= 2 and part2_words >= 3:
-                return part2, part1
-            if part2_words <= 2 and part1_words >= 3:
-                return part1, part2
-            return part2, part1
-
-    # Common download slug: title_words__author_words
-    if "__" in stem:
-        left, right = stem.split("__", 1)
-        title = clean_filename_phrase(left)
-        author = clean_filename_phrase(right)
-        return title or stem, author or "Unknown"
-
-    if "_" in stem:
-        return clean_filename_phrase(stem) or stem, "Unknown"
-
-    return clean_filename_phrase(stem) or stem, "Unknown"
-
-
-def clean_metadata_title(title: str) -> str:
-    """Drop series tags such as "(Bobiverse Book 1)" from an EPUB title."""
-    title = re.sub(r"\s+", " ", title or "").strip()
-    title = re.sub(r"\s*\([^()]*\bbook\s*\d+[^()]*\)\s*$", "", title, flags=re.I)
-    return title.strip()
-
-
-def normalize_author_name(author: str) -> str:
-    """Turn "Wynn-Williams, Sarah" into "Sarah Wynn-Williams"."""
-    author = re.sub(r"\s+", " ", author or "").strip()
-    if author.count(",") == 1:
-        last, first = [part.strip() for part in author.split(",")]
-        if first and last and len(first.split()) <= 3:
-            return f"{first} {last}"
-    return author
-
-
-def read_epub_metadata(file_path: Path) -> tuple:
-    """(title, author) from the EPUB's own metadata; None for a missing field."""
-    if epub is None:
-        return None, None
-    try:
-        import warnings
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            book = epub.read_epub(str(file_path))
-        titles = [t[0] for t in book.get_metadata("DC", "title") if t and t[0]]
-        creators = [c[0] for c in book.get_metadata("DC", "creator") if c and c[0]]
-    except Exception:
-        return None, None
-    title = clean_metadata_title(titles[0]) if titles else None
-    author = normalize_author_name(creators[0]) if creators else None
-    if title and title.lower() in ("unknown", "untitled"):
-        title = None
-    if author and author.lower() in ("unknown", "anonymous"):
-        author = None
-    return title or None, author or None
-
-
-_IDENTITY_CACHE: Dict[tuple, tuple] = {}
-
-
-def file_title_and_author(file_path: Path) -> tuple:
-    """
-    Title and author of a library file. The EPUB's embedded metadata wins;
-    the filename is only a fallback (it gave "Wynn-Williams, Sarah" as a title).
-    """
-    file_path = Path(file_path)
-    try:
-        stat = file_path.stat()
-        cache_key = (str(file_path), stat.st_mtime_ns, stat.st_size)
-    except OSError:
-        return extract_title_and_author(file_path.name)
-    if cache_key in _IDENTITY_CACHE:
-        return _IDENTITY_CACHE[cache_key]
-
-    name_title, name_author = extract_title_and_author(file_path.name)
-    title, author = name_title, name_author
-    if file_path.suffix.lower() == ".epub":
-        meta_title, meta_author = read_epub_metadata(file_path)
-        title = meta_title or name_title
-        author = meta_author or name_author
-    _IDENTITY_CACHE[cache_key] = (title, author)
-    return title, author
 
 
 def repair_owned_books(cursor, conn, books_dir: Optional[Path] = None) -> int:
@@ -3006,163 +2107,6 @@ def process_single_file(
     # Fill cover art for owned books even when the row already existed
     ensure_cover_for_book(source_book_id, cursor, conn)
     return title
-
-
-def clean_title_for_lookup(title: str) -> str:
-    """Strip filename junk so cover/title lookups work better."""
-    t = (title or "").strip()
-    t = re.sub(r"\s*\(epub\)\s*", " ", t, flags=re.I)
-    t = re.sub(r"\s*\(\d+\)\s*$", "", t)
-    t = re.sub(r"\s+", " ", t).strip()
-    return t
-
-
-def lookup_wikipedia_thumb(title: str) -> Optional[str]:
-    """Wikipedia page thumbnail — useful for films, songs, and famous works."""
-    from urllib.parse import quote
-
-    query = clean_title_for_lookup(title)
-    if not query or len(query) < 2:
-        return None
-    headers = {
-        "User-Agent": "BooksInBooks/1.0 (https://github.com/Lioncour/books-in-books; literary catalog)",
-        "Accept": "application/json",
-    }
-    try:
-        response = requests.get(
-            f"https://en.wikipedia.org/api/rest_v1/page/summary/{quote(query)}",
-            headers=headers,
-            timeout=15,
-        )
-        if not response.ok:
-            return None
-        data = response.json()
-        thumb = (data.get("thumbnail") or {}).get("source")
-        if thumb:
-            return thumb
-        # Some pages only expose originalimage
-        return (data.get("originalimage") or {}).get("source")
-    except Exception:
-        return None
-
-
-def ensure_cover_for_book(book_id: int, cursor, conn) -> bool:
-    """
-    If a work has no cover, try Open Library / domain lookup / Wikipedia.
-    Returns True when a cover was written.
-    """
-    cursor.execute("PRAGMA table_info(books)")
-    cols = {row[1] for row in cursor.fetchall()}
-    has_cover_url = "cover_url" in cols
-
-    select_cols = "id, title, author, cover_id, open_library_id, IFNULL(kind, 'book')"
-    if has_cover_url:
-        select_cols += ", cover_url"
-    cursor.execute(f"SELECT {select_cols} FROM books WHERE id = ?", (book_id,))
-    row = cursor.fetchone()
-    if not row:
-        return False
-
-    if has_cover_url:
-        _id, title, author, cover_id, ol_id, kind, cover_url = row
-    else:
-        _id, title, author, cover_id, ol_id, kind = row
-        cover_url = None
-
-    if cover_id or cover_url:
-        return False
-
-    lookup_title = clean_title_for_lookup(title)
-    new_cover_id = None
-    new_cover_url = None
-    new_ol = None
-    new_author = None
-    new_title = None
-
-    if kind == "book":
-        match = lookup_open_library(lookup_title)
-        if match:
-            new_cover_id = match.get("cover_id")
-            new_ol = match.get("open_library_id")
-            new_author = match.get("author")
-            new_title = match.get("title")
-        if not new_cover_id and ol_id and str(ol_id).startswith("/works/"):
-            try:
-                response = requests.get(f"https://openlibrary.org{ol_id}.json", timeout=20)
-                if response.ok:
-                    covers = response.json().get("covers") or []
-                    if covers:
-                        new_cover_id = str(covers[0])
-            except Exception:
-                pass
-    else:
-        from mention_kinds import lookup_by_kind
-
-        match = lookup_by_kind(kind, lookup_title)
-        if match:
-            new_cover_id = match.get("cover_id")
-            new_cover_url = match.get("cover_url")
-            new_ol = match.get("open_library_id")
-            new_author = match.get("author")
-            new_title = match.get("title")
-        # Franchise films often have an OL work id from older imports — use its cover
-        if not new_cover_id and ol_id and str(ol_id).startswith("/works/"):
-            try:
-                response = requests.get(f"https://openlibrary.org{ol_id}.json", timeout=20)
-                if response.ok:
-                    covers = response.json().get("covers") or []
-                    if covers:
-                        new_cover_id = str(covers[0])
-            except Exception:
-                pass
-
-    if not new_cover_id and not new_cover_url:
-        new_cover_url = lookup_wikipedia_thumb(lookup_title)
-
-    if not new_cover_id and not new_cover_url:
-        return False
-
-    if has_cover_url:
-        cursor.execute(
-            """
-            UPDATE books
-            SET cover_id = COALESCE(?, cover_id),
-                cover_url = COALESCE(?, cover_url),
-                open_library_id = COALESCE(?, open_library_id),
-                title = CASE
-                    WHEN ? IS NOT NULL AND (title IS NULL OR TRIM(title) = '' OR title LIKE '%(EPUB)%')
-                    THEN ? ELSE title END,
-                author = CASE
-                    WHEN ? IS NOT NULL AND (author IS NULL OR author = 'Unknown') THEN ?
-                    ELSE author
-                END,
-                verified = 1
-            WHERE id = ?
-            """,
-            (
-                new_cover_id,
-                new_cover_url,
-                new_ol,
-                new_title,
-                new_title,
-                new_author,
-                new_author,
-                book_id,
-            ),
-        )
-    else:
-        cursor.execute(
-            """
-            UPDATE books
-            SET cover_id = COALESCE(?, cover_id),
-                open_library_id = COALESCE(?, open_library_id),
-                verified = 1
-            WHERE id = ?
-            """,
-            (new_cover_id, new_ol, book_id),
-        )
-    conn.commit()
-    return True
 
 
 def backfill_missing_covers(limit: int = 50, quiet: bool = True) -> Dict:
