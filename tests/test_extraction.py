@@ -1048,6 +1048,60 @@ class VersionTests(TempProject):
         self.assertEqual(self.cur.fetchone()[0], 1)
 
 
+class ShelfTests(TempProject):
+    """Adding a book to the library by title, with no file."""
+
+    MATCH = {"title": "Emma", "author": "Jane Austen", "open_library_id": "/works/OL1W",
+             "match_score": 1.0, "cover_id": "7", "first_publish_year": 1815}
+
+    def test_a_work_already_in_the_graph_joins_the_library_with_its_links(self):
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified) VALUES ('Emma', 'Jane Austen', '/works/OL1W', 1)"
+        )
+        emma = self.cur.lastrowid
+        self.cur.execute(
+            "INSERT INTO book_references (source_book_id, referenced_book_id) VALUES (?, ?)",
+            (self.source_id, emma),
+        )
+        self.conn.commit()
+        with mock.patch.object(pb, "lookup_open_library", return_value=dict(self.MATCH)):
+            book = pb.add_shelf_book("emma", "Austen", self.cur, self.conn)
+        self.assertEqual((book["id"], book["already_known"]), (emma, True))
+        self.assertEqual(len(book["mentioned_by"]), 1)
+        self.cur.execute("SELECT on_shelf FROM books WHERE id = ?", (emma,))
+        self.assertEqual(self.cur.fetchone()[0], 1)
+
+    def test_a_new_book_is_filed_from_the_catalogue_or_as_typed(self):
+        with mock.patch.object(pb, "lookup_open_library", return_value=dict(self.MATCH)):
+            found = pb.add_shelf_book("Emma", "", self.cur, self.conn)
+        with mock.patch.object(pb, "lookup_open_library", return_value=None):
+            typed = pb.add_shelf_book("My Aunt's Diary", "Aunt Vera", self.cur, self.conn)
+            again = pb.add_shelf_book("My Aunt's Diary", "Aunt Vera", self.cur, self.conn)
+        self.assertEqual((found["title"], found["author"], found["found_in_catalogue"]),
+                         ("Emma", "Jane Austen", True))
+        self.assertEqual((typed["title"], typed["author"], typed["found_in_catalogue"]),
+                         ("My Aunt's Diary", "Aunt Vera", False))
+        self.assertEqual(again["id"], typed["id"])  # adding twice makes one book
+
+    def test_a_shelf_book_survives_pruning_and_merging(self):
+        with mock.patch.object(pb, "lookup_open_library", return_value=None):
+            shelf = pb.add_shelf_book("Star Wars", "George Lucas", self.cur, self.conn)
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified, kind) "
+            "VALUES ('Star Wars', 'Film / TV', 'film_sw', 1, 'movie')"
+        )
+        film = self.cur.lastrowid
+        self.cur.execute(
+            "INSERT INTO book_references (source_book_id, referenced_book_id) VALUES (?, ?)",
+            (self.source_id, film),
+        )
+        self.conn.commit()
+        pb.prune_orphan_works(self.cur)
+        pb.merge_versions(self.cur, self.conn)
+        self.cur.execute("SELECT COUNT(*) FROM books WHERE id = ?", (shelf["id"],))
+        self.assertEqual(self.cur.fetchone()[0], 1)
+
+
 class RescueTests(TempProject):
     def test_works_dropped_for_lack_of_a_catalogue_record_are_linked(self):
         pb._record_skip(self.cur, self.source_id, "the Proclamation",

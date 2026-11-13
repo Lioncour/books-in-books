@@ -97,13 +97,21 @@
               <strong>${escapeHtml(book.title)}</strong>
               <span>${escapeHtml(book.author || "Unknown")}</span>
               <span class="admin-muted">${refsOut} reference${refsOut === 1 ? "" : "s"}${
-                book.source_filename ? ` · ${escapeHtml(book.source_filename)}` : ""
+                book.source_filename
+                  ? ` · ${escapeHtml(book.source_filename)}`
+                  : book.no_file
+                  ? " · added by title, no file"
+                  : ""
               }</span>
             </div>
             <div class="manage-book-actions">
-              <button type="button" class="btn btn-ghost" data-edit="${book.id}" data-title="${escapeHtml(
-                book.title
-              )}" data-author="${escapeHtml(book.author || "")}">Edit</button>
+              ${
+                book.no_file
+                  ? ""
+                  : `<button type="button" class="btn btn-ghost" data-edit="${book.id}" data-title="${escapeHtml(
+                      book.title
+                    )}" data-author="${escapeHtml(book.author || "")}">Edit</button>`
+              }
               <button type="button" class="btn btn-ghost danger" data-remove="${book.id}" data-title="${escapeHtml(
                 book.title
               )}">Remove</button>
@@ -293,6 +301,33 @@
     $("logout-btn")?.addEventListener("click", async () => {
       await api("/api/admin/logout", { method: "POST", body: "{}" });
       setLoggedIn(false);
+    });
+
+    // Add a book by its title, with no file
+    $("title-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = $("title-input").value.trim();
+      const author = $("title-author").value.trim();
+      if (!title) return;
+      const status = $("title-status");
+      const button = $("title-submit");
+      button.disabled = true;
+      status.hidden = false;
+      status.textContent = "Looking it up…";
+      try {
+        const res = await api("/api/library/books", {
+          method: "POST",
+          body: JSON.stringify({ title, author }),
+        });
+        status.textContent = res.message;
+        $("title-input").value = "";
+        $("title-author").value = "";
+        await refreshLibrary();
+      } catch (err) {
+        status.textContent = err.message || "Could not add the book";
+      } finally {
+        button.disabled = false;
+      }
     });
 
     // Edit a library book's title and author in place

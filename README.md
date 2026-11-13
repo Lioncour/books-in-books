@@ -135,6 +135,10 @@ $env:ANTHROPIC_API_KEY = "<your key>"   # or run `ant auth login` once
 
 The sidebar says whether the Judge is on. Without credentials the app still works, but falls back to title-only matching. Then re-read your books (**Retry** on each, or `python process_books.py --force`) so existing links are judged.
 
+### Adding a book without a file
+
+On the manage page, **Add a book by title** puts a book in your library from its title alone (and the author, if the title is a common one). There is no text to read, so it brings no mentions of its own. It becomes a library book the others can point at, and if one of them already mentions it, that existing node is the one that joins your library, links and all.
+
 ### Using Amazon Bedrock
 
 If you already reach Claude through AWS, you do not need an Anthropic API key. Copy `.env.example` to `.env` and set:

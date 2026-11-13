@@ -73,6 +73,17 @@
             </section>
 
             <section class="admin-card">
+                <h2>Add a book by title</h2>
+                <p class="admin-hint">For a book you have read but have no file for. It brings no mentions of its own, but shows up in your library and connects to the books that mention it.</p>
+                <form id="title-form" class="admin-form-row">
+                    <input type="text" id="title-input" placeholder="Title" maxlength="300" required aria-label="Title">
+                    <input type="text" id="title-author" placeholder="Author (optional)" maxlength="200" aria-label="Author">
+                    <button type="submit" class="btn btn-primary" id="title-submit">Add</button>
+                </form>
+                <p id="title-status" class="admin-muted" style="margin-top:0.75rem" hidden></p>
+            </section>
+
+            <section class="admin-card">
                 <div class="admin-card-head">
                     <h2>Your library</h2>
                     <span id="library-count" class="admin-muted"></span>

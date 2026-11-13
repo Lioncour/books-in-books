@@ -217,6 +217,13 @@ def match_starting_books(books_rows):
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Books added to the library by title, with no file
+    try:
+        cursor.execute("SELECT id FROM books WHERE on_shelf = 1")
+        shelf_ids = {row["id"] for row in cursor.fetchall()}
+    except sqlite3.OperationalError:
+        shelf_ids = set()
+
     # What was folded into each work: its parts and its other names
     includes = {}
     try:
@@ -235,6 +242,8 @@ def match_starting_books(books_rows):
         if book["id"] in owned_by_id:
             is_starting = True
             source_filename = owned_by_id[book["id"]]
+        elif book["id"] in shelf_ids:
+            is_starting = True
         elif "summary of" not in db_title and "paperback" not in db_title:
             matched_file_idx = -1
             for idx, (file_title, file_author, file_title_lower, file_author_lower, filename) in enumerate(
@@ -314,6 +323,7 @@ def match_starting_books(books_rows):
                 "cover_id": book["cover_id"] if "cover_id" in book.keys() else None,
                 "cover_url": book_cover_url(book, size="M"),
                 "source_filename": source_filename,
+                "no_file": is_starting and not source_filename and book["id"] in shelf_ids,
                 "includes": [
                     t for t in includes.get(book["id"], []) if t.lower() != book["title"].lower()
                 ],
@@ -1525,6 +1535,10 @@ def api_library_delete_book(book_id):
                 deleted_file = True
             clear_processed_file(filename)
 
+        try:
+            cursor.execute("UPDATE books SET on_shelf = 0 WHERE id = ?", (book_id,))
+        except sqlite3.OperationalError:
+            pass  # a database from before books could be added by title
         cursor.execute(
             "DELETE FROM book_references WHERE source_book_id = ?", (book_id,)
         )
@@ -1561,6 +1575,33 @@ def api_library_delete_book(book_id):
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/library/books", methods=["POST"])
+@require_admin
+def api_library_add_by_title():
+    """Add a book to the library by its title, with no file to read."""
+    from process_books import add_shelf_book, init_database
+
+    data = request.get_json(silent=True) or {}
+    title = (data.get("title") or "").strip()
+    author = (data.get("author") or "").strip()
+    if not title:
+        return jsonify({"error": "A title is required"}), 400
+    if len(title) > 300 or len(author) > 200:
+        return jsonify({"error": "Title or author is too long"}), 400
+    try:
+        init_database(quiet=True)
+        book = add_shelf_book(title, author)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    mentioned = book["mentioned_by"]
+    message = f'Added "{book["title"]}" by {book["author"]}.'
+    if mentioned:
+        message += " Mentioned by " + ", ".join(mentioned) + "."
+    elif not book["found_in_catalogue"]:
+        message += " No catalogue had it, so it is filed as you typed it."
+    return jsonify({"ok": True, "book": book, "message": message})
 
 
 @app.route("/api/library/books/<int:book_id>", methods=["PATCH"])

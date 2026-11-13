@@ -146,6 +146,10 @@ def init_database(quiet: bool = False):
         # 1 = title/author were set by hand on the manage page; never overwrite
         cursor.execute("ALTER TABLE books ADD COLUMN user_edited INTEGER DEFAULT 0")
 
+    if "on_shelf" not in columns:
+        # 1 = added to the library by title, with no file to read
+        cursor.execute("ALTER TABLE books ADD COLUMN on_shelf INTEGER DEFAULT 0")
+
     if "parts_checked" not in columns:
         # 1 = the Cataloguer has seen this work when looking for parts of wholes
         cursor.execute("ALTER TABLE books ADD COLUMN parts_checked INTEGER DEFAULT 0")
@@ -329,6 +333,7 @@ def prune_orphan_works(cursor) -> int:
           AND id NOT IN (SELECT referenced_book_id FROM book_references)
           AND id NOT IN (SELECT source_book_id FROM skipped_mentions)
           AND id NOT IN (SELECT book_id FROM processed_files WHERE book_id IS NOT NULL)
+          AND IFNULL(on_shelf, 0) = 0
           AND id NOT IN (SELECT source_book_id FROM reference_overrides)
           AND id NOT IN (
               SELECT target_book_id FROM reference_overrides WHERE target_book_id IS NOT NULL
@@ -418,6 +423,98 @@ def _same_work(a: Dict, b: Dict) -> bool:
     )
 
 
+def add_shelf_book(title: str, author: str = "", cursor=None, conn=None) -> Dict:
+    """
+    Put a book in the library by its title, with no file. It has no mentions
+    of its own (there is no text to read), but it becomes a library book the
+    others can point at. If the graph already has the work, because another
+    book mentions it, that record is the one that joins the library, so its
+    links come with it.
+
+    Returns {"id", "title", "author", "already_known", "mentioned_by"}.
+    """
+    own = conn is None
+    if own:
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+    title, author = clean_text(title).strip(), clean_text(author or "").strip()
+    try:
+        match = lookup_open_library(title, author=author or None)
+    except Exception:
+        match = None  # offline: file it under what was typed
+
+    book_id = None
+    if match:
+        cursor.execute("SELECT id FROM books WHERE open_library_id = ?", (match["open_library_id"],))
+        row = cursor.fetchone()
+        book_id = row[0] if row else None
+    if book_id is None:
+        # The same work may be in the graph under another catalogue record
+        wanted = (match or {}).get("title") or title
+        wanted_author = (match or {}).get("author") or author
+        cursor.execute("SELECT id, title, author FROM books WHERE IFNULL(kind, 'book') = 'book'")
+        for candidate_id, candidate_title, candidate_author in cursor.fetchall():
+            if title_similarity(candidate_title, wanted) < 0.95:
+                continue
+            if wanted_author and not author_matches(wanted_author, [candidate_author or ""]):
+                continue
+            book_id = candidate_id
+            break
+    already_known = book_id is not None
+    if book_id is None:
+        if match:
+            cursor.execute(
+                """
+                INSERT INTO books (title, author, open_library_id, verified, match_score, cover_id, kind)
+                VALUES (?, ?, ?, 1, ?, ?, 'book')
+                """,
+                (
+                    match["title"],
+                    match.get("author") or author or "Unknown",
+                    match["open_library_id"],
+                    match.get("match_score"),
+                    match.get("cover_id"),
+                ),
+            )
+        else:
+            manual_id = f"manual_{normalize_title(title)}_{normalize_title(author)}".strip("_")
+            cursor.execute("SELECT id FROM books WHERE open_library_id = ?", (manual_id,))
+            row = cursor.fetchone()
+            if row:
+                book_id = row[0]
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO books (title, author, open_library_id, verified, kind)
+                    VALUES (?, ?, ?, 1, 'book')
+                    """,
+                    (title, author or "Unknown", manual_id),
+                )
+        book_id = book_id or cursor.lastrowid
+    cursor.execute("UPDATE books SET on_shelf = 1 WHERE id = ?", (book_id,))
+    conn.commit()
+    cursor.execute("SELECT title, author FROM books WHERE id = ?", (book_id,))
+    stored_title, stored_author = cursor.fetchone()
+    cursor.execute(
+        """
+        SELECT b.title FROM book_references r JOIN books b ON b.id = r.source_book_id
+        WHERE r.referenced_book_id = ? ORDER BY b.title
+        """,
+        (book_id,),
+    )
+    result = {
+        "id": book_id,
+        "title": stored_title,
+        "author": stored_author,
+        "already_known": already_known,
+        "found_in_catalogue": bool(match),
+        "mentioned_by": [row[0] for row in cursor.fetchall()],
+    }
+    if own:
+        conn.close()
+    return result
+
+
 def _fold_work_into(cursor, other_id: int, keeper_id: int):
     """Give one mentioned work's links to another and remove it."""
     # Remember what was folded in, so the whole can still be found by its part's name
@@ -464,6 +561,7 @@ def merge_parts(cursor, conn, quiet: bool = True, finder=None) -> Optional[int]:
         SELECT b.id, b.title, b.author, IFNULL(b.kind, 'book'), IFNULL(b.parts_checked, 0)
         FROM books b
         WHERE b.id IN (SELECT referenced_book_id FROM book_references)
+          AND IFNULL(b.on_shelf, 0) = 0
           AND b.id NOT IN (SELECT book_id FROM processed_files WHERE book_id IS NOT NULL)
           AND b.id NOT IN (SELECT source_book_id FROM book_references)
         ORDER BY b.title
@@ -510,6 +608,7 @@ def merge_versions(cursor, conn, quiet: bool = True) -> int:
                (SELECT COUNT(*) FROM book_references r WHERE r.referenced_book_id = b.id)
         FROM books b
         WHERE b.id NOT IN (SELECT book_id FROM processed_files WHERE book_id IS NOT NULL)
+          AND IFNULL(b.on_shelf, 0) = 0
           AND b.id NOT IN (SELECT source_book_id FROM book_references)
         """
     )
