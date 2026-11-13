@@ -1075,24 +1075,29 @@ class CatalogueTests(TempProject):
         ])
         self.assertEqual(gutenberg.strip_licence(text), "Emma Woodhouse, handsome, clever, and rich.")
 
-    def test_only_the_right_text_is_accepted(self):
+    def test_the_local_index_finds_the_right_text_without_a_network(self):
         import gutenberg
 
-        results = {"results": [
-            {"id": 1, "title": "Emma Goldman: A Life", "authors": [{"name": "Someone Else"}],
-             "formats": {"text/plain; charset=utf-8": "http://x/1.txt"}},
-            {"id": 2, "title": "Emma", "authors": [{"name": "Brontë, Charlotte"}],
-             "formats": {"text/plain; charset=utf-8": "http://x/2.txt"}},
-            {"id": 3, "title": "Emma", "authors": [{"name": "Austen, Jane"}],
-             "formats": {"application/epub+zip": "http://x/3.epub"}},
-            {"id": 158, "title": "Emma", "authors": [{"name": "Austen, Jane"}],
-             "formats": {"text/plain; charset=us-ascii": "http://x/158.txt"}},
-        ]}
-        reply = mock.Mock(json=lambda: results, raise_for_status=lambda: None)
-        with mock.patch.object(gutenberg.requests, "get", return_value=reply):
-            found = gutenberg.find_text("Emma", "Jane Austen")
-            self.assertIsNone(gutenberg.find_text("Persuasion", "Jane Austen"))
-        self.assertEqual((found["gutenberg_id"], found["url"]), (158, "http://x/158.txt"))
+        folder = Path(self._tmp.name) / "catalogue"
+        folder.mkdir()
+        rows = [
+            "Text#,Type,Issued,Title,Language,Authors,Subjects,LoCC,Bookshelves",
+            '15,Text,2001-07-01,"Moby-Dick; or, The Whale",en,"Melville, Herman, 1819-1891",,,',
+            '158,Text,1994-08-01,Emma,en,"Austen, Jane, 1775-1817",,,',
+            '900,Text,2000-01-01,Emma,en,"Someone, Else",,,',
+            '901,Sound,2000-01-01,Emma,en,"Austen, Jane, 1775-1817",,,',
+            '902,Text,2000-01-01,Emma,fr,"Austen, Jane, 1775-1817",,,',
+            '903,Text,2000-01-01,Emma Goldman: A Life,en,"Austen, Jane, 1775-1817",,,',
+        ]
+        (folder / gutenberg.CATALOG_FILE).write_text(os.linesep.join(rows), encoding="utf-8")
+        with mock.patch.object(gutenberg.requests, "get", side_effect=AssertionError("no network")):
+            emma = gutenberg.find_text("Emma", "Jane Austen", folder)
+            whale = gutenberg.find_text("Moby Dick", "Herman Melville", folder)
+            self.assertIsNone(gutenberg.find_text("Emma", "Charlotte Brontë", folder))
+            self.assertIsNone(gutenberg.find_text("Persuasion", "Jane Austen", folder))
+        self.assertEqual(emma["gutenberg_id"], 158)
+        self.assertEqual(emma["url"], "https://www.gutenberg.org/ebooks/158.txt.utf-8")
+        self.assertEqual(whale["gutenberg_id"], 15)
 
     def test_old_mentioned_works_are_read_once_and_new_ones_left_alone(self):
         import gutenberg

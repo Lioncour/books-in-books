@@ -111,13 +111,15 @@
   const LABEL_ZOOM = 1.6; // zoomed in this far, every node gets its title
   const AUTHOR_LINK_COLOR = "#c9a227";
   const REF_LINK_COLOR = "#6d7c75";
-  // A mention made by a work that is not in your library but was read for the catalogue
+  // A mention made by a work that is not in your library but was read for the catalogue.
+  // Off: only your own books and what they mention. On: the catalogue works too,
+  // with everything they mention.
   const HOP_LINK_COLOR = "#5fb3a8";
   let showHopLinks = (() => {
     try {
-      return localStorage.getItem("bib.hopLinks") !== "off";
+      return localStorage.getItem("bib.hopLinks") === "on";
     } catch (e) {
-      return true;
+      return false;
     }
   })();
 
@@ -1359,6 +1361,20 @@ ${mannerTag(r.manner)}
       }
     });
 
+    // With the catalogue shown, a mentioned work that was itself read brings
+    // along what it mentions, and so on outward
+    const libraryIdSet = new Set(startingBooks.map(String));
+    const catalogueRefs = uniqueReferences.filter((ref) => !libraryIdSet.has(ref.source));
+    if (showHopLinks) {
+      for (let round = 0; round < 4; round += 1) {
+        const before = connectedBookIds.size;
+        catalogueRefs.forEach((ref) => {
+          if (connectedBookIds.has(ref.source)) connectedBookIds.add(ref.target);
+        });
+        if (connectedBookIds.size === before) break;
+      }
+    }
+
     const connectedBooks = uniqueBooks.filter((b) => {
       if (!connectedBookIds.has(String(b.id))) return false;
       // The author and period filters narrow the mentioned works, never the library
@@ -1401,11 +1417,9 @@ ${mannerTag(r.manner)}
     // Second hop: a mentioned work that was itself read mentions something
     // else on the map. Only bridges between nodes already shown are drawn, so
     // a well-read classic does not flood the graph with everything it cites.
-    const libraryIds = new Set(startingBooks.map(String));
-    const hopLinks = uniqueReferences
+    const hopLinks = (showHopLinks ? catalogueRefs : [])
       .filter(
         (ref) =>
-          !libraryIds.has(ref.source) &&
           visibleIds.has(ref.source) &&
           visibleIds.has(ref.target) &&
           !direct.has(`${ref.source}|${ref.target}`)
@@ -1450,10 +1464,18 @@ ${mannerTag(r.manner)}
         authorLinks: authorLinks.filter((l) => keep.has(l.source) && keep.has(l.target)),
         hopLinks: hopLinks.filter((l) => keep.has(l.source) && keep.has(l.target)),
         sharedIds,
+        hasCatalogue: catalogueRefs.length > 0,
       };
     }
 
-    return { connectedBooks, connectedReferences, authorLinks, hopLinks, sharedIds };
+    return {
+      connectedBooks,
+      connectedReferences,
+      authorLinks,
+      hopLinks,
+      sharedIds,
+      hasCatalogue: catalogueRefs.length > 0,
+    };
   }
 
   /* Everything the Connections panel shows, from the same data as the graph. */
@@ -1868,13 +1890,11 @@ ${mannerTag(r.manner)}
     const width = container.node().clientWidth || Math.max(320, window.innerWidth - 360);
     const height = container.node().clientHeight || Math.max(320, window.innerHeight);
 
-    const { connectedBooks, connectedReferences, authorLinks, hopLinks, sharedIds } = prepareGraphData(
-      allBooks,
-      allReferences
-    );
+    const { connectedBooks, connectedReferences, authorLinks, hopLinks, sharedIds, hasCatalogue } =
+      prepareGraphData(allBooks, allReferences);
     sharedNodeIds = sharedIds;
     const hopToggle = $("layer-hop");
-    if (hopToggle) hopToggle.closest("label").hidden = !hopLinks.length;
+    if (hopToggle) hopToggle.closest("label").hidden = !hasCatalogue;
     renderListView(connectedBooks, connectedReferences, sharedIds);
     const oldById = new Map((nodes || []).map((n) => [String(n.id), n]));
     const desiredIds = new Set(connectedBooks.map((b) => String(b.id)));

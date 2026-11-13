@@ -2477,10 +2477,23 @@ def main():
         init_database(quiet=True)
         rest = sys.argv[sys.argv.index("--catalogue") + 1 :]
         count = int(rest[0]) if rest and rest[0].isdigit() else 1
+        if "--refresh" in sys.argv[1:]:
+            import gutenberg
+
+            index = gutenberg.ensure_index(refresh=True)
+            conn = sqlite3.connect(index)
+            held = conn.execute("SELECT COUNT(*) FROM texts").fetchone()[0]
+            conn.close()
+            print(f"Project Gutenberg's catalogue: {held:,} English texts")
+            return
         if "--list" in sys.argv[1:]:
+            import gutenberg
+
             conn = sqlite3.connect("database.db")
             for _id, title, author, year, mentions in catalogue_candidates(conn.cursor(), count):
-                print(f"  {title} by {author} ({year}), mentioned by {mentions}")
+                found = gutenberg.find_text(title, author or "")
+                where = f"Project Gutenberg #{found['gutenberg_id']}" if found else "not free"
+                print(f"  {title} by {author} ({year}), mentioned by {mentions} — {where}")
             conn.close()
             return
         outcome = read_catalogue_works(count, quiet=False, progress_callback=on_progress)

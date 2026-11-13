@@ -156,9 +156,11 @@ On the manage page, **Add a book by title** puts a book in your library from its
 
 A work your books mention is only a dot until its own text is read. For works old enough to be in the public domain, `python process_books.py --catalogue 3` finds the text on Project Gutenberg, reads it like one of your own books, and keeps what it mentions. Two of your books can then meet through a book neither of them is: one mentions *Hamlet*, *Hamlet* mentions the *Aeneid*, another mentions the *Aeneid*. The graph draws these as dashed **Second hop** lines, and only between works already on the map, so a much-quoted classic does not flood it.
 
-- It takes the works most of your books point at first, and tries each one once. `--catalogue 10 --list` shows what would be read without reading it.
+- It takes the works most of your books point at first, and tries each one once. `--catalogue 10 --list` shows what would be read, and whether each one is free, without reading anything.
+- The search is local. Project Gutenberg's catalogue (about 20 MB, 62,000 English texts) is kept in `catalogue/` and refreshed when it is a month old, or with `--catalogue --refresh`, so a lookup takes a millisecond instead of a minute.
 - The texts are kept in `catalogue/`, apart from your own books, and such a work does not join your library.
-- Each one costs as much as reading a book of your own, and the Gutenberg index is slow (a minute or more per search).
+- Each one costs as much as reading a book of your own.
+- In the graph, the **Catalogue** switch decides what you see: off, only your own books and what they mention; on, the works read from Project Gutenberg as well, with everything they mention, drawn as dashed lines.
 
 ### Using Amazon Bedrock
 
@@ -274,7 +276,7 @@ This compares the links in the database with hand-checked gold sets in `eval/gol
 | `python process_books.py --merge-versions` | Make versions of one work one node (runs by itself after each read) |
 | `python process_books.py --merge-parts` | Let the Cataloguer fold parts into their wholes (runs by itself after each judged read; `--again` asks about every work afresh) |
 | `python process_books.py --years` | Let the Cataloguer date works it has not dated yet (`--again` re-dates everything) |
-| `python process_books.py --catalogue N` | Read N mentioned works from Project Gutenberg for second-hop links (`--list` only shows them) |
+| `python process_books.py --catalogue N` | Read N mentioned works from Project Gutenberg for second-hop links (`--list` only shows them, `--refresh` updates the local catalogue) |
 | `python process_books.py --audit` | Let the Auditor check links it has not seen yet |
 | `python process_books.py --rescue` | Link works that were dropped only for lack of a catalogue record (after a rule change) |
 | `python process_books.py --fix-library` | Re-file library books under their real title and author (fixes wrong covers) |

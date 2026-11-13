@@ -50,6 +50,8 @@ Items are ordered by how much they improve the result for the effort.
 - **A fresh start (13 Nov 2026).** The ten test books were set aside in `archive/` with a copy of the database, and the library emptied: from here on it holds the books actually read, added as they are finished. The accuracy numbers above were measured on the archived books; `eval_extraction.py` has nothing to measure until one of the gold books is back.
 - **Marking books as read.** A button on each library book records the day it was read; books added by title arrive marked.
 - **Token count per book.** Through Claude Code, each read now reports what it used (tokens in, tokens out, requests).
+- **A local Gutenberg catalogue.** Their catalogue file (62,161 English texts) is kept in `catalogue/` and searched there: a lookup went from over a minute to about a millisecond, and works offline. Alternative titles are folded in, so "Moby-Dick" finds "Moby-Dick; or, The Whale".
+- **A Catalogue switch in the graph.** Off (the default), you see only your own books and what they mention; on, the works read from Project Gutenberg as well, with everything they mention.
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
@@ -59,7 +61,6 @@ Items are ordered by how much they improve the result for the effort.
 The library was emptied on 13 Nov 2026 and starts again from the books actually read. What makes it connect:
 - **More books.** The network effect needs a larger library; batch upload and adding by title both work.
 - **A fuller catalogue.** Twelve more mentioned works are old enough to read from Project Gutenberg (`--catalogue 12 --list`). Each costs a book's worth of reading, so do it a few at a time.
-- **A faster index.** Gutendex takes a minute or more per search. Project Gutenberg publishes its catalogue as one file; searching a local copy would be instant.
 
 ## Then: product
 
