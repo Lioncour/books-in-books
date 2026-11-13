@@ -1661,7 +1661,10 @@
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Harry_Potter_logo.svg/330px-Harry_Potter_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 2,
-    "includes": []
+    "includes": [
+      "Harry Potter and the Philosopher's Stone",
+      "Harry Potter and the Sorcerer's Stone"
+    ]
   },
   {
     "id": 215,
@@ -3183,6 +3186,7 @@
     "outgoing_count": 0,
     "incoming_count": 3,
     "includes": [
+      "Star Trek (film series)",
       "The Way to Eden"
     ]
   },
@@ -3214,7 +3218,10 @@
     "cover_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Star_wars2.svg/330px-Star_wars2.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
     "outgoing_count": 0,
     "incoming_count": 4,
-    "includes": []
+    "includes": [
+      "Star Wars: Episode V – The Empire Strikes Back",
+      "Star Wars: Episode VI – Return of the Jedi"
+    ]
   },
   {
     "id": 517,
@@ -4036,7 +4043,9 @@
     "cover_url": null,
     "outgoing_count": 0,
     "incoming_count": 3,
-    "includes": []
+    "includes": [
+      "The Wonderful Wizard of Oz"
+    ]
   },
   {
     "id": 144,
