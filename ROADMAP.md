@@ -10,7 +10,7 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 113 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 114 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
@@ -47,13 +47,16 @@ Items are ordered by how much they improve the result for the effort.
 - **`process_books.py` split.** From 3,470 lines to 2,417, with six modules cut along the seams that existed: `titles.py` (comparing titles and authors), `open_library.py` (catalogue lookup and its cache), `book_text.py` (reading a file, italics and quotation marks), `file_metadata.py` (title and author from a file), `work_merging.py` (versions, parts, dates) and `covers.py`. The old names still import from `process_books`, so nothing else had to change. Tests green before and after.
 - **A shared catalogue from free texts, and second-hop links.** `--catalogue N` finds mentioned works on Project Gutenberg and reads them through the same pipeline. First run: *Hamlet* and *Winnie-the-Pooh*. *Hamlet* turned out to mention the Bible and the *Aeneid*, both already on the map, and the graph now draws those as dashed second-hop lines. Precision and recall on the five gold sets are unchanged.
 - **Fable 5.2 as the Reader.** One reading each, through Claude Code: *Careless People* 34 of 36 gold works (Opus 5.5: 31), *Columbus Day* 40 of 41 (37), *To Kill a Mockingbird* 25 of 25 (22 to 24). 97% against about 90%, so the Reader is set to Fable on this machine. The Judge, the Auditor and the Cataloguer stay on Opus: they were only measured there, and their precision is 100%.
+- **A fresh start (13 Nov 2026).** The ten test books were set aside in `archive/` with a copy of the database, and the library emptied: from here on it holds the books actually read, added as they are finished. The accuracy numbers above were measured on the archived books; `eval_extraction.py` has nothing to measure until one of the gold books is back.
+- **Marking books as read.** A button on each library book records the day it was read; books added by title arrive marked.
+- **Token count per book.** Through Claude Code, each read now reports what it used (tokens in, tokens out, requests).
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
 ## Next: do these first
 
 ### 1. Make the graph connect
-Ten books share 22 works, and two second-hop links exist. What would add more:
+The library was emptied on 13 Nov 2026 and starts again from the books actually read. What makes it connect:
 - **More books.** The network effect needs a larger library; batch upload and adding by title both work.
 - **A fuller catalogue.** Twelve more mentioned works are old enough to read from Project Gutenberg (`--catalogue 12 --list`). Each costs a book's worth of reading, so do it a few at a time.
 - **A faster index.** Gutendex takes a minute or more per search. Project Gutenberg publishes its catalogue as one file; searching a local copy would be instant.
@@ -69,5 +72,5 @@ A book added by title has no mentions of its own. When it is old enough, the cat
 `process_books.py` is down to about 2,400 lines; what is left is matching and storage, which lean on each other and on names the tests replace, so the next cut needs the tests rewritten first. `app.py` (about 2,000 lines) could give its review and admin routes to Flask blueprints. `static/main.js` (about 3,200 lines) is one closure sharing its state; splitting it means choosing a module system, and nothing tests it today.
 
 ### 4. Housekeeping
-- **Re-read the library with Fable.** The links were made with Opus. A first attempt at a full re-read was stopped: after the three measuring runs each request took minutes instead of seconds, which looks like the subscription's rate limit. Run `python process_books.py --force` when there is room for it (two readings of ten books), then `eval_extraction.py`.
+- **Reading speed through Claude Code.** After three measuring runs each request took minutes instead of seconds, which looks like the subscription's rate limit. Watch the token count on the first real books.
 - The front end has no tests; the graph, the filters and the list view are checked by hand.

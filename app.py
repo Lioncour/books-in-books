@@ -230,6 +230,12 @@ def match_starting_books(books_rows):
     except sqlite3.OperationalError:
         years = {}
 
+    try:
+        cursor.execute("SELECT id, read_at FROM books WHERE read_at IS NOT NULL")
+        read_dates = {row["id"]: row["read_at"] for row in cursor.fetchall()}
+    except sqlite3.OperationalError:
+        read_dates = {}
+
     # What was folded into each work: its parts and its other names
     includes = {}
     try:
@@ -331,6 +337,7 @@ def match_starting_books(books_rows):
                 "source_filename": source_filename,
                 "no_file": is_starting and not source_filename and book["id"] in shelf_ids,
                 "year": years.get(book["id"]),
+                "read_at": read_dates.get(book["id"]) if is_starting else None,
                 "includes": [
                     t for t in includes.get(book["id"], []) if t.lower() != book["title"].lower()
                 ],
@@ -1582,6 +1589,47 @@ def api_library_delete_book(book_id):
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/library/books/<int:book_id>/read", methods=["POST"])
+@require_admin
+def api_library_mark_read(book_id):
+    """Mark a library book as read (today, or the date given) or as not read."""
+    import datetime
+
+    data = request.get_json(silent=True) or {}
+    read = bool(data.get("read", True))
+    date = (data.get("date") or "").strip()
+    if read:
+        try:
+            date = (
+                datetime.date.fromisoformat(date).isoformat()
+                if date
+                else datetime.date.today().isoformat()
+            )
+        except ValueError:
+            return jsonify({"error": "The date must look like 2026-11-13"}), 400
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT id, title, author, verified, match_score, cover_id, cover_url, open_library_id, kind
+        FROM books WHERE id = ?
+        """,
+        (book_id,),
+    )
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"error": "Book not found"}), 404
+    annotated = match_starting_books([row])
+    if not annotated or not annotated[0].get("is_starting"):
+        conn.close()
+        return jsonify({"error": "Only library books can be marked as read"}), 400
+    cursor.execute("UPDATE books SET read_at = ? WHERE id = ?", (date if read else None, book_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "read_at": date if read else None})
 
 
 @app.route("/api/library/books", methods=["POST"])

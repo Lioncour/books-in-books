@@ -409,9 +409,20 @@
               <button type="button" class="library-item-body" data-action="focus" data-book-id="${id}">
                 <span class="book-title">${escapeHtml(book.title)}</span>
                 <span class="book-author">${escapeHtml(book.author || "Unknown")}</span>
-                <span class="book-meta">${refs} reference${refs === 1 ? "" : "s"}</span>
+                <span class="book-meta">${refs} reference${refs === 1 ? "" : "s"}${
+          book.read_at ? ` · <span class="read-mark">read ${escapeHtml(formatReadDate(book.read_at))}</span>` : ""
+        }</span>
               </button>
               <div class="library-actions">
+                ${
+                  isStaticMode
+                    ? ""
+                    : `<button type="button" data-action="read" data-book-id="${id}" class="${
+                        book.read_at ? "is-read" : ""
+                      }" title="${
+                        book.read_at ? "Marked as read. Click to unmark." : "Mark this book as read today"
+                      }">${book.read_at ? "✓ Read" : "Mark read"}</button>`
+                }
                 <button type="button" data-action="toggle" data-book-id="${id}" title="Show or hide on graph">${hidden ? "Show" : "Hide"}</button>
                 ${
                   isStaticMode
@@ -442,6 +453,11 @@
       reprocessBook(bookId);
       return;
     }
+    if (action === "read") {
+      e.preventDefault();
+      toggleRead(bookId);
+      return;
+    }
     if (action === "focus") {
       focusBookId = bookId;
       const focusBtn = $("focus-mode");
@@ -455,6 +471,32 @@
         openDetailPanel(bookId);
       }
       renderLibrary();
+    }
+  }
+
+  function formatReadDate(iso) {
+    const date = new Date(`${iso}T12:00:00`);
+    if (Number.isNaN(date.getTime())) return iso;
+    return date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  // Mark a library book as read today, or take the mark off again
+  async function toggleRead(bookId) {
+    const book = allBooks.find((b) => String(b.id) === String(bookId));
+    if (!book) return;
+    const read = !book.read_at;
+    try {
+      const res = await fetch(`/api/library/books/${bookId}/read`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ read }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not save");
+      book.read_at = data.read_at;
+      renderLibrary();
+    } catch (err) {
+      notify("Not saved", err.message, "error", 8000);
     }
   }
 

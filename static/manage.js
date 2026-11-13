@@ -102,9 +102,12 @@
                   : book.no_file
                   ? " · added by title, no file"
                   : ""
-              }</span>
+              }${book.read_at ? ` · read ${escapeHtml(book.read_at)}` : ""}</span>
             </div>
             <div class="manage-book-actions">
+              <button type="button" class="btn btn-ghost" data-read="${book.id}" data-is-read="${
+                book.read_at ? "1" : ""
+              }">${book.read_at ? "✓ Read" : "Mark read"}</button>
               ${
                 book.no_file
                   ? ""
@@ -301,6 +304,21 @@
     $("logout-btn")?.addEventListener("click", async () => {
       await api("/api/admin/logout", { method: "POST", body: "{}" });
       setLoggedIn(false);
+    });
+
+    // Mark a library book as read today, or take the mark off again
+    $("library-list")?.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-read]");
+      if (!btn) return;
+      try {
+        await api(`/api/library/books/${btn.getAttribute("data-read")}/read`, {
+          method: "POST",
+          body: JSON.stringify({ read: !btn.getAttribute("data-is-read") }),
+        });
+        await refreshLibrary();
+      } catch (err) {
+        notify("Not saved", err.message || "", "error");
+      }
     });
 
     // Add a book by its title, with no file

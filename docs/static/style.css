@@ -377,6 +377,15 @@ body {
     font-family: var(--font-body);
 }
 
+.library-actions button.is-read {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.read-mark {
+    color: var(--accent);
+}
+
 .library-actions button:hover {
     color: var(--ink);
     border-color: var(--ink-soft);

@@ -202,6 +202,10 @@ def init_database(quiet: bool = False):
         cursor.execute("ALTER TABLE books ADD COLUMN year_checked INTEGER DEFAULT 0")
         cursor.execute("UPDATE books SET year = NULL")  # drop years from an earlier, unreliable source
 
+    if "read_at" not in columns:
+        # The day a library book was marked as read (YYYY-MM-DD), or NULL
+        cursor.execute("ALTER TABLE books ADD COLUMN read_at TEXT")
+
     if "on_shelf" not in columns:
         # 1 = added to the library by title, with no file to read
         cursor.execute("ALTER TABLE books ADD COLUMN on_shelf INTEGER DEFAULT 0")
@@ -480,7 +484,11 @@ def add_shelf_book(title: str, author: str = "", cursor=None, conn=None) -> Dict
                     (title, author or "Unknown", manual_id),
                 )
         book_id = book_id or cursor.lastrowid
-    cursor.execute("UPDATE books SET on_shelf = 1 WHERE id = ?", (book_id,))
+    # A book added by title is one you have read: there is no file to read later
+    cursor.execute(
+        "UPDATE books SET on_shelf = 1, read_at = COALESCE(read_at, DATE('now', 'localtime')) WHERE id = ?",
+        (book_id,),
+    )
     conn.commit()
     cursor.execute("SELECT title, author FROM books WHERE id = ?", (book_id,))
     stored_title, stored_author = cursor.fetchone()
@@ -1780,6 +1788,9 @@ def process_book_file(
     """
     if not quiet:
         print(f"Processing: {file_path.name}")
+    import claude_code
+
+    used_before = claude_code.usage()
     try:
         # Candidates depend on the spaCy model, so the cache is keyed by both
         cache_key = f"{spacy_model_name()}:{file_hash}" if file_hash else None
@@ -1825,6 +1836,18 @@ def process_book_file(
             result["audit"] = audit_book(
                 source_book_id, cursor, conn, progress_callback=progress_callback, quiet=quiet
             )
+        # What this book cost, when Claude was reached through Claude Code
+        used = claude_code.usage()
+        tokens = {k: used[k] - used_before[k] for k in used}
+        if tokens["calls"]:
+            result["tokens"] = tokens
+            message = (
+                f"{file_path.name}: {tokens['input_tokens']:,} tokens in, "
+                f"{tokens['output_tokens']:,} out, over {tokens['calls']} requests"
+            )
+            print(message)
+            if progress_callback:
+                progress_callback({"phase": "judging", "message": message, "agent": "judge"})
         return result
     except Exception as e:
         if not quiet:

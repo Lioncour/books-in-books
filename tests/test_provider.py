@@ -186,6 +186,23 @@ class ClaudeCodeTests(unittest.TestCase):
         # an API key would switch the program away from the subscription login
         self.assertEqual(claude_code._own_environment({"ANTHROPIC_API_KEY": "k", "PATH": "p"}), {"PATH": "p"})
 
+    def test_tokens_are_counted_across_requests(self):
+        import claude_code
+
+        reply = self.reply(structured_output={"works": []},
+                           usage={"input_tokens": 100, "cache_read_input_tokens": 900, "output_tokens": 40})
+        before = claude_code.usage()
+        with mock.patch.object(claude_code, "executable", return_value="claude"), mock.patch.object(
+            claude_code.subprocess, "run", return_value=reply
+        ):
+            for _ in range(2):
+                claude_code.ask("m", "s", [{"role": "user", "content": "t"}])
+        after = claude_code.usage()
+        self.assertEqual(
+            {k: after[k] - before[k] for k in after},
+            {"calls": 2, "input_tokens": 2000, "output_tokens": 80},
+        )
+
     def test_an_expired_login_says_how_to_fix_it(self):
         import claude_code
 

@@ -26,6 +26,24 @@ from typing import Dict, Optional
 
 TIMEOUT_SECONDS = 900
 
+# What the requests made by this process have used so far, as the program reports it
+USAGE = {"calls": 0, "input_tokens": 0, "output_tokens": 0}
+
+
+def usage() -> Dict:
+    """A copy of the running totals; subtract two of these to price a book."""
+    return dict(USAGE)
+
+
+def _count(reply: Dict):
+    used = reply.get("usage") or {}
+    USAGE["calls"] += 1
+    USAGE["input_tokens"] += sum(
+        int(used.get(k) or 0)
+        for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")
+    )
+    USAGE["output_tokens"] += int(used.get("output_tokens") or 0)
+
 
 def executable() -> Optional[str]:
     """Where the `claude` program is, or None when it is not installed."""
@@ -137,6 +155,7 @@ def ask(model: str, system, messages, output_config=None, **_ignored):
         raise RuntimeError(f"Claude Code gave no usable answer (exit {done.returncode}): {detail}")
     if isinstance(reply, list):  # some versions print every event; the result is last
         reply = next((r for r in reversed(reply) if r.get("type") == "result"), {})
+    _count(reply)
     if reply.get("is_error"):
         message = str(reply.get("result") or "unknown error")
         if "authenticate" in message.lower() or "oauth" in message.lower():

@@ -65,3 +65,6 @@ process_status.json
 
 # Free texts fetched for the shared catalogue
 catalogue/
+
+# Books and data set aside when the library was emptied
+archive/
