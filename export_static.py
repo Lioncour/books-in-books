@@ -65,6 +65,7 @@ def export_network():
                 "cover_url": book.get("cover_url"),
                 "outgoing_count": book.get("outgoing_count"),
                 "incoming_count": book.get("incoming_count"),
+                "includes": book.get("includes") or [],
             }
         )
     return portable_books, references
@@ -88,7 +89,7 @@ def create_static_index(docs_dir: Path):
     # Keep a cache-bust on main.js for Pages deploy
     html_content = html_content.replace(
         'src="static/main.js"',
-        'src="static/main.js?v=42"',
+        'src="static/main.js?v=43"',
     )
 
     # Explore-only: no local manage routes on Pages

@@ -217,6 +217,15 @@ def match_starting_books(books_rows):
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # What was folded into each work: its parts and its other names
+    includes = {}
+    try:
+        cursor.execute("SELECT book_id, title FROM work_aliases ORDER BY title")
+        for row in cursor.fetchall():
+            includes.setdefault(row["book_id"], []).append(row["title"])
+    except sqlite3.OperationalError:
+        pass  # a database from before works were folded
+
     for book in books_rows:
         db_title = book["title"].lower().strip()
         db_author = (book["author"] or "").lower().strip()
@@ -305,6 +314,9 @@ def match_starting_books(books_rows):
                 "cover_id": book["cover_id"] if "cover_id" in book.keys() else None,
                 "cover_url": book_cover_url(book, size="M"),
                 "source_filename": source_filename,
+                "includes": [
+                    t for t in includes.get(book["id"], []) if t.lower() != book["title"].lower()
+                ],
             }
         )
 

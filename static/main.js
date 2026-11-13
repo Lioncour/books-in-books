@@ -489,11 +489,20 @@
     const book = data.source_book;
     const isOwned = allBooks.find((b) => String(b.id) === String(book.id))?.is_starting;
     data.skipped = data.skipped || [];
+    // Parts and other names that were folded into this work
+    const includes = allBooks.find((b) => String(b.id) === String(book.id))?.includes || [];
 
     content.innerHTML = `
       <p class="detail-kicker">${isOwned ? "In your library" : kindLabel(book.kind)}</p>
       <h2 class="detail-title">${escapeHtml(book.title)}</h2>
       <p class="detail-author">${escapeHtml(book.author || "Unknown author")}</p>
+      ${
+        includes.length
+          ? `<p class="detail-includes"><span>Includes</span> ${includes
+              .map((t) => escapeHtml(t))
+              .join(" · ")}</p>`
+          : ""
+      }
       ${
         book.kind && book.kind !== "book"
           ? `<p class="kind-badge kind-${escapeHtml(book.kind)}">${escapeHtml(kindLabel(book.kind))}</p>`

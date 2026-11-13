@@ -1460,3 +1460,19 @@ body[data-static="true"] #first-run {
 .node-label.is-cocktail {
     fill: #f0b8be;
 }
+
+/* Parts and other names folded into a work */
+.detail-includes {
+    margin-top: 0.5rem;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+.detail-includes span {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.7rem;
+    margin-right: 0.35rem;
+}
