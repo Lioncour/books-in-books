@@ -84,6 +84,7 @@ books in books/
 ├── file_metadata.py       # Title and author from a file name or EPUB metadata
 ├── work_merging.py        # Versions, parts of a whole, dates
 ├── covers.py              # Cover pictures
+├── gutenberg.py           # Free texts for the shared catalogue
 ├── judge.py               # Claude judges each candidate mention in context
 ├── reader.py              # Optional: Claude reads the book and lists the works it mentions
 ├── auditor.py             # Claude checks the finished links and fixes or removes wrong ones
@@ -146,6 +147,14 @@ The sidebar says whether the Judge is on. Without credentials the app still work
 ### Adding a book without a file
 
 On the manage page, **Add a book by title** puts a book in your library from its title alone (and the author, if the title is a common one). There is no text to read, so it brings no mentions of its own. It becomes a library book the others can point at, and if one of them already mentions it, that existing node is the one that joins your library, links and all.
+
+### The shared catalogue and second-hop links
+
+A work your books mention is only a dot until its own text is read. For works old enough to be in the public domain, `python process_books.py --catalogue 3` finds the text on Project Gutenberg, reads it like one of your own books, and keeps what it mentions. Two of your books can then meet through a book neither of them is: one mentions *Hamlet*, *Hamlet* mentions the *Aeneid*, another mentions the *Aeneid*. The graph draws these as dashed **Second hop** lines, and only between works already on the map, so a much-quoted classic does not flood it.
+
+- It takes the works most of your books point at first, and tries each one once. `--catalogue 10 --list` shows what would be read without reading it.
+- The texts are kept in `catalogue/`, apart from your own books, and such a work does not join your library.
+- Each one costs as much as reading a book of your own, and the Gutenberg index is slow (a minute or more per search).
 
 ### Using Amazon Bedrock
 
@@ -261,6 +270,7 @@ This compares the links in the database with hand-checked gold sets in `eval/gol
 | `python process_books.py --merge-versions` | Make versions of one work one node (runs by itself after each read) |
 | `python process_books.py --merge-parts` | Let the Cataloguer fold parts into their wholes (runs by itself after each judged read; `--again` asks about every work afresh) |
 | `python process_books.py --years` | Let the Cataloguer date works it has not dated yet (`--again` re-dates everything) |
+| `python process_books.py --catalogue N` | Read N mentioned works from Project Gutenberg for second-hop links (`--list` only shows them) |
 | `python process_books.py --audit` | Let the Auditor check links it has not seen yet |
 | `python process_books.py --rescue` | Link works that were dropped only for lack of a catalogue record (after a rule change) |
 | `python process_books.py --fix-library` | Re-file library books under their real title and author (fixes wrong covers) |

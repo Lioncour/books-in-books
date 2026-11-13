@@ -1048,6 +1048,78 @@ class VersionTests(TempProject):
         self.assertEqual(self.cur.fetchone()[0], 1)
 
 
+class CatalogueTests(TempProject):
+    """Reading mentioned works from Project Gutenberg for second-hop links."""
+
+    def old_work(self, title, author, year, olid):
+        self.cur.execute(
+            "INSERT INTO books (title, author, open_library_id, verified, year) VALUES (?, ?, ?, 1, ?)",
+            (title, author, olid, year),
+        )
+        work = self.cur.lastrowid
+        self.cur.execute(
+            "INSERT INTO book_references (source_book_id, referenced_book_id) VALUES (?, ?)",
+            (self.source_id, work),
+        )
+        return work
+
+    def test_the_licence_pages_are_cut_off(self):
+        import gutenberg
+
+        text = "\n".join([
+            "The Project Gutenberg eBook of Emma",
+            "*** START OF THE PROJECT GUTENBERG EBOOK EMMA ***",
+            "Emma Woodhouse, handsome, clever, and rich.",
+            "*** END OF THE PROJECT GUTENBERG EBOOK EMMA ***",
+            "Licence text",
+        ])
+        self.assertEqual(gutenberg.strip_licence(text), "Emma Woodhouse, handsome, clever, and rich.")
+
+    def test_only_the_right_text_is_accepted(self):
+        import gutenberg
+
+        results = {"results": [
+            {"id": 1, "title": "Emma Goldman: A Life", "authors": [{"name": "Someone Else"}],
+             "formats": {"text/plain; charset=utf-8": "http://x/1.txt"}},
+            {"id": 2, "title": "Emma", "authors": [{"name": "Brontë, Charlotte"}],
+             "formats": {"text/plain; charset=utf-8": "http://x/2.txt"}},
+            {"id": 3, "title": "Emma", "authors": [{"name": "Austen, Jane"}],
+             "formats": {"application/epub+zip": "http://x/3.epub"}},
+            {"id": 158, "title": "Emma", "authors": [{"name": "Austen, Jane"}],
+             "formats": {"text/plain; charset=us-ascii": "http://x/158.txt"}},
+        ]}
+        reply = mock.Mock(json=lambda: results, raise_for_status=lambda: None)
+        with mock.patch.object(gutenberg.requests, "get", return_value=reply):
+            found = gutenberg.find_text("Emma", "Jane Austen")
+            self.assertIsNone(gutenberg.find_text("Persuasion", "Jane Austen"))
+        self.assertEqual((found["gutenberg_id"], found["url"]), (158, "http://x/158.txt"))
+
+    def test_old_mentioned_works_are_read_once_and_new_ones_left_alone(self):
+        import gutenberg
+
+        hamlet = self.old_work("Hamlet", "William Shakespeare", 1601, "h")
+        self.old_work("A Modern Novel", "Living Author", 2015, "m")
+        self.old_work("An Unfindable Tract", "Obscure Divine", 1650, "u")
+        self.conn.commit()
+        text = Path(self._tmp.name) / "pg1524.txt"
+        text.write_text("To be, or not to be.", encoding="utf-8")
+        read = []
+
+        def find(title, author):
+            return {"gutenberg_id": 1524, "title": title, "author": author, "url": "u"} if title == "Hamlet" else None
+
+        def process(path, book_id, cursor, conn, **kwargs):
+            read.append((path.name, book_id))
+            return {}
+
+        with mock.patch.object(gutenberg, "find_text", side_effect=find),                 mock.patch.object(gutenberg, "fetch_text", return_value=text),                 mock.patch.object(pb, "process_book_file", side_effect=process):
+            first = pb.read_catalogue_works(5, quiet=True)
+            second = pb.read_catalogue_works(5, quiet=True)
+        self.assertEqual(read, [("pg1524.txt", hamlet)])
+        self.assertEqual((first["read"], first["not_found"]), (["Hamlet"], ["An Unfindable Tract"]))
+        self.assertEqual((second["read"], second["not_found"]), ([], []))  # each work is tried once
+
+
 class YearTests(TempProject):
     def test_works_are_dated_once_and_an_unknown_year_is_not_asked_again(self):
         ids = {}

@@ -708,6 +708,48 @@
     "manner": "compared"
   },
   {
+    "source": 43,
+    "target": 576,
+    "context": "If you happen to have read another book about Christopher Robin, you may",
+    "manner": "passing"
+  },
+  {
+    "source": 43,
+    "target": 579,
+    "context": "Not That It Matters",
+    "manner": "passing"
+  },
+  {
+    "source": 43,
+    "target": 580,
+    "context": "The Sunny Side",
+    "manner": "passing"
+  },
+  {
+    "source": 43,
+    "target": 581,
+    "context": "The Red House Mystery",
+    "manner": "passing"
+  },
+  {
+    "source": 43,
+    "target": 582,
+    "context": "Gaiety. Song-and-dance. Here we go round the mulberry bush.",
+    "manner": "quoted"
+  },
+  {
+    "source": 43,
+    "target": 583,
+    "context": "Here we go gathering Nuts and May.",
+    "manner": "quoted"
+  },
+  {
+    "source": 43,
+    "target": 584,
+    "context": "Fourteen Songs from When We Were Very Young",
+    "manner": "passing"
+  },
+  {
     "source": 48,
     "target": 18,
     "context": "Warp factor five was not an option, unfortunately.",
@@ -1996,5 +2038,41 @@
     "target": 524,
     "context": "having just completed the study of Erasmus in which he used the great humanist and theologian as a template to espouse his own convictions",
     "manner": "passing"
+  },
+  {
+    "source": 368,
+    "target": 266,
+    "context": "’Twas Aeneas’ tale to Dido, and thereabout of it",
+    "manner": "passing"
+  },
+  {
+    "source": 368,
+    "target": 480,
+    "context": "How dost thou understand the Scripture? The Scripture says Adam digg’d.",
+    "manner": "discussed"
+  },
+  {
+    "source": 368,
+    "target": 570,
+    "context": "One fair daughter, and no more,",
+    "manner": "quoted"
+  },
+  {
+    "source": 368,
+    "target": 572,
+    "context": "with the hobby-horse, whose epitaph is ‘For, O, for O, the hobby-horse is forgot!’",
+    "manner": "quoted"
+  },
+  {
+    "source": 368,
+    "target": 573,
+    "context": "For bonny sweet Robin is all my joy.",
+    "manner": "quoted"
+  },
+  {
+    "source": 368,
+    "target": 574,
+    "context": "In youth when I did love, did love,",
+    "manner": "quoted"
   }
 ]

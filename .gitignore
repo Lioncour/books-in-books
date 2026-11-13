@@ -62,3 +62,6 @@ process_status.json
 *.db-journal
 *.db-wal
 *.db-shm
+
+# Free texts fetched for the shared catalogue
+catalogue/

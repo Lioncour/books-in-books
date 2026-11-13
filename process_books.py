@@ -243,6 +243,19 @@ def init_database(quiet: bool = False):
         # 1 = a person confirmed this link in the review queue; survives re-extraction
         cursor.execute("ALTER TABLE book_references ADD COLUMN confirmed INTEGER DEFAULT 0")
 
+    # Mentioned works whose own text was looked for on Project Gutenberg
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS catalogue_texts (
+            book_id INTEGER PRIMARY KEY,
+            gutenberg_id INTEGER,
+            filename TEXT,
+            status TEXT NOT NULL,
+            tried_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
     # Titles that were folded into a work: its parts, and its other names
     cursor.execute(
         """
@@ -1819,6 +1832,88 @@ def process_book_file(
         raise
 
 
+def catalogue_candidates(cursor, limit: int) -> List[Tuple]:
+    """
+    Mentioned books worth reading for the shared catalogue: old enough to be
+    in the public domain, not in the library, not tried before, and first the
+    ones most of your books point at.
+    """
+    cursor.execute(
+        """
+        SELECT b.id, b.title, b.author, b.year,
+               (SELECT COUNT(*) FROM book_references r WHERE r.referenced_book_id = b.id) AS mentions
+        FROM books b
+        WHERE IFNULL(b.kind, 'book') = 'book'
+          AND b.year IS NOT NULL AND b.year BETWEEN 1500 AND 1927
+          AND IFNULL(b.on_shelf, 0) = 0
+          AND b.id IN (SELECT referenced_book_id FROM book_references)
+          AND b.id NOT IN (SELECT source_book_id FROM book_references)
+          AND b.id NOT IN (SELECT book_id FROM processed_files WHERE book_id IS NOT NULL)
+          AND b.id NOT IN (SELECT book_id FROM catalogue_texts WHERE status != 'error')
+          AND LOWER(IFNULL(b.author, '')) NOT IN ('', 'unknown', 'anonymous', 'traditional')
+        ORDER BY mentions DESC, b.year, b.title
+        LIMIT ?
+        """,
+        (limit,),
+    )
+    return cursor.fetchall()
+
+
+def read_catalogue_works(limit: int = 1, quiet: bool = True, progress_callback=None) -> Dict:
+    """
+    Read up to `limit` mentioned works from Project Gutenberg, so that what
+    they mention joins the map: two of your books can then meet through a book
+    neither of them is. Each work is tried once, found or not. The texts are
+    kept in catalogue/, apart from your own books.
+    """
+    import gutenberg
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    result = {"read": [], "not_found": [], "errors": []}
+    for book_id, title, author, _year, _mentions in catalogue_candidates(cursor, limit):
+        status, gutenberg_id, filename = "not_found", None, None
+        try:
+            found = gutenberg.find_text(title, author or "")
+            if found:
+                path = gutenberg.fetch_text(found)
+                gutenberg_id, filename = found["gutenberg_id"], path.name
+                if not quiet:
+                    print(f"Reading for the catalogue: {title} (Project Gutenberg #{gutenberg_id})")
+                process_book_file(
+                    path,
+                    book_id,
+                    cursor,
+                    conn,
+                    quiet=True,
+                    progress_callback=progress_callback,
+                    file_hash=get_file_hash(path),
+                )
+                status = "read"
+        except Exception as e:
+            status = "error"
+            result["errors"].append(f"{title}: {type(e).__name__}: {e}")
+        if status != "error":
+            result["read" if status == "read" else "not_found"].append(title)
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO catalogue_texts (book_id, gutenberg_id, filename, status)
+            VALUES (?, ?, ?, ?)
+            """,
+            (book_id, gutenberg_id, filename, status),
+        )
+        conn.commit()
+    if result["read"]:
+        merge_versions(cursor, conn, quiet=quiet)
+        import judge as _judge
+
+        if _judge.judge_status()["available"]:
+            merge_parts(cursor, conn, quiet=quiet)
+            fill_years(cursor, conn, quiet=quiet)
+    conn.close()
+    return result
+
+
 def repair_owned_books(cursor, conn, books_dir: Optional[Path] = None) -> int:
     """
     Tie each processed file to its library row and correct rows whose title or
@@ -2354,6 +2449,23 @@ def main():
         conn = sqlite3.connect("database.db")
         print(f"Merged {merge_versions(conn.cursor(), conn, quiet=False)} version(s)")
         conn.close()
+        return
+    if "--catalogue" in sys.argv[1:]:
+        init_database(quiet=True)
+        rest = sys.argv[sys.argv.index("--catalogue") + 1 :]
+        count = int(rest[0]) if rest and rest[0].isdigit() else 1
+        if "--list" in sys.argv[1:]:
+            conn = sqlite3.connect("database.db")
+            for _id, title, author, year, mentions in catalogue_candidates(conn.cursor(), count):
+                print(f"  {title} by {author} ({year}), mentioned by {mentions}")
+            conn.close()
+            return
+        outcome = read_catalogue_works(count, quiet=False, progress_callback=on_progress)
+        print(f"Read: {outcome['read'] or 'nothing'}")
+        if outcome["not_found"]:
+            print(f"Not on Project Gutenberg: {outcome['not_found']}")
+        for error in outcome["errors"]:
+            print(f"Error: {error}")
         return
     if "--years" in sys.argv[1:]:
         init_database(quiet=True)

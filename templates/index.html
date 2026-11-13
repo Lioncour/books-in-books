@@ -86,6 +86,7 @@
                             <select id="period-filter" class="manner-filter" title="Show only mentioned books first published in this period (films and music have no year)" hidden></select>
                             <label class="layer-chip" title="Hide works that only one of your books mentions"><input type="checkbox" id="layer-connected"> Connections only</label>
                             <span class="layer-label">Also show</span>
+                            <label class="layer-chip" title="Dashed lines from a mentioned work that was itself read to the other works on the map it mentions" hidden><input type="checkbox" id="layer-hop"> <span class="kind-swatch kind-hop" aria-hidden="true"></span> Second hop</label>
                             <label class="layer-chip" title="Dotted lines between different works by the same author"><input type="checkbox" id="layer-author"> <span class="kind-swatch kind-author" aria-hidden="true"></span> Same author</label>
                             <label class="layer-chip"><input type="checkbox" data-kind="movie" id="layer-movie"> <span class="kind-swatch kind-movie" aria-hidden="true"></span> Movies</label>
                             <label class="layer-chip"><input type="checkbox" data-kind="music" id="layer-music"> <span class="kind-swatch kind-music" aria-hidden="true"></span> Music</label>
@@ -149,6 +150,6 @@
 
     <div id="node-tooltip" class="node-tooltip" hidden></div>
 
-    <script src="{{ url_for('static', filename='main.js') }}?v=44"></script>
+    <script src="{{ url_for('static', filename='main.js') }}?v=45"></script>
 </body>
 </html>
