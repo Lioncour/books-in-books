@@ -25,6 +25,32 @@
   let showAuthorLinks = loadAuthorLinksPref();
   let connectedOnly = false; // show only works that tie the library together
   let mannerFilter = ""; // show only works mentioned in this way (read, quoted, …)
+  let authorFilter = ""; // show only mentioned works by this author (an authorKey)
+  // The same data as a plain list, for small screens where a force graph is hard to use
+  let listView = (() => {
+    try {
+      const stored = localStorage.getItem("bib.view");
+      if (stored) return stored === "list";
+    } catch (e) {
+      /* private mode */
+    }
+    return window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+  })();
+  let periodFilter = ""; // show only mentioned works first published in this period
+  // Periods rather than single decades: a small library has one or two works in most decades
+  const PERIODS = [
+    { id: "-1799", label: "Before 1800", from: -Infinity, to: 1799 },
+    { id: "1800", label: "1800–1899", from: 1800, to: 1899 },
+    { id: "1900", label: "1900–1949", from: 1900, to: 1949 },
+    { id: "1950", label: "1950–1999", from: 1950, to: 1999 },
+    { id: "2000", label: "2000 and later", from: 2000, to: Infinity },
+  ];
+  function periodOf(book) {
+    const year = Number(book && book.year);
+    if (!book || book.year == null || !Number.isFinite(year)) return "";
+    const period = PERIODS.find((p) => year >= p.from && year <= p.to);
+    return period ? period.id : "";
+  }
   let savedPositions = loadPositions();
 
   const MANNER_LABELS = {
@@ -53,7 +79,8 @@
   }
 
   function savePositions() {
-    if (!nodes.length || connectedOnly || mannerFilter || focusBookId) return;
+    if (!nodes.length || connectedOnly || mannerFilter || authorFilter || periodFilter || focusBookId)
+      return;
     const container = $("graph-container");
     const out = {};
     nodes.forEach((n) => {
@@ -1280,6 +1307,11 @@ ${mannerTag(r.manner)}
 
     const connectedBooks = uniqueBooks.filter((b) => {
       if (!connectedBookIds.has(String(b.id))) return false;
+      // The author and period filters narrow the mentioned works, never the library
+      if (!b.is_starting) {
+        if (authorFilter && authorKey(b.author) !== authorFilter) return false;
+        if (periodFilter && periodOf(b) !== periodFilter) return false;
+      }
       // Owned library books always show; other nodes respect layer toggles
       return nodeShouldStay({ ...b, isStarting: b.is_starting });
     });
@@ -1353,9 +1385,13 @@ ${mannerTag(r.manner)}
     const savedKinds = enabledKinds;
     const savedConnectedOnly = connectedOnly;
     const savedManner = mannerFilter;
+    const savedAuthor = authorFilter;
+    const savedPeriod = periodFilter;
     enabledKinds = new Set(Object.keys(KIND_COLORS).concat(["book"]));
     connectedOnly = false;
     mannerFilter = "";
+    authorFilter = "";
+    periodFilter = "";
     let prepared;
     try {
       prepared = prepareGraphData(allBooks, allReferences);
@@ -1363,6 +1399,8 @@ ${mannerTag(r.manner)}
       enabledKinds = savedKinds;
       connectedOnly = savedConnectedOnly;
       mannerFilter = savedManner;
+      authorFilter = savedAuthor;
+      periodFilter = savedPeriod;
     }
     const { connectedBooks, connectedReferences } = prepared;
     const byId = new Map(connectedBooks.map((b) => [String(b.id), b]));
@@ -1674,6 +1712,78 @@ ${mannerTag(r.manner)}
    * Sync graph to current data/layers.
    * reset=false keeps existing node positions and grows new nodes from neighbors.
    */
+  /* The graph as a list: each library book with the works it mentions. */
+  function renderListView(books, references, sharedIds) {
+    const view = $("list-view");
+    const container = $("graph-container");
+    const button = $("toggle-list");
+    if (!view || !container) return;
+    container.classList.toggle("is-list", listView);
+    view.hidden = !listView;
+    if (button) {
+      button.textContent = listView ? "Graph view" : "List view";
+      button.setAttribute("aria-pressed", listView ? "true" : "false");
+    }
+    if (!listView) return;
+
+    const byId = new Map(books.map((b) => [String(b.id), b]));
+    const sourcesOf = new Map();
+    references.forEach((ref) => {
+      if (!sourcesOf.has(ref.target)) sourcesOf.set(ref.target, new Set());
+      sourcesOf.get(ref.target).add(ref.source);
+    });
+    const library = books
+      .filter((b) => b.is_starting)
+      .sort((a, b) => a.title.localeCompare(b.title));
+    if (!library.length) {
+      view.innerHTML = `<p class="list-empty">No books to show.</p>`;
+      return;
+    }
+    view.innerHTML = library
+      .map((book) => {
+        const id = String(book.id);
+        const works = references
+          .filter((ref) => ref.source === id && byId.has(ref.target))
+          .map((ref) => byId.get(ref.target))
+          .sort(
+            (a, b) =>
+              Number(sharedIds.has(String(b.id))) - Number(sharedIds.has(String(a.id))) ||
+              a.title.localeCompare(b.title)
+          );
+        const mentionedBy = sourcesOf.get(id);
+        const items = works
+          .map((work) => {
+            const others = (sourcesOf.get(String(work.id)) || new Set()).size - 1;
+            const kind = kindOf(work);
+            return `
+              <li>
+                <button type="button" class="list-work" data-open="${escapeHtml(String(work.id))}">
+                  <span class="kind-swatch kind-${escapeHtml(kind)}" aria-hidden="true"></span>
+                  <span class="list-work-title">${escapeHtml(work.title)}</span>
+                  <span class="list-work-author">${escapeHtml(work.author || "")}</span>
+                  ${
+                    others > 0
+                      ? `<span class="list-shared">also in ${others} other${others === 1 ? "" : "s"}</span>`
+                      : ""
+                  }
+                </button>
+              </li>`;
+          })
+          .join("");
+        return `
+          <section class="list-book">
+            <button type="button" class="list-book-head" data-open="${escapeHtml(id)}">
+              <span class="list-book-title">${escapeHtml(book.title)}</span>
+              <span class="list-book-meta">${escapeHtml(book.author || "")} · ${works.length} work${
+          works.length === 1 ? "" : "s"
+        }${mentionedBy ? ` · mentioned by ${mentionedBy.size}` : ""}</span>
+            </button>
+            ${works.length ? `<ul>${items}</ul>` : `<p class="list-empty">Nothing to show with these filters.</p>`}
+          </section>`;
+      })
+      .join("");
+  }
+
   function syncGraph({ reset = false } = {}) {
     if (!svg || !linkGroup || !nodeGroup) return;
     const container = d3.select("#graph-container");
@@ -1685,6 +1795,7 @@ ${mannerTag(r.manner)}
       allReferences
     );
     sharedNodeIds = sharedIds;
+    renderListView(connectedBooks, connectedReferences, sharedIds);
     const oldById = new Map((nodes || []).map((n) => [String(n.id), n]));
     const desiredIds = new Set(connectedBooks.map((b) => String(b.id)));
 
@@ -1694,6 +1805,8 @@ ${mannerTag(r.manner)}
       reset &&
       !connectedOnly &&
       !mannerFilter &&
+      !authorFilter &&
+      !periodFilter &&
       positionsFit(width, height) &&
       rememberedCount >= connectedBooks.length * 0.8;
 
@@ -2931,6 +3044,54 @@ ${mannerTag(r.manner)}
         };
       }
     };
+    // Authors with several mentioned works, and the periods that have any
+    const setupWorkFilters = () => {
+      const mentioned = allBooks.filter((b) => !b.is_starting);
+      const authorSelect = $("author-filter");
+      if (authorSelect) {
+        const byKey = new Map();
+        mentioned.forEach((b) => {
+          const key = authorKey(b.author);
+          if (!key) return;
+          if (!byKey.has(key)) byKey.set(key, { name: b.author, count: 0 });
+          byKey.get(key).count += 1;
+        });
+        const authors = [...byKey.entries()]
+          .filter(([, a]) => a.count >= 2)
+          .sort((a, b) => b[1].count - a[1].count || a[1].name.localeCompare(b[1].name));
+        if (!authors.some(([key]) => key === authorFilter)) authorFilter = "";
+        authorSelect.hidden = authors.length === 0;
+        authorSelect.innerHTML =
+          `<option value="">Any author</option>` +
+          authors
+            .map(([key, a]) => `<option value="${escapeHtml(key)}">${escapeHtml(a.name)} (${a.count})</option>`)
+            .join("");
+        authorSelect.value = authorFilter;
+        authorSelect.onchange = () => {
+          authorFilter = authorSelect.value;
+          syncGraph();
+        };
+      }
+      const periodSelect = $("period-filter");
+      if (periodSelect) {
+        const counts = {};
+        mentioned.forEach((b) => {
+          const id = periodOf(b);
+          if (id) counts[id] = (counts[id] || 0) + 1;
+        });
+        const present = PERIODS.filter((p) => counts[p.id]);
+        if (!present.some((p) => p.id === periodFilter)) periodFilter = "";
+        periodSelect.hidden = present.length < 2;
+        periodSelect.innerHTML =
+          `<option value="">Any period</option>` +
+          present.map((p) => `<option value="${p.id}">${p.label} (${counts[p.id]})</option>`).join("");
+        periodSelect.value = periodFilter;
+        periodSelect.onchange = () => {
+          periodFilter = periodSelect.value;
+          syncGraph();
+        };
+      }
+    };
     const connectedToggle = $("layer-connected");
     if (connectedToggle) {
       connectedToggle.addEventListener("change", () => {
@@ -2964,6 +3125,19 @@ ${mannerTag(r.manner)}
       closeDetailPanel();
       clearFocusMode();
       tidyGraphLayout();
+    });
+    $("toggle-list")?.addEventListener("click", () => {
+      listView = !listView;
+      try {
+        localStorage.setItem("bib.view", listView ? "list" : "graph");
+      } catch (e) {
+        /* private mode */
+      }
+      syncGraph();
+    });
+    $("list-view")?.addEventListener("click", (e) => {
+      const item = e.target.closest("[data-open]");
+      if (item) openDetailPanel(item.getAttribute("data-open"));
     });
     // Forget the remembered positions and let the graph lay itself out afresh
     $("reset-layout")?.addEventListener("click", () => {
@@ -3028,6 +3202,7 @@ ${mannerTag(r.manner)}
 
     refreshAll().then(() => {
       setupMannerFilter();
+      setupWorkFilters();
       resumeProcessIfNeeded();
     });
   });

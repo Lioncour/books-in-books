@@ -224,6 +224,12 @@ def match_starting_books(books_rows):
     except sqlite3.OperationalError:
         shelf_ids = set()
 
+    try:
+        cursor.execute("SELECT id, year FROM books WHERE year IS NOT NULL")
+        years = {row["id"]: row["year"] for row in cursor.fetchall()}
+    except sqlite3.OperationalError:
+        years = {}
+
     # What was folded into each work: its parts and its other names
     includes = {}
     try:
@@ -324,6 +330,7 @@ def match_starting_books(books_rows):
                 "cover_url": book_cover_url(book, size="M"),
                 "source_filename": source_filename,
                 "no_file": is_starting and not source_filename and book["id"] in shelf_ids,
+                "year": years.get(book["id"]),
                 "includes": [
                     t for t in includes.get(book["id"], []) if t.lower() != book["title"].lower()
                 ],

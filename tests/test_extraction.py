@@ -1048,6 +1048,49 @@ class VersionTests(TempProject):
         self.assertEqual(self.cur.fetchone()[0], 1)
 
 
+class YearTests(TempProject):
+    def test_works_are_dated_once_and_an_unknown_year_is_not_asked_again(self):
+        ids = {}
+        for title in ("Emma", "An Obscure Pamphlet"):
+            self.cur.execute(
+                "INSERT INTO books (title, author, open_library_id, verified) VALUES (?, 'A', ?, 1)",
+                (title, "y_" + title),
+            )
+            ids[title] = self.cur.lastrowid
+            self.cur.execute(
+                "INSERT INTO book_references (source_book_id, referenced_book_id) VALUES (?, ?)",
+                (self.source_id, ids[title]),
+            )
+        self.conn.commit()
+        asked = []
+
+        def finder(works):
+            asked.append(sorted(w["title"] for w in works))
+            return {w["id"]: (1815 if w["title"] == "Emma" else None) for w in works}
+
+        dated = pb.fill_years(self.cur, self.conn, finder=finder)
+        self.assertEqual(pb.fill_years(self.cur, self.conn, finder=finder), 0)
+        self.assertEqual(len(asked), 1)
+        self.assertIn("Emma", asked[0])
+        self.cur.execute("SELECT year FROM books WHERE id = ?", (ids["Emma"],))
+        self.assertEqual(self.cur.fetchone()[0], 1815)
+        self.cur.execute("SELECT year, year_checked FROM books WHERE id = ?", (ids["An Obscure Pamphlet"],))
+        self.assertEqual(self.cur.fetchone(), (None, 1))
+        self.assertGreaterEqual(dated, 1)
+
+    def test_the_cataloguer_keeps_only_plausible_years(self):
+        import cataloguer
+
+        answer = {"years": [{"index": 0, "year": 1815}, {"index": 1, "year": 0},
+                            {"index": 2, "year": 99999}, {"index": 9, "year": 1900}]}
+        reply = SimpleNamespace(stop_reason="end_turn",
+                                content=[SimpleNamespace(type="text", text=json.dumps(answer))])
+        client = SimpleNamespace(messages=SimpleNamespace(create=lambda **kw: reply),
+                                 beta=SimpleNamespace(messages=SimpleNamespace(create=lambda **kw: reply)))
+        works = [{"id": 10 + n, "title": t, "author": "", "kind": "book"} for n, t in enumerate("abc")]
+        self.assertEqual(cataloguer.find_years(works, client=client), {10: 1815, 11: None, 12: None})
+
+
 class ShelfTests(TempProject):
     """Adding a book to the library by title, with no file."""
 

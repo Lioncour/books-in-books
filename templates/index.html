@@ -68,6 +68,7 @@
             <div id="graph-container" class="graph-container" aria-label="Book connection graph">
                 <div class="graph-toolbar">
                     <div class="toolbar-left">
+                        <button type="button" id="toggle-list" class="btn btn-small" aria-pressed="false" title="Show the same connections as a list">List view</button>
                         <button type="button" id="reset-view" class="btn btn-small">Reset view</button>
                         <button type="button" id="tidy-layout" class="btn btn-small">Tidy layout</button>
                         <button type="button" id="reset-layout" class="btn btn-small" title="Forget the remembered positions and lay the graph out again">Reset layout</button>
@@ -79,6 +80,10 @@
                         <div class="layer-toggles" id="layer-toggles">
                             <label class="sr-only" for="manner-filter">How the work is mentioned</label>
                             <select id="manner-filter" class="manner-filter" title="Show only works mentioned in this way" hidden></select>
+                            <label class="sr-only" for="author-filter">Author of the mentioned work</label>
+                            <select id="author-filter" class="manner-filter" title="Show only mentioned works by this author" hidden></select>
+                            <label class="sr-only" for="period-filter">When the mentioned work was first published</label>
+                            <select id="period-filter" class="manner-filter" title="Show only mentioned books first published in this period (films and music have no year)" hidden></select>
                             <label class="layer-chip" title="Hide works that only one of your books mentions"><input type="checkbox" id="layer-connected"> Connections only</label>
                             <span class="layer-label">Also show</span>
                             <label class="layer-chip" title="Dotted lines between different works by the same author"><input type="checkbox" id="layer-author"> <span class="kind-swatch kind-author" aria-hidden="true"></span> Same author</label>
@@ -89,6 +94,7 @@
                         <div id="node-counts" class="node-counts" aria-live="polite"></div>
                     </div>
                 </div>
+                <div id="list-view" class="list-view" hidden></div>
                 <div id="first-run" class="first-run" hidden>
                     <img class="first-run-mark" src="{{ url_for('static', filename='mark.svg') }}" alt="" width="48" height="48">
                     <h2>Start your literary web</h2>
@@ -143,6 +149,6 @@
 
     <div id="node-tooltip" class="node-tooltip" hidden></div>
 
-    <script src="{{ url_for('static', filename='main.js') }}?v=43"></script>
+    <script src="{{ url_for('static', filename='main.js') }}?v=44"></script>
 </body>
 </html>

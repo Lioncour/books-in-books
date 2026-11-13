@@ -146,6 +146,14 @@ def init_database(quiet: bool = False):
         # 1 = title/author were set by hand on the manage page; never overwrite
         cursor.execute("ALTER TABLE books ADD COLUMN user_edited INTEGER DEFAULT 0")
 
+    if "year" not in columns:
+        # The year the work first appeared; lets the graph be narrowed to a period
+        cursor.execute("ALTER TABLE books ADD COLUMN year INTEGER")
+    if "year_checked" not in columns:
+        # 1 = the Cataloguer has been asked to date this work
+        cursor.execute("ALTER TABLE books ADD COLUMN year_checked INTEGER DEFAULT 0")
+        cursor.execute("UPDATE books SET year = NULL")  # drop years from an earlier, unreliable source
+
     if "on_shelf" not in columns:
         # 1 = added to the library by title, with no file to read
         cursor.execute("ALTER TABLE books ADD COLUMN on_shelf INTEGER DEFAULT 0")
@@ -421,6 +429,48 @@ def _same_work(a: Dict, b: Dict) -> bool:
         or author_matches(known[0], [known[1]])
         or author_matches(known[1], [known[0]])
     )
+
+
+def fill_years(cursor, conn, quiet: bool = True, finder=None) -> Optional[int]:
+    """
+    Give mentioned works the year they first appeared, as dated by the
+    Cataloguer, so the graph can be narrowed to a period. The catalogue's own
+    years are not used: Open Library dates a work by its oldest record, which
+    put Lean In in 1799 and Macbeth in 1508. Claude is asked once per work.
+    Returns how many works got a year, or None when Claude is unavailable.
+    """
+    import cataloguer
+
+    if finder is None:
+        if not cataloguer.cataloguer_enabled():
+            return 0
+        finder = cataloguer.find_years
+    cursor.execute(
+        """
+        SELECT id, title, author, IFNULL(kind, 'book') FROM books
+        WHERE IFNULL(year_checked, 0) = 0 AND IFNULL(kind, 'book') != 'cocktail'
+          AND (id IN (SELECT referenced_book_id FROM book_references)
+               OR id IN (SELECT source_book_id FROM book_references)
+               OR IFNULL(on_shelf, 0) = 1)
+        ORDER BY title
+        """
+    )
+    works = [{"id": i, "title": t, "author": a, "kind": k} for i, t, a, k in cursor.fetchall()]
+    if not works:
+        return 0
+    years = finder(works)
+    if years is None:
+        return None
+    dated = 0
+    for work_id, year in years.items():
+        cursor.execute(
+            "UPDATE books SET year = ?, year_checked = 1 WHERE id = ?", (year, work_id)
+        )
+        dated += 1 if year is not None else 0
+    conn.commit()
+    if not quiet:
+        print(f"  Dated {dated} of {len(works)} work(s)")
+    return dated
 
 
 def add_shelf_book(title: str, author: str = "", cursor=None, conn=None) -> Dict:
@@ -3284,6 +3334,7 @@ def process_pending_files(
             parts = merge_parts(cursor, conn, quiet=quiet)
             if parts and not quiet:
                 print(f"Folded {parts} part(s) into the works they belong to")
+            fill_years(cursor, conn, quiet=quiet)
     conn.close()
     final_status = "error" if result["errors"] and not result["books_processed"] else "done"
     if result["books_processed"]:
@@ -3358,6 +3409,16 @@ def main():
         init_database(quiet=True)
         conn = sqlite3.connect("database.db")
         print(f"Merged {merge_versions(conn.cursor(), conn, quiet=False)} version(s)")
+        conn.close()
+        return
+    if "--years" in sys.argv[1:]:
+        init_database(quiet=True)
+        conn = sqlite3.connect("database.db")
+        cur = conn.cursor()
+        if "--again" in sys.argv[1:]:
+            cur.execute("UPDATE books SET year = NULL, year_checked = 0")
+        dated = fill_years(cur, conn, quiet=False)
+        print("The Cataloguer did not answer" if dated is None else f"Dated {dated} work(s)")
         conn.close()
         return
     if "--merge-parts" in sys.argv[1:]:

@@ -10,7 +10,7 @@ Items are ordered by how much they improve the result for the effort.
 - **Review queue** at `/review`, keyboard driven. Confirmed links survive a re-read and rejected ones stay out.
 - **Connections.** Shared mentions, recurring authors, books that cite each other, a reading list, and same-author ties in the graph.
 - **Security.** Local-only by default, debugger off, no default admin token, cross-site writes refused.
-- **Tests.** 108 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
+- **Tests.** 110 offline tests for matching, corrections, the Judge client and the write guard, run by GitHub Actions on every push.
 - **More candidates.** Italic spans and quoted Title Case phrases from the EPUB markup are offered to the Judge, so titles spaCy misses in running prose are found.
 - **Candidate cache.** Candidates are stored per file, so re-judging a book skips the slow spaCy pass.
 - **A yardstick.** `eval_extraction.py` reports precision and recall against gold sets in `eval/gold/`. Baseline before any judging, for *84, Charing Cross Road*: 58% precision, 52% recall.
@@ -43,33 +43,27 @@ Items are ordered by how much they improve the result for the effort.
 - **Versions of one work are one node.** A film and its sequels, a film and the book or comic behind it, a volume and its series, and two catalogue records of one title are merged after each read (*Star Wars* and its episodes, *Iron Man* the film and the comic, the *Harry Potter* films and the series, both *Wizard of Oz*). Different works that share a title stay apart: two authors' *Essays*, a song and a novel. Nine records merged in this library; 21 works are now shared by several books, and precision and recall are unchanged on all five gold sets.
 - **The Cataloguer folds parts into wholes.** Claude is shown the list of mentioned works once and names the ones that belong inside another: Genesis, Proverbs, Daniel and two Gospels into the Bible, six Montaigne essays and the English title into *Essais*, a sermon into Donne's *Sermons*, a song into *Aladdin*, an episode into *Star Trek*. 24 folded, all read and found right. The Bible now joins seven of the ten books. What was folded is remembered, so the measurement still counts a part as found through its whole; precision and recall are unchanged on all five gold sets. It only asks again when new works have appeared. The detail panel lists what a work includes.
 - **Add a book by title.** The manage page takes a title and puts the book in the library with no file. A work already in the graph joins the library with its links (*The Wind in the Willows* arrived already mentioned by two books); one no catalogue knows is filed as typed.
+- **Filters and a list view.** The graph can be narrowed to one author or one period, and shown as a list of each library book with the works it mentions (the default on a phone). The Cataloguer dates the works: Open Library's own years turned out to be unusable (*Lean In* in 1799, *Macbeth* in 1508), so Claude was asked instead and dated 286 of 302, films and songs included.
 - **Mention filter.** The graph can show only works that are read, quoted, discussed, recommended, criticised or used as a comparison, and the Connections panel lists what your books recommend and criticise.
 - **Live Judge test.** `tests/test_live_judge.py` runs five of this library's real mistakes through the actual Judge, behind a flag.
 
 ## Next: do these first
 
-### 1. Cut the Reader's price
-Haiku 5.5 and Sonnet 5.5 were both tried as the Reader and both found clearly fewer mentions, so a smaller model is not the answer. The Message Batches API halves the price of the same model. Results are cached per file and model, so this only matters for new books.
-
-### 2. Make the graph connect
+### 1. Make the graph connect
 Ten books now share 22 works (the Bible in seven of them, then The Simpsons, Star Wars, Spider-Man, The Wizard of Oz, Hamlet, Winnie-the-Pooh, Star Trek and others), up from two. Two things would create more real links:
 - **More books.** The network effect needs a larger library; batch upload already works.
 - **Second-hop links from the catalogue.** For a mentioned book you do not own, pull its own mentions from the shared catalogue, so two of your books connect through a third.
 
 ## Then: product
 
-### 3. A shelf for books you have no file for
+### 2. A shelf for books you have no file for
 Adding by title works, but such a book has no mentions of its own. The longer aim is a shared catalogue: read public-domain texts (Project Gutenberg) once, keep what they mention, and let a book added by title bring those mentions with it.
-
-### 4. Graph usability
-- Filter the graph to one author or one decade.
-- A list view for phones, where a force graph is hard to use.
 
 ## Later: engineering
 
-### 5. Split the big files
+### 3. Split the big files
 `app.py` (about 1,900 lines), `process_books.py` (about 2,200) and `static/main.js` (about 2,800) each do several jobs. Split along the seams that now exist: text reading, candidate finding, judging, catalogue lookup, storage; and on the front end graph, panels, upload and processing. Do it with the tests green before and after.
 
-### 6. Housekeeping
-- `process_books.py` still holds matching, storage, file reading and the command line in one file (see item 5).
+### 4. Housekeeping
+- `process_books.py` still holds matching, storage, file reading and the command line in one file (see item 3).
 - The candidate finder changed, so the first re-read of each book repeats the slow spaCy pass once.

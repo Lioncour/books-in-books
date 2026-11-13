@@ -223,7 +223,7 @@ Open [http://localhost:5000/review](http://localhost:5000/review). With the Audi
 
 ## Connections
 
-The **Connections** button on the graph lists works mentioned by more than one of your books, authors who recur, your books that cite each other, and a reading list of books you do not own. **Same author** draws dotted ties between different works by one author. **Connections only** hides works that just one of your books mentions. Works shared by several books are drawn in gold, and zooming in labels every node. The layout is remembered between visits; **Reset layout** starts it over. With the Judge on, each mention also carries a small tag for how the work is used: read, quoted, discussed, recommended, criticised or comparison.
+The **Connections** button on the graph lists works mentioned by more than one of your books, authors who recur, your books that cite each other, and a reading list of books you do not own. **Same author** draws dotted ties between different works by one author. **Connections only** hides works that just one of your books mentions. Works shared by several books are drawn in gold, and zooming in labels every node. The layout is remembered between visits; **Reset layout** starts it over. The toolbar can narrow the mentioned works to one author or one period, and **List view** shows the same connections as a plain list, which is the default on a phone. With the Judge on, each mention also carries a small tag for how the work is used: read, quoted, discussed, recommended, criticised or comparison.
 
 ## Tests
 
@@ -252,6 +252,7 @@ This compares the links in the database with hand-checked gold sets in `eval/gol
 | `python process_books.py --check` | Ask Claude one small question, to see that the chosen provider answers |
 | `python process_books.py --merge-versions` | Make versions of one work one node (runs by itself after each read) |
 | `python process_books.py --merge-parts` | Let the Cataloguer fold parts into their wholes (runs by itself after each judged read; `--again` asks about every work afresh) |
+| `python process_books.py --years` | Let the Cataloguer date works it has not dated yet (`--again` re-dates everything) |
 | `python process_books.py --audit` | Let the Auditor check links it has not seen yet |
 | `python process_books.py --rescue` | Link works that were dropped only for lack of a catalogue record (after a rule change) |
 | `python process_books.py --fix-library` | Re-file library books under their real title and author (fixes wrong covers) |

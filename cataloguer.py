@@ -133,3 +133,83 @@ def find_parts(works: List[Dict], client=None) -> Optional[List[Dict]]:
     # keep it simple and drop pairs whose whole is being merged away
     parts = {p["part"] for p in pairs}
     return [p for p in pairs if p["whole"] not in parts]
+
+
+YEARS_PROMPT = """You are adding dates to a map of which books mention which other works.
+
+For each numbered work give the year it first appeared: first publication for \
+a book, play, poem or essay (first performance or printing for old plays), \
+release for a film, first broadcast for a TV series, first release or \
+publication for a song or piece of music. Use a negative number for years \
+before the common era. For scripture and other ancient texts give the \
+approximate year the text took its form.
+
+Give 0 when you do not know the work or cannot date it to within a decade. A \
+missing year is better than a wrong one."""
+
+YEARS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "years": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {"index": {"type": "integer"}, "year": {"type": "integer"}},
+                "required": ["index", "year"],
+                "additionalProperties": False,
+            },
+        }
+    },
+    "required": ["years"],
+    "additionalProperties": False,
+}
+YEARS_BATCH = 120
+
+
+def find_years(works: List[Dict], client=None) -> Optional[Dict[int, Optional[int]]]:
+    """
+    works: [{"id", "title", "author", "kind"}, ...]
+    Returns {id: year or None} for the works Claude answered for, or None when
+    Claude is unavailable. A work it could not date comes back as None.
+    """
+    if not works:
+        return {}
+    client = client or _get_client()
+    if client is None:
+        return None
+    api, extra = message_api(client)
+    found: Dict[int, Optional[int]] = {}
+    for start in range(0, len(works), YEARS_BATCH):
+        batch = works[start : start + YEARS_BATCH]
+        lines = [
+            f'[{n}] "{w["title"]}" by {w.get("author") or "unknown"} ({w.get("kind") or "book"})'
+            for n, w in enumerate(batch)
+        ]
+        try:
+            response = api.create(
+                model=cataloguer_model(),
+                max_tokens=16000,
+                system=[{"type": "text", "text": YEARS_PROMPT, "cache_control": {"type": "ephemeral"}}],
+                output_config={
+                    "effort": "medium",
+                    "format": {"type": "json_schema", "schema": YEARS_SCHEMA},
+                },
+                **extra,
+                messages=[{"role": "user", "content": "Works:\n" + "\n".join(lines)}],
+            )
+            if response.stop_reason in ("refusal", "max_tokens"):
+                raise RuntimeError(f"stopped early ({response.stop_reason})")
+            text = next((b.text for b in response.content if b.type == "text"), "")
+            answer = json.loads(text)
+        except Exception as e:
+            print(f"The Cataloguer could not date a batch: {type(e).__name__}: {e}")
+            if not found:
+                return None
+            continue
+        for item in answer.get("years") or []:
+            index, year = item.get("index"), item.get("year")
+            if not isinstance(index, int) or not (0 <= index < len(batch)):
+                continue
+            plausible = isinstance(year, int) and year != 0 and -3000 <= year <= 2100
+            found[batch[index]["id"]] = year if plausible else None
+    return found
